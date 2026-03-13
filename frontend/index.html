@@ -4,13 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pokedex</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
   <header class="pokedex-header">
     <div class="header-brand px-4 py-3 d-flex align-items-center gap-3">
-      <h1 class="mb-0">Pokedex</h1>
+      <h1 class="mb-0">Pokédex</h1>
       <div class="ms-auto d-flex gap-2" id="search-bar">
-        <input id="search-input" type="text" class="form-control" placeholder="Buscar por nombre o numero..." />
+        <input id="search-input" type="text" class="form-control" placeholder="Buscar por nombre o número..." />
         <button id="search-btn" class="btn btn-light">Buscar</button>
       </div>
     </div>
@@ -24,6 +27,17 @@
   <main class="container-fluid p-4">
     <div id="tab-pokedex" class="tab-page">
       <section id="list-view">
+        <div id="filter-bar" class="filter-bar">
+          <select id="filter-gen" class="filter-select">
+            <option value="">Todas las generaciones</option>
+          </select>
+          <select id="filter-type" class="filter-select">
+            <option value="">Todos los tipos</option>
+          </select>
+          <button id="filter-legendary" class="filter-pill" title="Mostrar solo legendarios">⭐ Legendario</button>
+          <button id="filter-mythical" class="filter-pill" title="Mostrar solo míticos">✨ Mítico</button>
+          <button id="filter-reset" class="filter-reset-btn">✕ Todos</button>
+        </div>
         <div id="pokemon-grid"></div>
         <div id="pagination" class="d-flex align-items-center justify-content-center gap-3 mt-4">
           <button id="prev-btn" class="btn btn-primary" disabled>&larr; Anterior</button>

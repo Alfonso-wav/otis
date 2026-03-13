@@ -291,7 +291,7 @@ type Generation struct {
 	Name           string
 	MainRegion     string
 	Games          []string
-	PokemonSpecies []string
+	PokemonSpecies []PokemonListItem
 	Types          []string
 	Moves          []string
 	Abilities      []string

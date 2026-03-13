@@ -34,7 +34,7 @@ export function showView(viewIn: HTMLElement, viewOut: HTMLElement): Promise<voi
 }
 
 export function staggerCards(container: HTMLElement): void {
-  const cards = container.querySelectorAll(".card");
+  const cards = container.querySelectorAll(".poke-card");
   if (cards.length === 0) return;
 
   gsap.fromTo(
