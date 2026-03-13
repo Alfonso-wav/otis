@@ -99,6 +99,7 @@ type apiGeneration struct {
 	} `json:"version_groups"`
 	PokemonSpecies []struct {
 		Name string `json:"name"`
+		URL  string `json:"url"`
 	} `json:"pokemon_species"`
 	Types []struct {
 		Name string `json:"name"`
@@ -116,9 +117,9 @@ func toDomainGeneration(raw apiGeneration) core.Generation {
 	for i, vg := range raw.VersionGroups {
 		games[i] = vg.Name
 	}
-	species := make([]string, len(raw.PokemonSpecies))
+	species := make([]core.PokemonListItem, len(raw.PokemonSpecies))
 	for i, p := range raw.PokemonSpecies {
-		species[i] = p.Name
+		species[i] = core.PokemonListItem{Name: p.Name, URL: p.URL}
 	}
 	types := make([]string, len(raw.Types))
 	for i, t := range raw.Types {
