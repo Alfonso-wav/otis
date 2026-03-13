@@ -1,6 +1,7 @@
 import "./styles/main.scss";
 import { ListPokemon, GetPokemon } from "../wailsjs/go/app/App";
 import type { Pokemon, PokemonListItem } from "./types";
+import { showView, staggerCards } from "./animations/transitions";
 
 const LIMIT = 20;
 let offset = 0;
@@ -53,6 +54,8 @@ function renderGrid(items: PokemonListItem[]): void {
       if (name) showDetail(name);
     });
   });
+
+  staggerCards(grid);
 }
 
 function updatePagination(): void {
@@ -75,8 +78,7 @@ nextBtn.addEventListener("click", () => {
 // -- Detalle -----------------------------------------------------------------
 
 async function showDetail(name: string): Promise<void> {
-  listView.classList.add("hidden");
-  detailView.classList.remove("hidden");
+  await showView(detailView, listView);
   detailEl.innerHTML = '<p class="loading">Cargando...</p>';
 
   try {
@@ -87,7 +89,7 @@ async function showDetail(name: string): Promise<void> {
   }
 }
 
-function renderDetail(p: Pokemon): void {
+async function renderDetail(p: Pokemon): Promise<void> {
   const types = (p.Types || [])
     .map((t) => `<span class="type-badge type-${t.Name}">${t.Name}</span>`)
     .join("");
@@ -98,31 +100,22 @@ function renderDetail(p: Pokemon): void {
       ${p.Sprites.FrontShiny ? `<div><img src="${p.Sprites.FrontShiny}" alt="shiny"/><span>Shiny</span></div>` : ""}
     </div>`;
 
-  const statsRows = (p.Stats || [])
-    .map((s) => {
-      const pct = Math.round((s.BaseStat / 255) * 100);
-      return `<tr>
-      <td>${s.Name}</td>
-      <td><div class="stat-bar-wrap"><div class="stat-bar" style="width:${pct}%"></div></div></td>
-      <td>${s.BaseStat}</td>
-    </tr>`;
-    })
-    .join("");
-
   detailEl.innerHTML = `
     <h2>#${p.ID} ${p.Name}</h2>
     ${sprites}
     <div class="types">${types}</div>
     <p class="meta">Altura: ${p.Height / 10} m &nbsp;&middot;&nbsp; Peso: ${p.Weight / 10} kg</p>
-    <table class="stats-table">
-      <thead><tr><th>Stat</th><th></th><th>Base</th></tr></thead>
-      <tbody>${statsRows}</tbody>
-    </table>`;
+    <div id="stats-chart" style="width:100%;height:300px;"></div>`;
+
+  const chartContainer = document.getElementById("stats-chart") as HTMLDivElement;
+  const { renderStatsChart } = await import("./charts/stats-chart");
+  renderStatsChart(chartContainer, p.Stats || []);
 }
 
-backBtn.addEventListener("click", () => {
-  detailView.classList.add("hidden");
-  listView.classList.remove("hidden");
+backBtn.addEventListener("click", async () => {
+  const { disposeChart } = await import("./charts/stats-chart");
+  disposeChart();
+  await showView(listView, detailView);
 });
 
 // -- Busqueda ----------------------------------------------------------------
