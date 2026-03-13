@@ -146,3 +146,115 @@ func (a *App) CalculateStats(input core.StatCalculatorInput) (core.Stats, error)
 
 	return core.CalculateAllStats(baseStats, input.IVs, input.EVs, input.Level, nature), nil
 }
+
+// --- Grupo A: Pokémon extendido ---
+
+func (a *App) GetPokemonSpecies(name string) (core.PokemonSpecies, error) {
+	return a.fetcher.FetchPokemonSpecies(core.NormalizeName(name))
+}
+
+func (a *App) GetPokemonForm(name string) (core.PokemonForm, error) {
+	return a.fetcher.FetchPokemonForm(core.NormalizeName(name))
+}
+
+func (a *App) ListPokemonColors() ([]core.NamedResource, error) {
+	return a.fetcher.FetchPokemonColors()
+}
+
+func (a *App) ListPokemonShapes() ([]core.NamedResource, error) {
+	return a.fetcher.FetchPokemonShapes()
+}
+
+func (a *App) ListPokemonHabitats() ([]core.NamedResource, error) {
+	return a.fetcher.FetchPokemonHabitats()
+}
+
+// --- Grupo B: Naturalezas y cría ---
+
+func (a *App) ListNatureNames() ([]core.NamedResource, error) {
+	return a.fetcher.FetchNatureList()
+}
+
+func (a *App) GetNatureDetail(name string) (core.NatureDetail, error) {
+	return a.fetcher.FetchNatureDetail(core.NormalizeName(name))
+}
+
+func (a *App) GetEggGroup(name string) (core.EggGroup, error) {
+	return a.fetcher.FetchEggGroup(core.NormalizeName(name))
+}
+
+func (a *App) GetGender(name string) (core.Gender, error) {
+	return a.fetcher.FetchGender(core.NormalizeName(name))
+}
+
+func (a *App) GetGrowthRate(name string) (core.GrowthRate, error) {
+	return a.fetcher.FetchGrowthRate(core.NormalizeName(name))
+}
+
+// --- Grupo C: Movimientos completos ---
+
+func (a *App) ListMoves(offset int, limit int) (core.MoveListResponse, error) {
+	return a.fetcher.FetchMoveList(offset, limit)
+}
+
+func (a *App) GetMoveDamageClass(name string) (core.MoveDamageClass, error) {
+	return a.fetcher.FetchMoveDamageClass(core.NormalizeName(name))
+}
+
+func (a *App) GetMoveAilment(name string) (core.MoveAilment, error) {
+	return a.fetcher.FetchMoveAilment(core.NormalizeName(name))
+}
+
+func (a *App) GetMoveTarget(name string) (core.MoveTarget, error) {
+	return a.fetcher.FetchMoveTarget(core.NormalizeName(name))
+}
+
+func (a *App) GetMachine(id int) (core.Machine, error) {
+	return a.fetcher.FetchMachine(id)
+}
+
+// --- Grupo D: Habilidades completas ---
+
+func (a *App) ListAbilities(offset int, limit int) (core.AbilityListResponse, error) {
+	return a.fetcher.FetchAbilityList(offset, limit)
+}
+
+// --- Grupo F: Ubicaciones ---
+
+func (a *App) GetLocation(name string) (core.LocationDetail, error) {
+	return a.fetcher.FetchLocation(core.NormalizeName(name))
+}
+
+func (a *App) GetLocationArea(name string) (core.LocationArea, error) {
+	return a.fetcher.FetchLocationArea(core.NormalizeName(name))
+}
+
+// --- Grupo G: Stats y generaciones ---
+
+func (a *App) GetStatDetail(name string) (core.StatDetail, error) {
+	return a.fetcher.FetchStat(core.NormalizeName(name))
+}
+
+func (a *App) ListGenerations() ([]core.NamedResource, error) {
+	return a.fetcher.FetchGenerations()
+}
+
+func (a *App) GetGeneration(name string) (core.Generation, error) {
+	return a.fetcher.FetchGeneration(core.NormalizeName(name))
+}
+
+func (a *App) ListPokedexes() ([]core.NamedResource, error) {
+	return a.fetcher.FetchPokedexList()
+}
+
+func (a *App) GetPokedex(name string) (core.Pokedex, error) {
+	return a.fetcher.FetchPokedex(core.NormalizeName(name))
+}
+
+func (a *App) ListVersionGroups() ([]core.NamedResource, error) {
+	return a.fetcher.FetchVersionGroups()
+}
+
+func (a *App) GetVersionGroup(name string) (core.VersionGroup, error) {
+	return a.fetcher.FetchVersionGroup(core.NormalizeName(name))
+}

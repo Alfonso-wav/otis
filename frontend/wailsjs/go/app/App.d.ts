@@ -8,20 +8,70 @@ export function CalculateStats(arg1:core.StatCalculatorInput):Promise<core.Stats
 
 export function GetAbility(arg1:string):Promise<core.Ability>;
 
+export function GetEggGroup(arg1:string):Promise<core.EggGroup>;
+
 export function GetEvolutionChain(arg1:number):Promise<core.EvolutionChain>;
+
+export function GetGender(arg1:string):Promise<core.Gender>;
+
+export function GetGeneration(arg1:string):Promise<core.Generation>;
+
+export function GetGrowthRate(arg1:string):Promise<core.GrowthRate>;
+
+export function GetLocation(arg1:string):Promise<core.LocationDetail>;
+
+export function GetLocationArea(arg1:string):Promise<core.LocationArea>;
+
+export function GetMachine(arg1:number):Promise<core.Machine>;
 
 export function GetMove(arg1:string):Promise<core.Move>;
 
+export function GetMoveAilment(arg1:string):Promise<core.MoveAilment>;
+
+export function GetMoveDamageClass(arg1:string):Promise<core.MoveDamageClass>;
+
+export function GetMoveTarget(arg1:string):Promise<core.MoveTarget>;
+
+export function GetNatureDetail(arg1:string):Promise<core.NatureDetail>;
+
 export function GetNatures():Promise<Array<core.Nature>>;
+
+export function GetPokedex(arg1:string):Promise<core.Pokedex>;
 
 export function GetPokemon(arg1:string):Promise<core.Pokemon>;
 
+export function GetPokemonForm(arg1:string):Promise<core.PokemonForm>;
+
+export function GetPokemonSpecies(arg1:string):Promise<core.PokemonSpecies>;
+
 export function GetRegion(arg1:string):Promise<core.Region>;
+
+export function GetStatDetail(arg1:string):Promise<core.StatDetail>;
 
 export function GetType(arg1:string):Promise<core.PokemonTypeDetail>;
 
+export function GetVersionGroup(arg1:string):Promise<core.VersionGroup>;
+
+export function ListAbilities(arg1:number,arg2:number):Promise<core.AbilityListResponse>;
+
+export function ListGenerations():Promise<Array<core.NamedResource>>;
+
+export function ListMoves(arg1:number,arg2:number):Promise<core.MoveListResponse>;
+
+export function ListNatureNames():Promise<Array<core.NamedResource>>;
+
+export function ListPokedexes():Promise<Array<core.NamedResource>>;
+
 export function ListPokemon(arg1:number,arg2:number):Promise<core.PokemonListResponse>;
+
+export function ListPokemonColors():Promise<Array<core.NamedResource>>;
+
+export function ListPokemonHabitats():Promise<Array<core.NamedResource>>;
+
+export function ListPokemonShapes():Promise<Array<core.NamedResource>>;
 
 export function ListRegions():Promise<Array<core.Region>>;
 
 export function ListTypes():Promise<core.TypeListResponse>;
+
+export function ListVersionGroups():Promise<Array<core.NamedResource>>;

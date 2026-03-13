@@ -16,6 +16,52 @@ export namespace core {
 	        this.Pokemon = source["Pokemon"];
 	    }
 	}
+	export class NamedResource {
+	    Name: string;
+	    URL: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new NamedResource(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.URL = source["URL"];
+	    }
+	}
+	export class AbilityListResponse {
+	    Count: number;
+	    Results: NamedResource[];
+	
+	    static createFrom(source: any = {}) {
+	        return new AbilityListResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Count = source["Count"];
+	        this.Results = this.convertValues(source["Results"], NamedResource);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class Stats {
 	    hp: number;
 	    attack: number;
@@ -138,6 +184,20 @@ export namespace core {
 		    return a;
 		}
 	}
+	export class EggGroup {
+	    Name: string;
+	    Pokemon: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new EggGroup(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Pokemon = source["Pokemon"];
+	    }
+	}
 	export class EvolutionStage {
 	    Name: string;
 	    MinLevel: number;
@@ -207,6 +267,95 @@ export namespace core {
 		}
 	}
 	
+	export class Gender {
+	    Name: string;
+	    Pokemon: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Gender(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Pokemon = source["Pokemon"];
+	    }
+	}
+	export class Generation {
+	    Name: string;
+	    MainRegion: string;
+	    Games: string[];
+	    PokemonSpecies: string[];
+	    Types: string[];
+	    Moves: string[];
+	    Abilities: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Generation(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.MainRegion = source["MainRegion"];
+	        this.Games = source["Games"];
+	        this.PokemonSpecies = source["PokemonSpecies"];
+	        this.Types = source["Types"];
+	        this.Moves = source["Moves"];
+	        this.Abilities = source["Abilities"];
+	    }
+	}
+	export class GrowthRateLevel {
+	    Level: number;
+	    Experience: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new GrowthRateLevel(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Level = source["Level"];
+	        this.Experience = source["Experience"];
+	    }
+	}
+	export class GrowthRate {
+	    Name: string;
+	    Formula: string;
+	    Levels: GrowthRateLevel[];
+	    Pokemon: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new GrowthRate(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Formula = source["Formula"];
+	        this.Levels = this.convertValues(source["Levels"], GrowthRateLevel);
+	        this.Pokemon = source["Pokemon"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
 	export class Location {
 	    Name: string;
 	    Region: string;
@@ -219,6 +368,88 @@ export namespace core {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Name = source["Name"];
 	        this.Region = source["Region"];
+	    }
+	}
+	export class PokemonEncounter {
+	    PokemonName: string;
+	    MaxChance: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new PokemonEncounter(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.PokemonName = source["PokemonName"];
+	        this.MaxChance = source["MaxChance"];
+	    }
+	}
+	export class LocationArea {
+	    Name: string;
+	    Location: string;
+	    PokemonEncounters: PokemonEncounter[];
+	
+	    static createFrom(source: any = {}) {
+	        return new LocationArea(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Location = source["Location"];
+	        this.PokemonEncounters = this.convertValues(source["PokemonEncounters"], PokemonEncounter);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class LocationDetail {
+	    Name: string;
+	    Region: string;
+	    Areas: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new LocationDetail(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Region = source["Region"];
+	        this.Areas = source["Areas"];
+	    }
+	}
+	export class Machine {
+	    ID: number;
+	    Move: string;
+	    Item: string;
+	    VersionGroup: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Machine(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ID = source["ID"];
+	        this.Move = source["Move"];
+	        this.Item = source["Item"];
+	        this.VersionGroup = source["VersionGroup"];
 	    }
 	}
 	export class Move {
@@ -245,6 +476,83 @@ export namespace core {
 	        this.Description = source["Description"];
 	    }
 	}
+	export class MoveAilment {
+	    Name: string;
+	    Moves: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new MoveAilment(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Moves = source["Moves"];
+	    }
+	}
+	export class MoveDamageClass {
+	    Name: string;
+	    Description: string;
+	    Moves: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new MoveDamageClass(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Description = source["Description"];
+	        this.Moves = source["Moves"];
+	    }
+	}
+	export class MoveListResponse {
+	    Count: number;
+	    Results: NamedResource[];
+	
+	    static createFrom(source: any = {}) {
+	        return new MoveListResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Count = source["Count"];
+	        this.Results = this.convertValues(source["Results"], NamedResource);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class MoveTarget {
+	    Name: string;
+	    Description: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new MoveTarget(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Description = source["Description"];
+	    }
+	}
+	
 	export class Nature {
 	    name: string;
 	    increasedStat: string;
@@ -261,6 +569,77 @@ export namespace core {
 	        this.decreasedStat = source["decreasedStat"];
 	    }
 	}
+	export class NatureDetail {
+	    Name: string;
+	    IncreasedStat: string;
+	    DecreasedStat: string;
+	    LikesFlavor: string;
+	    HatesFlavor: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new NatureDetail(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.IncreasedStat = source["IncreasedStat"];
+	        this.DecreasedStat = source["DecreasedStat"];
+	        this.LikesFlavor = source["LikesFlavor"];
+	        this.HatesFlavor = source["HatesFlavor"];
+	    }
+	}
+	export class PokedexEntry {
+	    EntryNumber: number;
+	    Pokemon: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PokedexEntry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.EntryNumber = source["EntryNumber"];
+	        this.Pokemon = source["Pokemon"];
+	    }
+	}
+	export class Pokedex {
+	    Name: string;
+	    IsMainSeries: boolean;
+	    Region: string;
+	    PokemonEntries: PokedexEntry[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Pokedex(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.IsMainSeries = source["IsMainSeries"];
+	        this.Region = source["Region"];
+	        this.PokemonEntries = this.convertValues(source["PokemonEntries"], PokedexEntry);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
 	export class Sprites {
 	    FrontDefault: string;
 	    FrontShiny: string;
@@ -343,6 +722,47 @@ export namespace core {
 		    return a;
 		}
 	}
+	
+	export class PokemonForm {
+	    Name: string;
+	    FormName: string;
+	    IsMega: boolean;
+	    IsBattleOnly: boolean;
+	    Types: PokemonType[];
+	    Sprites: Sprites;
+	
+	    static createFrom(source: any = {}) {
+	        return new PokemonForm(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.FormName = source["FormName"];
+	        this.IsMega = source["IsMega"];
+	        this.IsBattleOnly = source["IsBattleOnly"];
+	        this.Types = this.convertValues(source["Types"], PokemonType);
+	        this.Sprites = this.convertValues(source["Sprites"], Sprites);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class PokemonListItem {
 	    Name: string;
 	    URL: string;
@@ -373,6 +793,86 @@ export namespace core {
 	        this.Next = source["Next"];
 	        this.Previous = source["Previous"];
 	        this.Results = this.convertValues(source["Results"], PokemonListItem);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class PokemonVariety {
+	    IsDefault: boolean;
+	    Pokemon: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PokemonVariety(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.IsDefault = source["IsDefault"];
+	        this.Pokemon = source["Pokemon"];
+	    }
+	}
+	export class PokemonSpecies {
+	    Name: string;
+	    Order: number;
+	    GenderRate: number;
+	    CaptureRate: number;
+	    BaseHappiness: number;
+	    IsBaby: boolean;
+	    IsLegendary: boolean;
+	    IsMythical: boolean;
+	    HatchCounter: number;
+	    HasGenderDifferences: boolean;
+	    FormsSwitchable: boolean;
+	    Genus: string;
+	    Color: string;
+	    Shape: string;
+	    Habitat: string;
+	    EggGroups: string[];
+	    FlavorText: string;
+	    EvolutionChainID: number;
+	    Varieties: PokemonVariety[];
+	
+	    static createFrom(source: any = {}) {
+	        return new PokemonSpecies(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Order = source["Order"];
+	        this.GenderRate = source["GenderRate"];
+	        this.CaptureRate = source["CaptureRate"];
+	        this.BaseHappiness = source["BaseHappiness"];
+	        this.IsBaby = source["IsBaby"];
+	        this.IsLegendary = source["IsLegendary"];
+	        this.IsMythical = source["IsMythical"];
+	        this.HatchCounter = source["HatchCounter"];
+	        this.HasGenderDifferences = source["HasGenderDifferences"];
+	        this.FormsSwitchable = source["FormsSwitchable"];
+	        this.Genus = source["Genus"];
+	        this.Color = source["Color"];
+	        this.Shape = source["Shape"];
+	        this.Habitat = source["Habitat"];
+	        this.EggGroups = source["EggGroups"];
+	        this.FlavorText = source["FlavorText"];
+	        this.EvolutionChainID = source["EvolutionChainID"];
+	        this.Varieties = this.convertValues(source["Varieties"], PokemonVariety);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -440,6 +940,7 @@ export namespace core {
 		    return a;
 		}
 	}
+	
 	export class Region {
 	    Name: string;
 	    Locations: Location[];
@@ -512,6 +1013,28 @@ export namespace core {
 		    return a;
 		}
 	}
+	export class StatDetail {
+	    Name: string;
+	    IsBattleOnly: boolean;
+	    AffectingMovesBuff: string[];
+	    AffectingMovesNerf: string[];
+	    AffectingNaturesBuff: string[];
+	    AffectingNaturesNerf: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new StatDetail(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.IsBattleOnly = source["IsBattleOnly"];
+	        this.AffectingMovesBuff = source["AffectingMovesBuff"];
+	        this.AffectingMovesNerf = source["AffectingMovesNerf"];
+	        this.AffectingNaturesBuff = source["AffectingNaturesBuff"];
+	        this.AffectingNaturesNerf = source["AffectingNaturesNerf"];
+	    }
+	}
 	
 	
 	export class TypeListResponse {
@@ -545,6 +1068,29 @@ export namespace core {
 		    }
 		    return a;
 		}
+	}
+	
+	export class VersionGroup {
+	    Name: string;
+	    Order: number;
+	    Generation: string;
+	    Versions: string[];
+	    Pokedexes: string[];
+	    Regions: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new VersionGroup(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Order = source["Order"];
+	        this.Generation = source["Generation"];
+	        this.Versions = source["Versions"];
+	        this.Pokedexes = source["Pokedexes"];
+	        this.Regions = source["Regions"];
+	    }
 	}
 
 }

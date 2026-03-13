@@ -55,6 +55,69 @@ func (m *mockFetcher) FetchEvolutionChain(id int) (core.EvolutionChain, error) {
 	return core.EvolutionChain{}, nil
 }
 
+// --- Grupo A ---
+func (m *mockFetcher) FetchPokemonSpecies(name string) (core.PokemonSpecies, error) {
+	return core.PokemonSpecies{}, nil
+}
+func (m *mockFetcher) FetchPokemonForm(name string) (core.PokemonForm, error) {
+	return core.PokemonForm{}, nil
+}
+func (m *mockFetcher) FetchPokemonColors() ([]core.NamedResource, error)   { return nil, nil }
+func (m *mockFetcher) FetchPokemonShapes() ([]core.NamedResource, error)   { return nil, nil }
+func (m *mockFetcher) FetchPokemonHabitats() ([]core.NamedResource, error) { return nil, nil }
+
+// --- Grupo B ---
+func (m *mockFetcher) FetchNatureList() ([]core.NamedResource, error) { return nil, nil }
+func (m *mockFetcher) FetchNatureDetail(name string) (core.NatureDetail, error) {
+	return core.NatureDetail{}, nil
+}
+func (m *mockFetcher) FetchEggGroup(name string) (core.EggGroup, error)   { return core.EggGroup{}, nil }
+func (m *mockFetcher) FetchGender(name string) (core.Gender, error)       { return core.Gender{}, nil }
+func (m *mockFetcher) FetchGrowthRate(name string) (core.GrowthRate, error) {
+	return core.GrowthRate{}, nil
+}
+
+// --- Grupo C ---
+func (m *mockFetcher) FetchMoveList(offset int, limit int) (core.MoveListResponse, error) {
+	return core.MoveListResponse{}, nil
+}
+func (m *mockFetcher) FetchMoveDamageClass(name string) (core.MoveDamageClass, error) {
+	return core.MoveDamageClass{}, nil
+}
+func (m *mockFetcher) FetchMoveAilment(name string) (core.MoveAilment, error) {
+	return core.MoveAilment{}, nil
+}
+func (m *mockFetcher) FetchMoveTarget(name string) (core.MoveTarget, error) {
+	return core.MoveTarget{}, nil
+}
+func (m *mockFetcher) FetchMachine(id int) (core.Machine, error) { return core.Machine{}, nil }
+
+// --- Grupo D ---
+func (m *mockFetcher) FetchAbilityList(offset int, limit int) (core.AbilityListResponse, error) {
+	return core.AbilityListResponse{}, nil
+}
+
+// --- Grupo F ---
+func (m *mockFetcher) FetchLocation(name string) (core.LocationDetail, error) {
+	return core.LocationDetail{}, nil
+}
+func (m *mockFetcher) FetchLocationArea(name string) (core.LocationArea, error) {
+	return core.LocationArea{}, nil
+}
+
+// --- Grupo G ---
+func (m *mockFetcher) FetchStat(name string) (core.StatDetail, error) { return core.StatDetail{}, nil }
+func (m *mockFetcher) FetchGenerations() ([]core.NamedResource, error) { return nil, nil }
+func (m *mockFetcher) FetchGeneration(name string) (core.Generation, error) {
+	return core.Generation{}, nil
+}
+func (m *mockFetcher) FetchPokedexList() ([]core.NamedResource, error) { return nil, nil }
+func (m *mockFetcher) FetchPokedex(name string) (core.Pokedex, error)  { return core.Pokedex{}, nil }
+func (m *mockFetcher) FetchVersionGroups() ([]core.NamedResource, error) { return nil, nil }
+func (m *mockFetcher) FetchVersionGroup(name string) (core.VersionGroup, error) {
+	return core.VersionGroup{}, nil
+}
+
 func TestGetPokemon(t *testing.T) {
 	expected := core.Pokemon{ID: 25, Name: "pikachu"}
 	a := NewApp(&mockFetcher{pokemon: expected})
