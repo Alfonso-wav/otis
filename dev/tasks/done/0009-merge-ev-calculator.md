@@ -1,7 +1,7 @@
 # Merge PR #1: EV Calculator feature
 
 **ID**: 0009-merge-ev-calculator
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-13
 
 ---
