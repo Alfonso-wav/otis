@@ -20,14 +20,12 @@ const backBtn = document.getElementById('back-btn');
 async function loadList() {
   grid.innerHTML = '<p class="loading">Cargando...</p>';
   try {
-    const res = await fetch(`/api/pokemon?offset=${offset}&limit=${LIMIT}`);
-    if (!res.ok) throw new Error(`Error ${res.status}`);
-    const data = await res.json();
+    const data = await window.go.app.App.ListPokemon(offset, LIMIT);
     totalCount = data.Count;
     renderGrid(data.Results);
     updatePagination();
   } catch (err) {
-    grid.innerHTML = `<p class="loading" style="color:#e53e3e">${err.message}</p>`;
+    grid.innerHTML = `<p class="loading" style="color:#e53e3e">${err}</p>`;
   }
 }
 
@@ -69,12 +67,10 @@ async function showDetail(name) {
   detailEl.innerHTML = '<p class="loading">Cargando...</p>';
 
   try {
-    const res = await fetch(`/api/pokemon/${encodeURIComponent(name)}`);
-    if (!res.ok) throw new Error(`Error ${res.status}`);
-    const p = await res.json();
+    const p = await window.go.app.App.GetPokemon(name);
     renderDetail(p);
   } catch (err) {
-    detailEl.innerHTML = `<p class="loading" style="color:#e53e3e">${err.message}</p>`;
+    detailEl.innerHTML = `<p class="loading" style="color:#e53e3e">${err}</p>`;
   }
 }
 
