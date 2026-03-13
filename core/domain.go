@@ -143,3 +143,177 @@ type StatCalculatorInput struct {
 	IVs         Stats  `json:"ivs"`
 	EVs         Stats  `json:"evs"`
 }
+
+// NamedResource es una referencia a un recurso de la API con nombre y URL.
+type NamedResource struct {
+	Name string
+	URL  string
+}
+
+// --- Grupo A: Pokémon extendido ---
+
+type PokemonSpecies struct {
+	Name                 string
+	Order                int
+	GenderRate           int // -1 genderless, 0 always male, 8 always female
+	CaptureRate          int
+	BaseHappiness        int
+	IsBaby               bool
+	IsLegendary          bool
+	IsMythical           bool
+	HatchCounter         int
+	HasGenderDifferences bool
+	FormsSwitchable      bool
+	Genus                string
+	Color                string
+	Shape                string
+	Habitat              string
+	EggGroups            []string
+	FlavorText           string
+	EvolutionChainID     int
+	Varieties            []PokemonVariety
+}
+
+type PokemonVariety struct {
+	IsDefault bool
+	Pokemon   string
+}
+
+type PokemonForm struct {
+	Name         string
+	FormName     string
+	IsMega       bool
+	IsBattleOnly bool
+	Types        []PokemonType
+	Sprites      Sprites
+}
+
+// --- Grupo B: Naturalezas y cría ---
+
+type NatureDetail struct {
+	Name          string
+	IncreasedStat string
+	DecreasedStat string
+	LikesFlavor   string
+	HatesFlavor   string
+}
+
+type EggGroup struct {
+	Name    string
+	Pokemon []string
+}
+
+type Gender struct {
+	Name    string
+	Pokemon []string
+}
+
+type GrowthRateLevel struct {
+	Level      int
+	Experience int
+}
+
+type GrowthRate struct {
+	Name    string
+	Formula string
+	Levels  []GrowthRateLevel
+	Pokemon []string
+}
+
+// --- Grupo C: Movimientos completos ---
+
+type MoveListResponse struct {
+	Count   int
+	Results []NamedResource
+}
+
+type MoveDamageClass struct {
+	Name        string
+	Description string
+	Moves       []string
+}
+
+type MoveAilment struct {
+	Name  string
+	Moves []string
+}
+
+type MoveTarget struct {
+	Name        string
+	Description string
+}
+
+type Machine struct {
+	ID           int
+	Move         string
+	Item         string
+	VersionGroup string
+}
+
+// --- Grupo D: Habilidades ---
+
+type AbilityListResponse struct {
+	Count   int
+	Results []NamedResource
+}
+
+// --- Grupo F: Ubicaciones extendidas ---
+
+type LocationDetail struct {
+	Name   string
+	Region string
+	Areas  []string
+}
+
+type PokemonEncounter struct {
+	PokemonName string
+	MaxChance   int
+}
+
+type LocationArea struct {
+	Name              string
+	Location          string
+	PokemonEncounters []PokemonEncounter
+}
+
+// --- Grupo G: Stats y generaciones ---
+
+type StatDetail struct {
+	Name                 string
+	IsBattleOnly         bool
+	AffectingMovesBuff   []string
+	AffectingMovesNerf   []string
+	AffectingNaturesBuff []string
+	AffectingNaturesNerf []string
+}
+
+type Generation struct {
+	Name           string
+	MainRegion     string
+	Games          []string
+	PokemonSpecies []string
+	Types          []string
+	Moves          []string
+	Abilities      []string
+}
+
+type PokedexEntry struct {
+	EntryNumber int
+	Pokemon     string
+}
+
+type Pokedex struct {
+	Name           string
+	IsMainSeries   bool
+	Region         string
+	PokemonEntries []PokedexEntry
+}
+
+type VersionGroup struct {
+	Name       string
+	Order      int
+	Generation string
+	Versions   []string
+	Pokedexes  []string
+	Regions    []string
+}
