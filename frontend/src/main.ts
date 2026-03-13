@@ -1,0 +1,156 @@
+import { ListPokemon, GetPokemon } from "../wailsjs/go/app/App";
+import type { Pokemon, PokemonListItem } from "./types";
+
+const LIMIT = 20;
+let offset = 0;
+let totalCount = 0;
+
+const grid = document.getElementById("pokemon-grid") as HTMLDivElement;
+const listView = document.getElementById("list-view") as HTMLElement;
+const detailView = document.getElementById("detail-view") as HTMLElement;
+const detailEl = document.getElementById("pokemon-detail") as HTMLDivElement;
+const prevBtn = document.getElementById("prev-btn") as HTMLButtonElement;
+const nextBtn = document.getElementById("next-btn") as HTMLButtonElement;
+const pageInfo = document.getElementById("page-info") as HTMLSpanElement;
+const searchInput = document.getElementById("search-input") as HTMLInputElement;
+const searchBtn = document.getElementById("search-btn") as HTMLButtonElement;
+const backBtn = document.getElementById("back-btn") as HTMLButtonElement;
+
+// -- Lista -------------------------------------------------------------------
+
+async function loadList(): Promise<void> {
+  grid.innerHTML = '<p class="loading">Cargando...</p>';
+  try {
+    const data = await ListPokemon(offset, LIMIT);
+    totalCount = data.Count;
+    renderGrid(data.Results);
+    updatePagination();
+  } catch (err: unknown) {
+    grid.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
+  }
+}
+
+function renderGrid(items: PokemonListItem[]): void {
+  if (!items || items.length === 0) {
+    grid.innerHTML = '<p class="loading">No se encontraron Pokemon.</p>';
+    return;
+  }
+  grid.innerHTML = items
+    .map((item) => {
+      const id = idFromURL(item.URL);
+      const sprite = spriteURL(id);
+      return `<div class="card" data-name="${item.Name}">
+      <img src="${sprite}" alt="${item.Name}" loading="lazy" />
+      <div class="poke-name">${item.Name}</div>
+    </div>`;
+    })
+    .join("");
+
+  grid.querySelectorAll<HTMLDivElement>(".card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const name = card.dataset.name;
+      if (name) showDetail(name);
+    });
+  });
+}
+
+function updatePagination(): void {
+  const page = Math.floor(offset / LIMIT) + 1;
+  const pages = Math.ceil(totalCount / LIMIT);
+  pageInfo.textContent = `Pagina ${page} / ${pages}`;
+  prevBtn.disabled = offset === 0;
+  nextBtn.disabled = offset + LIMIT >= totalCount;
+}
+
+prevBtn.addEventListener("click", () => {
+  offset -= LIMIT;
+  loadList();
+});
+nextBtn.addEventListener("click", () => {
+  offset += LIMIT;
+  loadList();
+});
+
+// -- Detalle -----------------------------------------------------------------
+
+async function showDetail(name: string): Promise<void> {
+  listView.classList.add("hidden");
+  detailView.classList.remove("hidden");
+  detailEl.innerHTML = '<p class="loading">Cargando...</p>';
+
+  try {
+    const p = await GetPokemon(name);
+    renderDetail(p);
+  } catch (err: unknown) {
+    detailEl.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
+  }
+}
+
+function renderDetail(p: Pokemon): void {
+  const types = (p.Types || [])
+    .map((t) => `<span class="type-badge type-${t.Name}">${t.Name}</span>`)
+    .join("");
+
+  const sprites = `
+    <div class="sprites">
+      ${p.Sprites.FrontDefault ? `<div><img src="${p.Sprites.FrontDefault}" alt="default"/><span>Normal</span></div>` : ""}
+      ${p.Sprites.FrontShiny ? `<div><img src="${p.Sprites.FrontShiny}" alt="shiny"/><span>Shiny</span></div>` : ""}
+    </div>`;
+
+  const statsRows = (p.Stats || [])
+    .map((s) => {
+      const pct = Math.round((s.BaseStat / 255) * 100);
+      return `<tr>
+      <td>${s.Name}</td>
+      <td><div class="stat-bar-wrap"><div class="stat-bar" style="width:${pct}%"></div></div></td>
+      <td>${s.BaseStat}</td>
+    </tr>`;
+    })
+    .join("");
+
+  detailEl.innerHTML = `
+    <h2>#${p.ID} ${p.Name}</h2>
+    ${sprites}
+    <div class="types">${types}</div>
+    <p class="meta">Altura: ${p.Height / 10} m &nbsp;&middot;&nbsp; Peso: ${p.Weight / 10} kg</p>
+    <table class="stats-table">
+      <thead><tr><th>Stat</th><th></th><th>Base</th></tr></thead>
+      <tbody>${statsRows}</tbody>
+    </table>`;
+}
+
+backBtn.addEventListener("click", () => {
+  detailView.classList.add("hidden");
+  listView.classList.remove("hidden");
+});
+
+// -- Busqueda ----------------------------------------------------------------
+
+async function search(): Promise<void> {
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) {
+    loadList();
+    return;
+  }
+  await showDetail(query);
+}
+
+searchBtn.addEventListener("click", search);
+searchInput.addEventListener("keydown", (e: KeyboardEvent) => {
+  if (e.key === "Enter") search();
+});
+
+// -- Helpers -----------------------------------------------------------------
+
+function idFromURL(url: string): string {
+  const parts = url.replace(/\/$/, "").split("/");
+  return parts[parts.length - 1];
+}
+
+function spriteURL(id: string): string {
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+}
+
+// -- Init --------------------------------------------------------------------
+
+loadList();
