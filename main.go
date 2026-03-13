@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"io/fs"
 	"log"
 
 	"github.com/alfon/pokemon-app/app"
@@ -11,7 +12,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
-//go:embed frontend
+//go:embed frontend/dist
 var assets embed.FS
 
 func main() {
@@ -19,12 +20,17 @@ func main() {
 	fetcher := shell.NewPokeAPIClient(cfg.PokeAPIBaseURL)
 	a := app.NewApp(fetcher)
 
-	err := wails.Run(&options.App{
+	distFS, err := fs.Sub(assets, "frontend/dist")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = wails.Run(&options.App{
 		Title:  "Pokédex",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
-			Assets: assets,
+			Assets: distFS,
 		},
 		OnStartup: a.Startup,
 		Bind:      []interface{}{a},
