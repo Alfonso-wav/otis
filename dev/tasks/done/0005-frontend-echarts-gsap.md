@@ -1,7 +1,7 @@
 # Integrar ECharts + GSAP para visualización y animaciones
 
 **ID**: 0005-frontend-echarts-gsap
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-13
 **Depende de**: 0003-frontend-typescript-vite, 0004-frontend-bootstrap-scss
 
