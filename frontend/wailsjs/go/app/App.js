@@ -6,6 +6,14 @@ export function GetPokemon(arg1) {
   return window['go']['app']['App']['GetPokemon'](arg1);
 }
 
+export function GetType(arg1) {
+  return window['go']['app']['App']['GetType'](arg1);
+}
+
 export function ListPokemon(arg1, arg2) {
   return window['go']['app']['App']['ListPokemon'](arg1, arg2);
+}
+
+export function ListTypes() {
+  return window['go']['app']['App']['ListTypes']();
 }

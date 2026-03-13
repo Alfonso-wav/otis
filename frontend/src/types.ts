@@ -33,3 +33,18 @@ export interface PokemonListResponse {
   Previous: string;
   Results: PokemonListItem[];
 }
+
+export interface TypePokemonEntry {
+  Name: string;
+  URL: string;
+}
+
+export interface PokemonTypeDetail {
+  Name: string;
+  Pokemon: TypePokemonEntry[];
+}
+
+export interface TypeListResponse {
+  Count: number;
+  Results: PokemonListItem[];
+}
