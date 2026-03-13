@@ -35,3 +35,18 @@ type PokemonListResponse struct {
 	Previous string
 	Results  []PokemonListItem
 }
+
+type TypePokemonEntry struct {
+	Name string
+	URL  string
+}
+
+type PokemonTypeDetail struct {
+	Name    string
+	Pokemon []TypePokemonEntry
+}
+
+type TypeListResponse struct {
+	Count   int
+	Results []PokemonListItem
+}

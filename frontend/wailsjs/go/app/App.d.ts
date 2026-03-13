@@ -4,4 +4,8 @@ import {core} from '../models';
 
 export function GetPokemon(arg1:string):Promise<core.Pokemon>;
 
+export function GetType(arg1:string):Promise<core.PokemonTypeDetail>;
+
 export function ListPokemon(arg1:number,arg2:number):Promise<core.PokemonListResponse>;
+
+export function ListTypes():Promise<core.TypeListResponse>;

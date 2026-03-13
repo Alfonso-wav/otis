@@ -100,6 +100,22 @@ func (c *PokeAPIClient) FetchPokemonList(offset int, limit int) (core.PokemonLis
 	return toDomainList(raw), nil
 }
 
+func toDomainTypeList(raw apiTypeList) core.TypeListResponse {
+	results := make([]core.PokemonListItem, len(raw.Results))
+	for i, r := range raw.Results {
+		results[i] = core.PokemonListItem{Name: r.Name, URL: r.URL}
+	}
+	return core.TypeListResponse{Count: raw.Count, Results: results}
+}
+
+func toDomainTypeDetail(raw apiTypeDetail) core.PokemonTypeDetail {
+	pokemon := make([]core.TypePokemonEntry, len(raw.Pokemon))
+	for i, p := range raw.Pokemon {
+		pokemon[i] = core.TypePokemonEntry{Name: p.Pokemon.Name, URL: p.Pokemon.URL}
+	}
+	return core.PokemonTypeDetail{Name: raw.Name, Pokemon: pokemon}
+}
+
 func toDomainPokemon(raw apiPokemon) core.Pokemon {
 	types := make([]core.PokemonType, len(raw.Types))
 	for i, t := range raw.Types {
@@ -123,6 +139,69 @@ func toDomainPokemon(raw apiPokemon) core.Pokemon {
 		Height: raw.Height,
 		Weight: raw.Weight,
 	}
+}
+
+// apiTypeList es la estructura raw que devuelve PokéAPI para /type.
+type apiTypeList struct {
+	Count   int `json:"count"`
+	Results []struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"results"`
+}
+
+// apiTypeDetail es la estructura raw que devuelve PokéAPI para /type/{name}.
+type apiTypeDetail struct {
+	Name    string `json:"name"`
+	Pokemon []struct {
+		Pokemon struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"pokemon"`
+	} `json:"pokemon"`
+}
+
+func (c *PokeAPIClient) FetchTypeList() (core.TypeListResponse, error) {
+	url := fmt.Sprintf("%s/type?limit=100", c.baseURL)
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return core.TypeListResponse{}, fmt.Errorf("fetching type list: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return core.TypeListResponse{}, fmt.Errorf("pokeapi returned status %d for type list", resp.StatusCode)
+	}
+
+	var raw apiTypeList
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return core.TypeListResponse{}, fmt.Errorf("decoding type list: %w", err)
+	}
+
+	return toDomainTypeList(raw), nil
+}
+
+func (c *PokeAPIClient) FetchType(name string) (core.PokemonTypeDetail, error) {
+	url := fmt.Sprintf("%s/type/%s", c.baseURL, name)
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return core.PokemonTypeDetail{}, fmt.Errorf("fetching type %q: %w", name, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return core.PokemonTypeDetail{}, fmt.Errorf("type %q not found", name)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return core.PokemonTypeDetail{}, fmt.Errorf("pokeapi returned status %d for type %q", resp.StatusCode, name)
+	}
+
+	var raw apiTypeDetail
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return core.PokemonTypeDetail{}, fmt.Errorf("decoding type %q: %w", name, err)
+	}
+
+	return toDomainTypeDetail(raw), nil
 }
 
 func toDomainList(raw apiList) core.PokemonListResponse {

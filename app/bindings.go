@@ -32,3 +32,13 @@ func (a *App) ListPokemon(offset int, limit int) (core.PokemonListResponse, erro
 func (a *App) GetPokemon(name string) (core.Pokemon, error) {
 	return a.fetcher.FetchPokemon(core.NormalizeName(name))
 }
+
+// ListTypes retorna la lista de todos los tipos de Pokémon.
+func (a *App) ListTypes() (core.TypeListResponse, error) {
+	return a.fetcher.FetchTypeList()
+}
+
+// GetType retorna el detalle de un tipo con sus Pokémon.
+func (a *App) GetType(name string) (core.PokemonTypeDetail, error) {
+	return a.fetcher.FetchType(core.NormalizeName(name))
+}
