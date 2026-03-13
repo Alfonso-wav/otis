@@ -3,29 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pokédex</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Pokedex</title>
 </head>
 <body>
-  <header>
-    <h1>Pokédex</h1>
-    <input id="search-input" type="text" placeholder="Buscar por nombre o número..." />
-    <button id="search-btn">Buscar</button>
+  <header class="pokedex-header d-flex align-items-center gap-3 px-4 py-3">
+    <h1 class="mb-0">Pokedex</h1>
+    <input id="search-input" type="text" class="form-control" placeholder="Buscar por nombre o numero..." />
+    <button id="search-btn" class="btn btn-light">Buscar</button>
   </header>
 
-  <main>
+  <main class="container-fluid p-4">
     <section id="list-view">
       <div id="pokemon-grid"></div>
-      <div id="pagination">
-        <button id="prev-btn" disabled>← Anterior</button>
+      <div id="pagination" class="d-flex align-items-center justify-content-center gap-3 mt-4">
+        <button id="prev-btn" class="btn btn-primary" disabled>&larr; Anterior</button>
         <span id="page-info"></span>
-        <button id="next-btn">Siguiente →</button>
+        <button id="next-btn" class="btn btn-primary">Siguiente &rarr;</button>
       </div>
     </section>
 
     <section id="detail-view" class="hidden">
-      <button id="back-btn">← Volver</button>
-      <div id="pokemon-detail"></div>
+      <button id="back-btn" class="btn mb-3">&larr; Volver</button>
+      <div id="pokemon-detail" class="card p-4 shadow-sm text-center"></div>
     </section>
   </main>
 

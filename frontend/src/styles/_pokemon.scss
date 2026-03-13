@@ -1,0 +1,176 @@
+@use "variables" as *;
+
+// Header
+.pokedex-header {
+  background: $pokedex-red;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.pokedex-header h1 {
+  font-size: 1.5rem;
+  flex: 0 0 auto;
+}
+
+#search-input {
+  max-width: 300px;
+}
+
+#search-btn {
+  color: $pokedex-red;
+  font-weight: 600;
+
+  &:hover {
+    background: $pokedex-red-light;
+  }
+}
+
+// Pokemon grid
+#pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  img {
+    width: 96px;
+    height: 96px;
+    image-rendering: pixelated;
+  }
+
+  .poke-name {
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+}
+
+// Pagination
+#pagination button {
+  &:disabled {
+    background: #ccc;
+    border-color: #ccc;
+    cursor: default;
+  }
+}
+
+// Detail view
+#detail-view {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+#back-btn {
+  border: 2px solid $pokedex-red;
+  color: $pokedex-red;
+  background: transparent;
+
+  &:hover {
+    background: $pokedex-red-hover;
+  }
+}
+
+#pokemon-detail {
+  h2 {
+    font-size: 2rem;
+    text-transform: capitalize;
+  }
+}
+
+// Sprites
+.sprites {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin: 1rem 0;
+
+  img {
+    width: 120px;
+    height: 120px;
+    image-rendering: pixelated;
+  }
+
+  span {
+    font-size: 0.75rem;
+    color: #718096;
+    display: block;
+  }
+}
+
+// Type badges
+.type-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: $border-radius-pill;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  text-transform: capitalize;
+  background: #718096;
+}
+
+@each $type, $color in $type-colors {
+  .type-#{$type} {
+    background: $color;
+
+    @if index($type-dark-text, $type) {
+      color: #1a202c;
+    }
+  }
+}
+
+// Stats table
+.stats-table {
+  width: 100%;
+
+  th {
+    font-size: 0.85rem;
+    color: #718096;
+  }
+
+  td:last-child {
+    font-weight: 600;
+  }
+}
+
+.stat-bar-wrap {
+  width: 160px;
+  background: #e2e8f0;
+  border-radius: $border-radius-pill;
+  height: 8px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.stat-bar {
+  height: 8px;
+  border-radius: $border-radius-pill;
+  background: $pokedex-red;
+  transition: width 0.4s;
+}
+
+// Meta info
+.meta {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+// Loading state
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: #718096;
+  font-size: 1.1rem;
+}
+
+// Utility
+.hidden {
+  display: none !important;
+}

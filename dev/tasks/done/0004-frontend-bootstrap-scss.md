@@ -1,7 +1,7 @@
 # Integrar Bootstrap + SCSS
 
 **ID**: 0004-frontend-bootstrap-scss
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-13
 **Depende de**: 0003-frontend-typescript-vite
 
