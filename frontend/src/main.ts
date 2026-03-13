@@ -2,6 +2,7 @@ import "./styles/main.scss";
 import { ListPokemon, GetPokemon } from "../wailsjs/go/app/App";
 import type { Pokemon, PokemonListItem } from "./types";
 import { showView, staggerCards } from "./animations/transitions";
+import { renderEVCalculatorForm, initEVCalculator } from "./ev-calculator";
 
 const LIMIT = 20;
 let offset = 0;
@@ -100,16 +101,21 @@ async function renderDetail(p: Pokemon): Promise<void> {
       ${p.Sprites.FrontShiny ? `<div><img src="${p.Sprites.FrontShiny}" alt="shiny"/><span>Shiny</span></div>` : ""}
     </div>`;
 
+  const evCalculator = renderEVCalculatorForm(p);
+
   detailEl.innerHTML = `
     <h2>#${p.ID} ${p.Name}</h2>
     ${sprites}
     <div class="types">${types}</div>
     <p class="meta">Altura: ${p.Height / 10} m &nbsp;&middot;&nbsp; Peso: ${p.Weight / 10} kg</p>
-    <div id="stats-chart" style="width:100%;height:300px;"></div>`;
+    <div id="stats-chart" style="width:100%;height:300px;"></div>
+    ${evCalculator}`;
 
   const chartContainer = document.getElementById("stats-chart") as HTMLDivElement;
   const { renderStatsChart } = await import("./charts/stats-chart");
   renderStatsChart(chartContainer, p.Stats || []);
+
+  await initEVCalculator(p);
 }
 
 backBtn.addEventListener("click", async () => {
