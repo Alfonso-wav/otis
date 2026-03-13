@@ -35,6 +35,26 @@ func (m *mockFetcher) FetchType(name string) (core.PokemonTypeDetail, error) {
 	return m.typeDetail, m.typeDetailErr
 }
 
+func (m *mockFetcher) FetchRegions() ([]core.Region, error) {
+	return nil, nil
+}
+
+func (m *mockFetcher) FetchRegion(name string) (core.Region, error) {
+	return core.Region{}, nil
+}
+
+func (m *mockFetcher) FetchMove(name string) (core.Move, error) {
+	return core.Move{}, nil
+}
+
+func (m *mockFetcher) FetchAbility(name string) (core.Ability, error) {
+	return core.Ability{}, nil
+}
+
+func (m *mockFetcher) FetchEvolutionChain(id int) (core.EvolutionChain, error) {
+	return core.EvolutionChain{}, nil
+}
+
 func TestGetPokemon(t *testing.T) {
 	expected := core.Pokemon{ID: 25, Name: "pikachu"}
 	a := NewApp(&mockFetcher{pokemon: expected})

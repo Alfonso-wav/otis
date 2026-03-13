@@ -1,7 +1,7 @@
 # Vista de exploración: regiones, movimientos y datos detallados
 
 **ID**: 0008-regions-moves-explore-view
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-13
 **Depende de**: 0006-tab-navigation-system
 **Agente**: .claude/agents/frontend

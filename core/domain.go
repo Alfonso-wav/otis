@@ -1,5 +1,43 @@
 package core
 
+type Region struct {
+	Name      string
+	Locations []Location
+}
+
+type Location struct {
+	Name   string
+	Region string
+}
+
+type Move struct {
+	Name        string
+	Type        string
+	Power       int
+	Accuracy    int
+	PP          int
+	Category    string
+	Description string
+}
+
+type Ability struct {
+	Name        string
+	Description string
+	Pokemon     []string
+}
+
+type EvolutionStage struct {
+	Name            string
+	MinLevel        int
+	TriggerName     string
+	EvolvesTo       []EvolutionStage
+}
+
+type EvolutionChain struct {
+	ID    int
+	Chain EvolutionStage
+}
+
 type Pokemon struct {
 	ID      int
 	Name    string
