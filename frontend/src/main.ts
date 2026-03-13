@@ -1,3 +1,4 @@
+import "./styles/main.scss";
 import { ListPokemon, GetPokemon } from "../wailsjs/go/app/App";
 import type { Pokemon, PokemonListItem } from "./types";
 
