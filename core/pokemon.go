@@ -1,6 +1,8 @@
 package core
 
-import "strings"
+import (
+	"strings"
+)
 
 // NormalizeName normaliza el nombre de un Pokemon a minusculas y sin espacios extra.
 func NormalizeName(name string) string {
@@ -31,4 +33,59 @@ func GetStat(p Pokemon, statName string) int {
 		}
 	}
 	return -1
+}
+
+// FilterMovesByType retorna los movimientos que coinciden con el tipo dado.
+func FilterMovesByType(moves []Move, typeName string) []Move {
+	normalized := NormalizeName(typeName)
+	result := make([]Move, 0)
+	for _, m := range moves {
+		if NormalizeName(m.Type) == normalized {
+			result = append(result, m)
+		}
+	}
+	return result
+}
+
+// FilterMovesByCategory retorna los movimientos que coinciden con la categoría dada.
+// Categorías válidas: "physical", "special", "status".
+func FilterMovesByCategory(moves []Move, category string) []Move {
+	normalized := NormalizeName(category)
+	result := make([]Move, 0)
+	for _, m := range moves {
+		if NormalizeName(m.Category) == normalized {
+			result = append(result, m)
+		}
+	}
+	return result
+}
+
+// SearchMoves retorna los movimientos cuyo nombre contiene la query (case-insensitive).
+func SearchMoves(moves []Move, query string) []Move {
+	q := NormalizeName(query)
+	if q == "" {
+		return moves
+	}
+	result := make([]Move, 0)
+	for _, m := range moves {
+		if strings.Contains(NormalizeName(m.Name), q) {
+			result = append(result, m)
+		}
+	}
+	return result
+}
+
+// SearchAbilities retorna las habilidades cuyo nombre contiene la query (case-insensitive).
+func SearchAbilities(abilities []Ability, query string) []Ability {
+	q := NormalizeName(query)
+	if q == "" {
+		return abilities
+	}
+	result := make([]Ability, 0)
+	for _, a := range abilities {
+		if strings.Contains(NormalizeName(a.Name), q) {
+			result = append(result, a)
+		}
+	}
+	return result
 }

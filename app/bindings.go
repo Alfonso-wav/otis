@@ -42,3 +42,28 @@ func (a *App) ListTypes() (core.TypeListResponse, error) {
 func (a *App) GetType(name string) (core.PokemonTypeDetail, error) {
 	return a.fetcher.FetchType(core.NormalizeName(name))
 }
+
+// ListRegions retorna todas las regiones del mundo Pokémon.
+func (a *App) ListRegions() ([]core.Region, error) {
+	return a.fetcher.FetchRegions()
+}
+
+// GetRegion retorna el detalle de una región con sus locations.
+func (a *App) GetRegion(name string) (core.Region, error) {
+	return a.fetcher.FetchRegion(core.NormalizeName(name))
+}
+
+// GetMove retorna el detalle de un movimiento.
+func (a *App) GetMove(name string) (core.Move, error) {
+	return a.fetcher.FetchMove(core.NormalizeName(name))
+}
+
+// GetAbility retorna el detalle de una habilidad.
+func (a *App) GetAbility(name string) (core.Ability, error) {
+	return a.fetcher.FetchAbility(core.NormalizeName(name))
+}
+
+// GetEvolutionChain retorna la cadena evolutiva por ID.
+func (a *App) GetEvolutionChain(id int) (core.EvolutionChain, error) {
+	return a.fetcher.FetchEvolutionChain(id)
+}

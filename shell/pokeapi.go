@@ -204,6 +204,250 @@ func (c *PokeAPIClient) FetchType(name string) (core.PokemonTypeDetail, error) {
 	return toDomainTypeDetail(raw), nil
 }
 
+// --- Region ---
+
+type apiRegionList struct {
+	Count   int `json:"count"`
+	Results []struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"results"`
+}
+
+type apiRegion struct {
+	Name      string `json:"name"`
+	Locations []struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"locations"`
+}
+
+func (c *PokeAPIClient) FetchRegions() ([]core.Region, error) {
+	url := fmt.Sprintf("%s/region?limit=100", c.baseURL)
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("fetching regions: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("pokeapi returned status %d for regions", resp.StatusCode)
+	}
+
+	var raw apiRegionList
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return nil, fmt.Errorf("decoding regions: %w", err)
+	}
+
+	regions := make([]core.Region, len(raw.Results))
+	for i, r := range raw.Results {
+		regions[i] = core.Region{Name: r.Name}
+	}
+	return regions, nil
+}
+
+func (c *PokeAPIClient) FetchRegion(name string) (core.Region, error) {
+	url := fmt.Sprintf("%s/region/%s", c.baseURL, name)
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return core.Region{}, fmt.Errorf("fetching region %q: %w", name, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return core.Region{}, fmt.Errorf("region %q not found", name)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return core.Region{}, fmt.Errorf("pokeapi returned status %d for region %q", resp.StatusCode, name)
+	}
+
+	var raw apiRegion
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return core.Region{}, fmt.Errorf("decoding region %q: %w", name, err)
+	}
+
+	locations := make([]core.Location, len(raw.Locations))
+	for i, l := range raw.Locations {
+		locations[i] = core.Location{Name: l.Name, Region: raw.Name}
+	}
+	return core.Region{Name: raw.Name, Locations: locations}, nil
+}
+
+// --- Move ---
+
+type apiMove struct {
+	Name     string `json:"name"`
+	Type     struct{ Name string `json:"name"` } `json:"type"`
+	Power    *int   `json:"power"`
+	Accuracy *int   `json:"accuracy"`
+	PP       int    `json:"pp"`
+	DamageClass struct{ Name string `json:"name"` } `json:"damage_class"`
+	FlavorTextEntries []struct {
+		FlavorText string `json:"flavor_text"`
+		Language   struct{ Name string `json:"name"` } `json:"language"`
+	} `json:"flavor_text_entries"`
+}
+
+func (c *PokeAPIClient) FetchMove(name string) (core.Move, error) {
+	url := fmt.Sprintf("%s/move/%s", c.baseURL, name)
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return core.Move{}, fmt.Errorf("fetching move %q: %w", name, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return core.Move{}, fmt.Errorf("move %q not found", name)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return core.Move{}, fmt.Errorf("pokeapi returned status %d for move %q", resp.StatusCode, name)
+	}
+
+	var raw apiMove
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return core.Move{}, fmt.Errorf("decoding move %q: %w", name, err)
+	}
+
+	power := 0
+	if raw.Power != nil {
+		power = *raw.Power
+	}
+	accuracy := 0
+	if raw.Accuracy != nil {
+		accuracy = *raw.Accuracy
+	}
+
+	desc := ""
+	for _, fe := range raw.FlavorTextEntries {
+		if fe.Language.Name == "en" {
+			desc = fe.FlavorText
+			break
+		}
+	}
+
+	return core.Move{
+		Name:        raw.Name,
+		Type:        raw.Type.Name,
+		Power:       power,
+		Accuracy:    accuracy,
+		PP:          raw.PP,
+		Category:    raw.DamageClass.Name,
+		Description: desc,
+	}, nil
+}
+
+// --- Ability ---
+
+type apiAbility struct {
+	Name string `json:"name"`
+	FlavorTextEntries []struct {
+		FlavorText string `json:"flavor_text"`
+		Language   struct{ Name string `json:"name"` } `json:"language"`
+	} `json:"flavor_text_entries"`
+	Pokemon []struct {
+		Pokemon struct{ Name string `json:"name"` } `json:"pokemon"`
+	} `json:"pokemon"`
+}
+
+func (c *PokeAPIClient) FetchAbility(name string) (core.Ability, error) {
+	url := fmt.Sprintf("%s/ability/%s", c.baseURL, name)
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return core.Ability{}, fmt.Errorf("fetching ability %q: %w", name, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return core.Ability{}, fmt.Errorf("ability %q not found", name)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return core.Ability{}, fmt.Errorf("pokeapi returned status %d for ability %q", resp.StatusCode, name)
+	}
+
+	var raw apiAbility
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return core.Ability{}, fmt.Errorf("decoding ability %q: %w", name, err)
+	}
+
+	desc := ""
+	for _, fe := range raw.FlavorTextEntries {
+		if fe.Language.Name == "en" {
+			desc = fe.FlavorText
+			break
+		}
+	}
+
+	pokemon := make([]string, len(raw.Pokemon))
+	for i, p := range raw.Pokemon {
+		pokemon[i] = p.Pokemon.Name
+	}
+
+	return core.Ability{Name: raw.Name, Description: desc, Pokemon: pokemon}, nil
+}
+
+// --- EvolutionChain ---
+
+type apiEvolutionChain struct {
+	ID   int            `json:"id"`
+	Chain apiChainLink  `json:"chain"`
+}
+
+type apiChainLink struct {
+	Species struct{ Name string `json:"name"` } `json:"species"`
+	EvolutionDetails []struct {
+		MinLevel    *int   `json:"min_level"`
+		Trigger     struct{ Name string `json:"name"` } `json:"trigger"`
+	} `json:"evolution_details"`
+	EvolvesTo []apiChainLink `json:"evolves_to"`
+}
+
+func toEvolutionStage(link apiChainLink) core.EvolutionStage {
+	minLevel := 0
+	trigger := ""
+	if len(link.EvolutionDetails) > 0 {
+		d := link.EvolutionDetails[0]
+		if d.MinLevel != nil {
+			minLevel = *d.MinLevel
+		}
+		trigger = d.Trigger.Name
+	}
+
+	children := make([]core.EvolutionStage, len(link.EvolvesTo))
+	for i, child := range link.EvolvesTo {
+		children[i] = toEvolutionStage(child)
+	}
+
+	return core.EvolutionStage{
+		Name:        link.Species.Name,
+		MinLevel:    minLevel,
+		TriggerName: trigger,
+		EvolvesTo:   children,
+	}
+}
+
+func (c *PokeAPIClient) FetchEvolutionChain(id int) (core.EvolutionChain, error) {
+	url := fmt.Sprintf("%s/evolution-chain/%d", c.baseURL, id)
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return core.EvolutionChain{}, fmt.Errorf("fetching evolution chain %d: %w", id, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return core.EvolutionChain{}, fmt.Errorf("evolution chain %d not found", id)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return core.EvolutionChain{}, fmt.Errorf("pokeapi returned status %d for evolution chain %d", resp.StatusCode, id)
+	}
+
+	var raw apiEvolutionChain
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return core.EvolutionChain{}, fmt.Errorf("decoding evolution chain %d: %w", id, err)
+	}
+
+	return core.EvolutionChain{ID: raw.ID, Chain: toEvolutionStage(raw.Chain)}, nil
+}
+
 func toDomainList(raw apiList) core.PokemonListResponse {
 	results := make([]core.PokemonListItem, len(raw.Results))
 	for i, r := range raw.Results {

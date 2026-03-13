@@ -1,0 +1,380 @@
+@use "variables" as *;
+
+// ─── Explore nav mini-tabs ──────────────────────────────────────────────────
+
+.explore-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.75rem;
+}
+
+.explore-tab-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: $border-radius;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #718096;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #edf2f7;
+    color: #2d3748;
+  }
+
+  &.active {
+    background: $pokedex-red;
+    color: white;
+  }
+}
+
+.explore-panel {
+  &.hidden {
+    display: none;
+  }
+}
+
+.explore-loading {
+  text-align: center;
+  padding: 3rem;
+  color: #718096;
+  font-size: 1.1rem;
+}
+
+.explore-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.5rem 1rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: $border-radius-pill;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: $pokedex-red;
+  }
+}
+
+// ─── Regions ────────────────────────────────────────────────────────────────
+
+.regions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.region-card {
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
+  }
+}
+
+.region-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: $border-radius-lg;
+  transition: border-radius 0.2s;
+
+  .region-card.expanded & {
+    border-radius: $border-radius-lg $border-radius-lg 0 0;
+  }
+}
+
+.region-card__name {
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+
+.region-card__chevron {
+  font-size: 0.75rem;
+  transition: transform 0.25s ease;
+
+  .region-card.expanded & {
+    transform: rotate(180deg);
+  }
+}
+
+.region-card__body {
+  background: white;
+  border-radius: 0 0 $border-radius-lg $border-radius-lg;
+  overflow: hidden;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+.region-detail {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.region-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #718096;
+  margin: 0 0 0.5rem;
+}
+
+.region-locations-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.region-location-tag {
+  background: #edf2f7;
+  color: #4a5568;
+  border-radius: $border-radius-pill;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.region-location-more {
+  background: #e2e8f0;
+  color: #718096;
+  border-radius: $border-radius-pill;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.region-chart {
+  width: 100%;
+  height: 220px;
+}
+
+// ─── Moves ──────────────────────────────────────────────────────────────────
+
+.moves-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.moves-filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: #edf2f7;
+  border: none;
+  padding: 0.35rem 0.875rem;
+  border-radius: $border-radius-pill;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #4a5568;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #e2e8f0;
+  }
+
+  &.active {
+    background: $pokedex-red;
+    color: white;
+  }
+}
+
+.moves-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.875rem;
+}
+
+.move-card {
+  background: white;
+  border-radius: $border-radius-lg;
+  padding: 0.875rem 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+
+  &--loading {
+    opacity: 0.5;
+    .move-card__name {
+      color: #a0aec0;
+    }
+  }
+}
+
+.move-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.move-card__name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: capitalize;
+  flex: 1;
+}
+
+.move-card__type {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: $border-radius-pill;
+}
+
+.move-card__cat {
+  font-size: 0.9rem;
+}
+
+.move-card__stats {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: #4a5568;
+  margin-bottom: 0.4rem;
+}
+
+.move-stat {
+  b {
+    color: #718096;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    display: block;
+  }
+}
+
+.move-card__desc {
+  font-size: 0.78rem;
+  color: #718096;
+  line-height: 1.4;
+  margin: 0;
+}
+
+// ─── Abilities ──────────────────────────────────────────────────────────────
+
+.abilities-controls {
+  margin-bottom: 1.25rem;
+}
+
+.abilities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.875rem;
+}
+
+.ability-card {
+  background: white;
+  border-radius: $border-radius-lg;
+  padding: 0.875rem 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+
+  &--loading {
+    opacity: 0.5;
+    .ability-card__name {
+      color: #a0aec0;
+    }
+  }
+}
+
+.ability-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.ability-card__name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}
+
+.ability-card__count {
+  font-size: 0.75rem;
+  color: #a0aec0;
+  white-space: nowrap;
+}
+
+.ability-card__desc {
+  font-size: 0.78rem;
+  color: #718096;
+  line-height: 1.45;
+  margin: 0 0 0.6rem;
+}
+
+.ability-pokemon-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.ability-pokemon-tag {
+  background: #edf2f7;
+  color: #4a5568;
+  border-radius: $border-radius-pill;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  text-transform: capitalize;
+}
+
+.ability-pokemon-more {
+  color: #a0aec0;
+  font-size: 0.72rem;
+  padding: 0.15rem 0.25rem;
+}
+
+// ─── Responsive ─────────────────────────────────────────────────────────────
+
+@media (max-width: 480px) {
+  .explore-nav {
+    flex-wrap: wrap;
+  }
+
+  .explore-tab-btn {
+    flex: 1;
+    text-align: center;
+    font-size: 0.8rem;
+  }
+
+  .moves-grid,
+  .abilities-grid,
+  .regions-grid {
+    grid-template-columns: 1fr;
+  }
+}

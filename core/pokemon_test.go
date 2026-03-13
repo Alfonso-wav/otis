@@ -54,6 +54,76 @@ func TestFilterByTypeCaseInsensitive(t *testing.T) {
 	}
 }
 
+func TestFilterMovesByType(t *testing.T) {
+	moves := []Move{
+		{Name: "flamethrower", Type: "fire", Category: "special"},
+		{Name: "ember", Type: "fire", Category: "special"},
+		{Name: "surf", Type: "water", Category: "special"},
+		{Name: "earthquake", Type: "ground", Category: "physical"},
+	}
+
+	got := FilterMovesByType(moves, "fire")
+	if len(got) != 2 {
+		t.Fatalf("FilterMovesByType(fire) len = %d, want 2", len(got))
+	}
+	got = FilterMovesByType(moves, "normal")
+	if len(got) != 0 {
+		t.Fatalf("FilterMovesByType(normal) len = %d, want 0", len(got))
+	}
+}
+
+func TestFilterMovesByCategory(t *testing.T) {
+	moves := []Move{
+		{Name: "tackle", Category: "physical"},
+		{Name: "flamethrower", Category: "special"},
+		{Name: "toxic", Category: "status"},
+		{Name: "earthquake", Category: "physical"},
+	}
+
+	got := FilterMovesByCategory(moves, "physical")
+	if len(got) != 2 {
+		t.Fatalf("FilterMovesByCategory(physical) len = %d, want 2", len(got))
+	}
+	got = FilterMovesByCategory(moves, "status")
+	if len(got) != 1 {
+		t.Fatalf("FilterMovesByCategory(status) len = %d, want 1", len(got))
+	}
+}
+
+func TestSearchMoves(t *testing.T) {
+	moves := []Move{
+		{Name: "flamethrower"},
+		{Name: "flame-wheel"},
+		{Name: "surf"},
+	}
+
+	got := SearchMoves(moves, "flame")
+	if len(got) != 2 {
+		t.Fatalf("SearchMoves(flame) len = %d, want 2", len(got))
+	}
+	got = SearchMoves(moves, "")
+	if len(got) != 3 {
+		t.Fatalf("SearchMoves('') len = %d, want 3", len(got))
+	}
+}
+
+func TestSearchAbilities(t *testing.T) {
+	abilities := []Ability{
+		{Name: "overgrow"},
+		{Name: "over-coat"},
+		{Name: "blaze"},
+	}
+
+	got := SearchAbilities(abilities, "over")
+	if len(got) != 2 {
+		t.Fatalf("SearchAbilities(over) len = %d, want 2", len(got))
+	}
+	got = SearchAbilities(abilities, "")
+	if len(got) != 3 {
+		t.Fatalf("SearchAbilities('') len = %d, want 3", len(got))
+	}
+}
+
 func TestGetStat(t *testing.T) {
 	p := Pokemon{
 		Stats: []Stat{
