@@ -29,89 +29,6 @@
   }
 }
 
-// -- Filter bar --------------------------------------------------------------
-
-.filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-  padding: 1rem 0 1.25rem;
-  border-bottom: 1.5px solid #e2e8f0;
-  margin-bottom: 1.5rem;
-}
-
-.filter-select {
-  padding: 0.4rem 2rem 0.4rem 0.9rem;
-  border: 2px solid #e2e8f0;
-  border-radius: $border-radius-pill;
-  background-color: white;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23718096'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.7rem center;
-  appearance: none;
-  font-family: $font-body;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #2d3748;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-
-  &:focus {
-    outline: none;
-    border-color: $pokedex-red;
-    box-shadow: 0 0 0 3px rgba($pokedex-red, 0.15);
-  }
-
-  &:hover {
-    border-color: #a0aec0;
-  }
-}
-
-.filter-pill {
-  padding: 0.4rem 0.9rem;
-  border: 2px solid #e2e8f0;
-  border-radius: $border-radius-pill;
-  background: white;
-  font-family: $font-body;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  color: #4a5568;
-
-  &:hover:not(.active) {
-    border-color: #a0aec0;
-    background: #f7fafc;
-  }
-
-  &.active {
-    background: #fefcbf;
-    border-color: #d69e2e;
-    color: #744210;
-    box-shadow: 0 2px 6px rgba(214, 158, 46, 0.3);
-  }
-}
-
-.filter-reset-btn {
-  padding: 0.4rem 0.9rem;
-  border: 2px solid transparent;
-  border-radius: $border-radius-pill;
-  background: transparent;
-  font-family: $font-body;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  color: #a0aec0;
-  transition: all 0.15s;
-
-  &:hover {
-    color: $pokedex-red;
-    border-color: $pokedex-red-light;
-    background: $pokedex-red-hover;
-  }
-}
-
 // -- Pokemon grid ------------------------------------------------------------
 
 #pokemon-grid {
@@ -246,29 +163,6 @@
   }
 }
 
-// -- Type badges -------------------------------------------------------------
-
-.type-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: $border-radius-pill;
-  font-size: 0.82rem;
-  font-weight: 700;
-  font-family: $font-body;
-  color: white;
-  text-transform: capitalize;
-  background: #718096;
-}
-
-@each $type, $color in $type-colors {
-  .type-#{$type} {
-    background: $color;
-
-    @if index($type-dark-text, $type) {
-      color: #1a202c;
-    }
-  }
-}
-
 // -- Stats table -------------------------------------------------------------
 
 .stats-table {
@@ -308,26 +202,6 @@
   color: #718096;
   font-size: 0.9rem;
   font-family: $font-body;
-}
-
-// -- Loading / error states --------------------------------------------------
-
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: #a0aec0;
-  font-size: 1rem;
-  font-family: $font-body;
-}
-
-.error-text {
-  color: #e53e3e;
-}
-
-// -- Utility -----------------------------------------------------------------
-
-.hidden {
-  display: none !important;
 }
 
 // -- EV Calculator -----------------------------------------------------------

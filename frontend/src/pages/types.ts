@@ -28,7 +28,9 @@ function typeHeaderClass(typeName: string): string {
 
 function renderTypeCards(types: PokemonListItem[]): void {
   const filtered = types.filter((t) => GAME_TYPES.has(t.Name));
-  container.innerHTML = `<div class="types-grid" id="types-grid"></div>`;
+  container.innerHTML = `
+    <div class="section-header"><h2>Tipos</h2></div>
+    <div class="types-grid" id="types-grid"></div>`;
   const grid = document.getElementById("types-grid") as HTMLDivElement;
 
   grid.innerHTML = filtered
@@ -89,7 +91,7 @@ async function toggleType(card: HTMLDivElement): Promise<void> {
   }
 
   pokemonPanel.innerHTML =
-    '<p class="types-loading" style="padding:1rem">Cargando...</p>';
+    '<p class="loading" style="padding:1rem">Cargando...</p>';
   pokemonPanel.classList.remove("hidden");
 
   try {
@@ -144,7 +146,7 @@ async function toggleType(card: HTMLDivElement): Promise<void> {
         });
       });
   } catch (err: unknown) {
-    pokemonPanel.innerHTML = `<p class="types-loading" style="color:#e53e3e;padding:1rem">${String(err)}</p>`;
+    pokemonPanel.innerHTML = `<p class="loading" style="color:#e53e3e;padding:1rem">${String(err)}</p>`;
   }
 }
 
@@ -159,12 +161,12 @@ export function initTypes(): void {
   tabBtn.addEventListener("click", async () => {
     if (initialized) return;
     initialized = true;
-    container.innerHTML = '<p class="types-loading">Cargando tipos...</p>';
+    container.innerHTML = '<p class="loading">Cargando tipos...</p>';
     try {
       const data = await ListTypes();
       renderTypeCards(data.Results || []);
     } catch (err: unknown) {
-      container.innerHTML = `<p class="types-loading" style="color:#e53e3e">${String(err)}</p>`;
+      container.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
     }
   });
 }

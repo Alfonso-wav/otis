@@ -2,8 +2,8 @@
 
 .types-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.875rem;
 }
 
 .type-card {
@@ -11,10 +11,11 @@
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s;
 
   &:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
   }
 }
 
@@ -22,7 +23,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.875rem 1.25rem;
+  padding: 1.1rem 1.25rem;
   border-radius: $border-radius-lg;
   transition: border-radius 0.2s;
 
@@ -32,15 +33,16 @@
 }
 
 .type-card__name {
-  font-weight: 700;
-  font-size: 1rem;
+  font-family: $font-display;
+  font-size: 1.4rem;
+  letter-spacing: 0.06em;
   text-transform: capitalize;
-  letter-spacing: 0.02em;
 }
 
 .type-card__chevron {
   font-size: 0.75rem;
   transition: transform 0.25s ease;
+  opacity: 0.8;
 
   .type-card.expanded & {
     transform: rotate(180deg);
@@ -114,11 +116,4 @@
 .type-header-default {
   background: #718096;
   color: white;
-}
-
-.types-loading {
-  text-align: center;
-  padding: 3rem;
-  color: #718096;
-  font-size: 1.1rem;
 }

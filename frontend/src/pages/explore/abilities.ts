@@ -63,7 +63,7 @@ function renderGrid(container: HTMLElement): void {
 
   const names = filteredAbilities();
   if (names.length === 0) {
-    grid.innerHTML = '<p class="explore-loading">No se encontraron habilidades.</p>';
+    grid.innerHTML = '<p class="loading">No se encontraron habilidades.</p>';
     return;
   }
 
@@ -108,6 +108,7 @@ async function loadAbilitiesLazy(
 
 export function initAbilities(container: HTMLElement): void {
   container.innerHTML = `
+    <div class="section-header"><h2>Habilidades</h2></div>
     <div class="abilities-controls">
       <input
         type="text"

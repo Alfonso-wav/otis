@@ -21,6 +21,9 @@
 @import "bootstrap/scss/helpers";
 @import "bootstrap/scss/utilities/api";
 
+// Shared components
+@import "components";
+
 // Pokemon-specific styles
 @import "pokemon";
 

@@ -100,7 +100,7 @@ function renderGrid(container: HTMLElement): void {
 
   const names = filteredMoves();
   if (names.length === 0) {
-    grid.innerHTML = '<p class="explore-loading">No se encontraron movimientos.</p>';
+    grid.innerHTML = '<p class="loading">No se encontraron movimientos.</p>';
     return;
   }
 
@@ -144,6 +144,7 @@ async function loadMovesLazy(
 
 export function initMoves(container: HTMLElement): void {
   container.innerHTML = `
+    <div class="section-header"><h2>Movimientos</h2></div>
     <div class="moves-controls">
       <input
         type="text"
