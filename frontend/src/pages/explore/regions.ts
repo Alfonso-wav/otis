@@ -51,7 +51,7 @@ async function loadRegionDetail(
     return;
   }
 
-  body.innerHTML = '<p class="explore-loading">Cargando región...</p>';
+  body.innerHTML = '<p class="loading">Cargando región...</p>';
   body.classList.remove("hidden");
 
   try {
@@ -95,7 +95,7 @@ async function loadRegionDetail(
 
     renderTypeDistributionChart(chartId, regionName);
   } catch (err: unknown) {
-    body.innerHTML = `<p class="explore-loading" style="color:#e53e3e">${String(err)}</p>`;
+    body.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
   }
 }
 
@@ -103,12 +103,14 @@ export async function initRegions(container: HTMLElement): Promise<void> {
   if (initialized) return;
   initialized = true;
 
-  container.innerHTML = '<p class="explore-loading">Cargando regiones...</p>';
+  container.innerHTML = '<p class="loading">Cargando regiones...</p>';
 
   try {
     const regions = await ListRegions();
 
-    container.innerHTML = `<div class="regions-grid" id="regions-grid"></div>`;
+    container.innerHTML = `
+      <div class="section-header"><h2>Regiones</h2></div>
+      <div class="regions-grid" id="regions-grid"></div>`;
     const grid = document.getElementById("regions-grid") as HTMLDivElement;
 
     grid.innerHTML = regions
@@ -137,6 +139,6 @@ export async function initRegions(container: HTMLElement): Promise<void> {
       );
     });
   } catch (err: unknown) {
-    container.innerHTML = `<p class="explore-loading" style="color:#e53e3e">${String(err)}</p>`;
+    container.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
   }
 }
