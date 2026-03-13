@@ -58,6 +58,19 @@ func (a *App) GetMove(name string) (core.Move, error) {
 	return a.fetcher.FetchMove(core.NormalizeName(name))
 }
 
+// ComparePokemons fetcha ambos Pokémon y devuelve la comparación de sus stats base.
+func (a *App) ComparePokemons(nameA, nameB string) (core.PokemonComparison, error) {
+	pkA, err := a.fetcher.FetchPokemon(core.NormalizeName(nameA))
+	if err != nil {
+		return core.PokemonComparison{}, err
+	}
+	pkB, err := a.fetcher.FetchPokemon(core.NormalizeName(nameB))
+	if err != nil {
+		return core.PokemonComparison{}, err
+	}
+	return core.ComparePokemons(pkA, pkB), nil
+}
+
 // GetAbility retorna el detalle de una habilidad.
 func (a *App) GetAbility(name string) (core.Ability, error) {
 	return a.fetcher.FetchAbility(core.NormalizeName(name))
