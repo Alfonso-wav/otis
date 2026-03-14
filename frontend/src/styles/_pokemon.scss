@@ -98,6 +98,71 @@
   line-height: 1.1;
 }
 
+// -- Pokemon table -----------------------------------------------------------
+
+.poke-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: $font-body;
+  font-size: 0.88rem;
+
+  th {
+    position: sticky;
+    top: 0;
+    background: #f7fafc;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #718096;
+    padding: 0.5rem 0.6rem;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: middle;
+  }
+
+  tr:hover {
+    background: #f7fafc;
+    cursor: pointer;
+  }
+}
+
+.poke-table__id {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #cbd5e0;
+  white-space: nowrap;
+}
+
+.poke-table__sprite {
+  width: 40px;
+  height: 40px;
+  image-rendering: pixelated;
+  display: block;
+}
+
+.poke-table__name {
+  text-transform: capitalize;
+  font-family: $font-display;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: #2d3748;
+}
+
+.stat-cell {
+  text-align: right;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.stat-total {
+  color: $pokedex-red;
+}
+
 // -- Pagination --------------------------------------------------------------
 
 #pagination button {
