@@ -26,6 +26,39 @@ let offset = 0;
 let totalCount = 0;
 let viewMode: "grid" | "table" = "grid";
 
+// -- Sorting state -----------------------------------------------------------
+
+type SortDirection = 'asc' | 'desc' | null;
+type SortColumn = 'id' | 'name' | 'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'vel' | 'total' | null;
+
+let currentSortColumn: SortColumn = null;
+let currentSortDirection: SortDirection = null;
+
+function sortPokemonData(data: Pokemon[], column: SortColumn, direction: SortDirection): Pokemon[] {
+  if (!column || !direction) return data;
+  const sorted = [...data];
+  const mult = direction === 'asc' ? 1 : -1;
+  sorted.sort((a, b) => {
+    switch (column) {
+      case 'id': return mult * (a.ID - b.ID);
+      case 'name': return mult * a.Name.localeCompare(b.Name);
+      case 'hp': return mult * (a.Stats[0].BaseStat - b.Stats[0].BaseStat);
+      case 'atk': return mult * (a.Stats[1].BaseStat - b.Stats[1].BaseStat);
+      case 'def': return mult * (a.Stats[2].BaseStat - b.Stats[2].BaseStat);
+      case 'spa': return mult * (a.Stats[3].BaseStat - b.Stats[3].BaseStat);
+      case 'spd': return mult * (a.Stats[4].BaseStat - b.Stats[4].BaseStat);
+      case 'vel': return mult * (a.Stats[5].BaseStat - b.Stats[5].BaseStat);
+      case 'total': {
+        const totalA = a.Stats.reduce((s, st) => s + st.BaseStat, 0);
+        const totalB = b.Stats.reduce((s, st) => s + st.BaseStat, 0);
+        return mult * (totalA - totalB);
+      }
+      default: return 0;
+    }
+  });
+  return sorted;
+}
+
 // Cache para evitar llamadas repetidas a GetPokemonSpecies
 const legendaryCache = new Map<string, { isLegendary: boolean; isMythical: boolean }>();
 
@@ -76,6 +109,7 @@ async function loadList(): Promise<void> {
 // -- Lista con filtro --------------------------------------------------------
 
 async function loadFiltered(): Promise<void> {
+  resetSorting();
   grid.innerHTML = '<p class="loading">Aplicando filtros...</p>';
   try {
     let base: PokemonListItem[] = [];
@@ -218,7 +252,9 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
     }),
   );
 
-  const rows = pokemonData
+  const sortedData = sortPokemonData(pokemonData, currentSortColumn, currentSortDirection);
+
+  const rows = sortedData
     .map((p) => {
       const sprite = p.Sprites.FrontDefault
         ? `<img class="poke-table__sprite" src="${p.Sprites.FrontDefault}" alt="${p.Name}" loading="lazy" />`
@@ -243,15 +279,30 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
     })
     .join("");
 
-  const statHeaders = ["HP", "Atk", "Def", "SpA", "SpD", "Vel"]
-    .map((h) => `<th class="stat-cell">${h}</th>`)
+  const sortableStats: [string, SortColumn][] = [
+    ["HP", "hp"], ["Atk", "atk"], ["Def", "def"],
+    ["SpA", "spa"], ["SpD", "spd"], ["Vel", "vel"],
+  ];
+  const statHeaders = sortableStats
+    .map(([label, col]) => {
+      const ind = currentSortColumn === col ? (currentSortDirection === 'asc' ? 'asc' : currentSortDirection === 'desc' ? 'desc' : '') : '';
+      const activeClass = currentSortColumn === col ? ' active' : '';
+      return `<th class="stat-cell sortable${activeClass}" data-sort="${col}">${label} <span class="sort-indicator ${ind}"></span></th>`;
+    })
     .join("");
+
+  const idInd = currentSortColumn === 'id' ? (currentSortDirection === 'asc' ? 'asc' : currentSortDirection === 'desc' ? 'desc' : '') : '';
+  const nameInd = currentSortColumn === 'name' ? (currentSortDirection === 'asc' ? 'asc' : currentSortDirection === 'desc' ? 'desc' : '') : '';
+  const totalInd = currentSortColumn === 'total' ? (currentSortDirection === 'asc' ? 'asc' : currentSortDirection === 'desc' ? 'desc' : '') : '';
 
   grid.innerHTML = `<table class="poke-table">
     <thead><tr>
-      <th>#</th><th></th><th>Nombre</th><th>Tipo</th>
+      <th class="sortable${currentSortColumn === 'id' ? ' active' : ''}" data-sort="id"># <span class="sort-indicator ${idInd}"></span></th>
+      <th></th>
+      <th class="sortable${currentSortColumn === 'name' ? ' active' : ''}" data-sort="name">Nombre <span class="sort-indicator ${nameInd}"></span></th>
+      <th>Tipo</th>
       ${statHeaders}
-      <th class="stat-cell">Total</th>
+      <th class="stat-cell sortable${currentSortColumn === 'total' ? ' active' : ''}" data-sort="total">Total <span class="sort-indicator ${totalInd}"></span></th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
@@ -260,6 +311,21 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
     row.addEventListener("click", () => {
       const name = row.dataset.name;
       if (name) showDetail(name);
+    });
+  });
+
+  grid.querySelectorAll<HTMLTableCellElement>("th.sortable").forEach((th) => {
+    th.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const col = th.dataset.sort as SortColumn;
+      if (currentSortColumn === col) {
+        if (currentSortDirection === 'asc') currentSortDirection = 'desc';
+        else if (currentSortDirection === 'desc') { currentSortDirection = null; currentSortColumn = null; }
+      } else {
+        currentSortColumn = col;
+        currentSortDirection = 'asc';
+      }
+      renderTable(getCurrentPageItems());
     });
   });
 
@@ -291,9 +357,15 @@ function updatePagination(): void {
 
 // -- Paginación --------------------------------------------------------------
 
+function resetSorting(): void {
+  currentSortColumn = null;
+  currentSortDirection = null;
+}
+
 async function prevPage(): Promise<void> {
   if (offset <= 0) return;
   offset -= LIMIT;
+  resetSorting();
   if (hasFilter()) {
     await renderCurrentView(filteredList.slice(offset, offset + LIMIT));
     updatePagination();
@@ -306,6 +378,7 @@ async function nextPage(): Promise<void> {
   const max = hasFilter() ? filteredList.length : totalCount;
   if (offset + LIMIT >= max) return;
   offset += LIMIT;
+  resetSorting();
   if (hasFilter()) {
     await renderCurrentView(filteredList.slice(offset, offset + LIMIT));
     updatePagination();
@@ -467,6 +540,7 @@ export function initPokedex(): void {
   viewToggleBtn.addEventListener("click", async () => {
     const oldMode = viewMode;
     viewMode = viewMode === "grid" ? "table" : "grid";
+    resetSorting();
     viewToggleBtn.textContent = viewMode === "grid" ? "⊞ Tabla" : "⊟ Tarjetas";
 
     const items = getCurrentPageItems();
