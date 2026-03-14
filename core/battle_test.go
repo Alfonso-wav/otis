@@ -44,6 +44,7 @@ func TestExecuteTurn_DealsDamage(t *testing.T) {
 		AttackerLevel: 50,
 		DefenderLevel: 50,
 		Move:          Move{Name: "Flamethrower", Type: "fire", Power: 90, Category: "special", Accuracy: 100},
+		AttackerName:  "Charizard",
 	}
 	result := ExecuteTurn(input, nil)
 
@@ -59,6 +60,9 @@ func TestExecuteTurn_DealsDamage(t *testing.T) {
 	if result.Damage.IsSuperEffective == false {
 		t.Error("Fire vs Grass should be super effective")
 	}
+	if !strings.Contains(result.LogEntry, "Charizard") {
+		t.Errorf("Log should contain attacker name, got: %s", result.LogEntry)
+	}
 }
 
 func TestExecuteTurn_StatusMoveNoDamage(t *testing.T) {
@@ -69,6 +73,7 @@ func TestExecuteTurn_StatusMoveNoDamage(t *testing.T) {
 		DefenderStats: Stats{Defense: 80, HP: 200},
 		AttackerLevel: 50,
 		Move:          Move{Name: "Swords Dance", Type: "normal", Power: 0, Category: "status"},
+		AttackerName:  "Scizor",
 	}
 	result := ExecuteTurn(input, nil)
 
@@ -77,6 +82,9 @@ func TestExecuteTurn_StatusMoveNoDamage(t *testing.T) {
 	}
 	if !strings.Contains(result.LogEntry, "sin efecto de daño") {
 		t.Errorf("Log should mention no damage, got: %s", result.LogEntry)
+	}
+	if !strings.Contains(result.LogEntry, "Scizor") {
+		t.Errorf("Log should contain attacker name, got: %s", result.LogEntry)
 	}
 	if result.NewState.IsOver {
 		t.Error("Battle should not end from a status move")
@@ -93,6 +101,7 @@ func TestExecuteTurn_WinCondition(t *testing.T) {
 		DefenderTypes: []PokemonType{{Name: "normal"}},
 		AttackerLevel: 50,
 		Move:          Move{Name: "Tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100},
+		AttackerName:  "Pikachu",
 	}
 	result := ExecuteTurn(input, nil)
 
@@ -120,6 +129,8 @@ func TestSimulateFullBattle_AttackerWins(t *testing.T) {
 		DefenderLevel: 50,
 		AttackerMoves: []Move{strongMove},
 		DefenderMoves: []Move{weakMove},
+		AttackerName:  "Snorlax",
+		DefenderName:  "Magikarp",
 	}
 
 	alwaysZero := func(n int) int { return 0 }
@@ -137,6 +148,11 @@ func TestSimulateFullBattle_AttackerWins(t *testing.T) {
 	if len(result.Log) == 0 {
 		t.Error("Log should not be empty")
 	}
+	for _, entry := range result.Log {
+		if !strings.Contains(entry, "Snorlax") && !strings.Contains(entry, "Magikarp") {
+			t.Errorf("Log entry should contain a Pokemon name, got: %s", entry)
+		}
+	}
 }
 
 func TestSimulateFullBattle_DefenderWins(t *testing.T) {
@@ -152,6 +168,8 @@ func TestSimulateFullBattle_DefenderWins(t *testing.T) {
 		DefenderLevel: 100,
 		AttackerMoves: []Move{weakMove},
 		DefenderMoves: []Move{strongMove},
+		AttackerName:  "Magikarp",
+		DefenderName:  "Snorlax",
 	}
 
 	alwaysZero := func(n int) int { return 0 }
@@ -206,6 +224,7 @@ func TestExecuteTurn_AccuracyMiss(t *testing.T) {
 		DefenderTypes: []PokemonType{{Name: "normal"}},
 		AttackerLevel: 50,
 		Move:          Move{Name: "Thunder", Type: "electric", Power: 110, Category: "special", Accuracy: 70},
+		AttackerName:  "Pikachu",
 	}
 	// randSource returns 99 for accuracy check → 99 >= 70 → miss
 	callCount := 0
@@ -227,6 +246,9 @@ func TestExecuteTurn_AccuracyMiss(t *testing.T) {
 	if !strings.Contains(result.LogEntry, "¡Falló!") {
 		t.Errorf("Log should contain miss message, got: %s", result.LogEntry)
 	}
+	if !strings.Contains(result.LogEntry, "Pikachu") {
+		t.Errorf("Log should contain attacker name, got: %s", result.LogEntry)
+	}
 }
 
 func TestExecuteTurn_AccuracyHit(t *testing.T) {
@@ -239,6 +261,7 @@ func TestExecuteTurn_AccuracyHit(t *testing.T) {
 		DefenderTypes: []PokemonType{{Name: "normal"}},
 		AttackerLevel: 50,
 		Move:          Move{Name: "Thunder", Type: "electric", Power: 110, Category: "special", Accuracy: 70},
+		AttackerName:  "Pikachu",
 	}
 	// randSource returns 0 for all checks → accuracy hit, no crit, lowest roll
 	alwaysZero := func(n int) int { return 0 }
@@ -262,6 +285,7 @@ func TestExecuteTurn_CriticalHit(t *testing.T) {
 		DefenderTypes: []PokemonType{{Name: "normal"}},
 		AttackerLevel: 50,
 		Move:          Move{Name: "Tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100},
+		AttackerName:  "Rattata",
 	}
 	// randSource: accuracy=0(hit), crit=0(crit at stage 0 means 1/24, roll 0 → crit), roll=0(min)
 	alwaysZero := func(n int) int { return 0 }
@@ -285,6 +309,7 @@ func TestExecuteTurn_NoCritWhenRollHigh(t *testing.T) {
 		DefenderTypes: []PokemonType{{Name: "normal"}},
 		AttackerLevel: 50,
 		Move:          Move{Name: "Tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100},
+		AttackerName:  "Rattata",
 	}
 	// Accuracy 100 bypasses check. CalculateBattleDamage calls:
 	// 1st: randSource(24) for crit → 5 != 0 → no crit
@@ -321,6 +346,8 @@ func TestSimulateFullBattle_SpeedOrdering(t *testing.T) {
 		DefenderLevel: 50,
 		AttackerMoves: []Move{priorityMove},
 		DefenderMoves: []Move{normalMove},
+		AttackerName:  "Eevee",
+		DefenderName:  "Pidgey",
 	}
 
 	alwaysZero := func(n int) int { return 0 }
@@ -348,6 +375,8 @@ func TestSimulateFullBattle_FasterGoesFirst(t *testing.T) {
 		DefenderLevel: 50,
 		AttackerMoves: []Move{move},
 		DefenderMoves: []Move{move},
+		AttackerName:  "Slowpoke",
+		DefenderName:  "Jolteon",
 	}
 
 	alwaysZero := func(n int) int { return 0 }

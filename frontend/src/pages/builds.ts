@@ -438,6 +438,7 @@ async function handleMoveClick(slotIdx: number): Promise<void> {
     attackerLevel: state.attackerLevel,
     defenderLevel: state.defenderLevel,
     move: slot.move,
+    attackerName: state.attacker.Name,
   } as core.TurnInput);
 
   bs = atkResult.newState;
@@ -471,6 +472,7 @@ async function handleMoveClick(slotIdx: number): Promise<void> {
     attackerLevel: state.defenderLevel,
     defenderLevel: state.attackerLevel,
     move: defMove,
+    attackerName: state.defender.Name,
   } as core.TurnInput);
 
   // Restore HP perspective
@@ -515,6 +517,8 @@ async function simulateFullBattle(): Promise<void> {
     defenderLevel: state.defenderLevel,
     attackerMoves: atkMoves,
     defenderMoves: defMoves,
+    attackerName: state.attacker.Name,
+    defenderName: state.defender.Name,
   } as core.FullBattleInput);
 
   battleUI = { battleState: result, phase: "over" };
