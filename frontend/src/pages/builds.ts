@@ -6,6 +6,8 @@ import {
   ListPokemon,
   CalculateStats,
   SimulateDamage,
+  InitBattle,
+  ExecuteTurn,
 } from "../../wailsjs/go/app/App";
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
@@ -43,6 +45,15 @@ const defaultIVs = (): core.Stats => ({
   hp: 31, attack: 31, defense: 31, spAttack: 31, spDefense: 31, speed: 31,
 });
 const emptySlot = (): BuildSlot => ({ moveName: null, move: null, isCritical: false });
+
+type BattlePhase = "idle" | "attacker-turn" | "defender-turn" | "over";
+
+interface BattleUIState {
+  battleState: core.BattleState | null;
+  phase: BattlePhase;
+}
+
+let battleUI: BattleUIState = { battleState: null, phase: "idle" };
 
 let state: BuildState = {
   attacker: null,
@@ -295,6 +306,180 @@ async function loadDamageTable(): Promise<void> {
     </table>`;
 }
 
+// ─── Battle ───────────────────────────────────────────────────────────────────
+
+function hpBarColor(pct: number): string {
+  if (pct > 0.5) return "#48bb78";
+  if (pct > 0.25) return "#ed8936";
+  return "#e53e3e";
+}
+
+function renderHPBar(name: string, current: number, max: number): string {
+  const pct = max > 0 ? Math.max(0, current / max) : 0;
+  const color = hpBarColor(pct);
+  return `
+    <div class="battle-pokemon-hp">
+      <div class="battle-pokemon-name">${name}</div>
+      <div class="hp-bar-track">
+        <div class="hp-bar-fill" style="width:${(pct * 100).toFixed(1)}%;background:${color}"></div>
+      </div>
+      <div class="hp-bar-label">${current} / ${max}</div>
+    </div>`;
+}
+
+function renderBattleSection(): string {
+  const filledSlots = state.slots.filter((s) => s.move !== null);
+  if (!state.attacker || !state.defender || filledSlots.length === 0) return "";
+
+  const bs = battleUI.battleState;
+  const phase = battleUI.phase;
+
+  if (phase === "idle" || !bs) {
+    return `
+      <div class="battle-section" id="battle-section">
+        <h3 class="build-section-title">Simulación de batalla</h3>
+        <button class="battle-start-btn" id="battle-start-btn">Iniciar batalla</button>
+      </div>`;
+  }
+
+  const atkName = state.attacker.Name;
+  const defName = state.defender.Name;
+
+  const winnerBanner = bs.isOver
+    ? `<div class="battle-winner-banner">${bs.winner === "attacker" ? atkName : defName} gana la batalla!</div>`
+    : "";
+
+  const turnLabel = bs.isOver
+    ? ""
+    : phase === "attacker-turn"
+    ? `<div class="battle-turn-label">Turno ${bs.turnCount + 1} — Elige movimiento de <strong>${atkName}</strong></div>`
+    : `<div class="battle-turn-label">Turno ${bs.turnCount + 1} — Elige movimiento de <strong>${defName}</strong></div>`;
+
+  const activeSlots = phase === "attacker-turn" ? state.slots : state.slots;
+  const moveBtns = activeSlots
+    .map((slot, i) => {
+      if (!slot.move) return "";
+      const disabled = bs.isOver ? "disabled" : "";
+      const typeClass = `type-${slot.move.Type}`;
+      return `<button class="move-btn ${typeClass}" data-slot="${i}" ${disabled}>
+        ${slot.move.Name}
+        <span class="move-btn-power">${slot.move.Power || "—"}</span>
+      </button>`;
+    })
+    .join("");
+
+  const logEntries = [...(bs.log ?? [])].reverse().slice(0, 10);
+  const logHTML = logEntries.map((entry) => `<div class="battle-log-entry">${entry}</div>`).join("");
+
+  return `
+    <div class="battle-section" id="battle-section">
+      <h3 class="build-section-title">Simulación de batalla — Turno ${bs.turnCount}</h3>
+      ${winnerBanner}
+      <div class="battle-hp-bars">
+        ${renderHPBar(atkName, bs.attackerHP, bs.attackerMaxHP)}
+        <div class="battle-vs">VS</div>
+        ${renderHPBar(defName, bs.defenderHP, bs.defenderMaxHP)}
+      </div>
+      ${turnLabel}
+      <div class="battle-move-btns" id="battle-move-btns">
+        ${moveBtns}
+      </div>
+      <div class="battle-log" id="battle-log">${logHTML}</div>
+      <button class="battle-reset-btn" id="battle-reset-btn">Reiniciar</button>
+    </div>`;
+}
+
+async function startBattle(): Promise<void> {
+  if (!state.attacker || !state.defender) return;
+
+  const attackerStats = state.attackerStats ?? statsFromPokemon(state.attacker);
+  const defenderStats = state.defenderStats ?? statsFromPokemon(state.defender);
+
+  const bs = await InitBattle(attackerStats.hp, defenderStats.hp);
+  battleUI = { battleState: bs, phase: "attacker-turn" };
+  renderBattleInPlace();
+}
+
+async function handleMoveClick(slotIdx: number): Promise<void> {
+  const bs = battleUI.battleState;
+  if (!bs || bs.isOver) return;
+  if (!state.attacker || !state.defender) return;
+
+  const slot = state.slots[slotIdx];
+  if (!slot.move) return;
+
+  const isAttackerTurn = battleUI.phase === "attacker-turn";
+
+  const attackerStats = isAttackerTurn
+    ? (state.attackerStats ?? statsFromPokemon(state.attacker))
+    : (state.defenderStats ?? statsFromPokemon(state.defender));
+  const defenderStats = isAttackerTurn
+    ? (state.defenderStats ?? statsFromPokemon(state.defender))
+    : (state.attackerStats ?? statsFromPokemon(state.attacker));
+  const attackerTypes = isAttackerTurn ? state.attacker.Types : state.defender.Types;
+  const defenderTypes = isAttackerTurn ? state.defender.Types : state.attacker.Types;
+  const attackerLevel = isAttackerTurn ? state.attackerLevel : state.defenderLevel;
+  const defenderLevel = isAttackerTurn ? state.defenderLevel : state.attackerLevel;
+
+  // Swap HP perspective when defender attacks
+  const stateForTurn = isAttackerTurn
+    ? bs
+    : { ...bs, attackerHP: bs.defenderHP, defenderHP: bs.attackerHP, attackerMaxHP: bs.defenderMaxHP, defenderMaxHP: bs.attackerMaxHP };
+
+  const result = await ExecuteTurn({
+    state: stateForTurn,
+    attackerStats,
+    defenderStats,
+    attackerTypes,
+    defenderTypes,
+    attackerLevel,
+    defenderLevel,
+    move: slot.move,
+  } as core.TurnInput);
+
+  // Restore HP perspective after the turn
+  let newBs = result.newState;
+  if (!isAttackerTurn) {
+    newBs = { ...newBs, attackerHP: newBs.defenderHP, defenderHP: newBs.attackerHP, attackerMaxHP: newBs.defenderMaxHP, defenderMaxHP: newBs.attackerMaxHP };
+    if (newBs.isOver) newBs = { ...newBs, winner: "defender" };
+  }
+
+  let nextPhase: BattlePhase = newBs.isOver
+    ? "over"
+    : isAttackerTurn
+    ? "defender-turn"
+    : "attacker-turn";
+
+  battleUI = { battleState: newBs, phase: nextPhase };
+  renderBattleInPlace();
+
+  // Animate HP bar
+  const barId = isAttackerTurn ? ".battle-hp-bars .battle-pokemon-hp:nth-child(3)" : ".battle-hp-bars .battle-pokemon-hp:nth-child(1)";
+  const bar = container.querySelector<HTMLElement>(`${barId} .hp-bar-fill`);
+  if (bar) gsap.from(bar, { scaleX: 1.1, duration: 0.3, ease: "power2.out" });
+}
+
+function renderBattleInPlace(): void {
+  const existing = container.querySelector<HTMLElement>("#battle-section");
+  if (!existing) {
+    buildLayout();
+    return;
+  }
+  existing.outerHTML = renderBattleSection();
+  bindBattleEvents();
+}
+
+function bindBattleEvents(): void {
+  container.querySelector<HTMLButtonElement>("#battle-start-btn")?.addEventListener("click", () => startBattle());
+  container.querySelector<HTMLButtonElement>("#battle-reset-btn")?.addEventListener("click", () => startBattle());
+  container.querySelectorAll<HTMLButtonElement>(".move-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.slot ?? "0");
+      handleMoveClick(idx);
+    });
+  });
+}
+
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
 function buildLayout(): void {
@@ -322,6 +507,7 @@ function buildLayout(): void {
     : "";
 
   const dmgSection = renderDamageSection();
+  const btlSection = renderBattleSection();
 
   container.innerHTML = `
     <div class="section-header"><h2>Builds & Simulador</h2></div>
@@ -350,9 +536,11 @@ function buildLayout(): void {
 
     ${movesSection}
     ${dmgSection}
+    ${btlSection}
   `;
 
   bindEvents();
+  bindBattleEvents();
 
   if (dmgSection) {
     loadDamageTable();
@@ -470,6 +658,7 @@ async function fetchPokemon(prefix: "atk" | "def", name: string): Promise<void> 
       state.defender = pokemon;
       state.defenderStats = null;
     }
+    battleUI = { battleState: null, phase: "idle" };
 
     buildLayout();
     gsap.fromTo(

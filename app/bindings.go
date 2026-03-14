@@ -165,6 +165,16 @@ func (a *App) CalculateStats(input core.StatCalculatorInput) (core.Stats, error)
 	return core.CalculateAllStats(baseStats, input.IVs, input.EVs, input.Level, nature), nil
 }
 
+// InitBattle initializes a fresh battle state with the given max HP values.
+func (a *App) InitBattle(attackerMaxHP, defenderMaxHP int) core.BattleState {
+	return core.InitBattle(attackerMaxHP, defenderMaxHP)
+}
+
+// ExecuteTurn applies one turn of battle and returns the new state and damage result.
+func (a *App) ExecuteTurn(input core.TurnInput) core.TurnResult {
+	return core.ExecuteTurn(input)
+}
+
 // --- Grupo A: Pokémon extendido ---
 
 func (a *App) GetPokemonSpecies(name string) (core.PokemonSpecies, error) {

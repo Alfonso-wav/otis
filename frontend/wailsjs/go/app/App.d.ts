@@ -8,6 +8,8 @@ export function CalculateStats(arg1:core.StatCalculatorInput):Promise<core.Stats
 
 export function ComparePokemons(arg1:string,arg2:string):Promise<core.PokemonComparison>;
 
+export function ExecuteTurn(arg1:core.TurnInput):Promise<core.TurnResult>;
+
 export function GetAbility(arg1:string):Promise<core.Ability>;
 
 export function GetEggGroup(arg1:string):Promise<core.EggGroup>;
@@ -53,6 +55,8 @@ export function GetStatDetail(arg1:string):Promise<core.StatDetail>;
 export function GetType(arg1:string):Promise<core.PokemonTypeDetail>;
 
 export function GetVersionGroup(arg1:string):Promise<core.VersionGroup>;
+
+export function InitBattle(arg1:number,arg2:number):Promise<core.BattleState>;
 
 export function ListAbilities(arg1:number,arg2:number):Promise<core.AbilityListResponse>;
 
