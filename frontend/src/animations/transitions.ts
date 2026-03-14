@@ -49,3 +49,54 @@ export function staggerCards(container: HTMLElement): void {
     },
   );
 }
+
+export function morphToTable(
+  container: HTMLElement,
+  renderFn: () => Promise<void>,
+): Promise<void> {
+  return new Promise((resolve) => {
+    const children = container.children;
+    if (children.length === 0) {
+      renderFn().then(resolve);
+      return;
+    }
+
+    gsap.to(children, {
+      opacity: 0,
+      scale: 0.85,
+      y: -10,
+      stagger: 0.015,
+      duration: 0.18,
+      ease: "power2.in",
+      onComplete() {
+        renderFn().then(resolve);
+      },
+    });
+  });
+}
+
+export function morphToGrid(
+  container: HTMLElement,
+  renderFn: () => void,
+): Promise<void> {
+  return new Promise((resolve) => {
+    const rows = container.querySelectorAll(".poke-table__row");
+    if (rows.length === 0) {
+      renderFn();
+      resolve();
+      return;
+    }
+
+    gsap.to(rows, {
+      opacity: 0,
+      x: 20,
+      stagger: 0.015,
+      duration: 0.15,
+      ease: "power2.in",
+      onComplete() {
+        renderFn();
+        resolve();
+      },
+    });
+  });
+}

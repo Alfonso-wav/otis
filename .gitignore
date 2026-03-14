@@ -1,3 +1,9 @@
 .claude
 node_modules/
 frontend/dist/
+
+# Binaries
+build/bin/
+*.exe
+*.exe~
+*.stackdump

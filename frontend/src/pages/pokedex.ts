@@ -8,7 +8,7 @@ import {
   GetPokemonSpecies,
 } from "../../wailsjs/go/app/App";
 import type { Pokemon, PokemonListItem } from "../types";
-import { showView, staggerCards } from "../animations/transitions";
+import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
 import { renderEVCalculatorForm, initEVCalculator } from "../ev-calculator";
 
 const LIMIT = 20;
@@ -24,9 +24,13 @@ let filter: FilterState = { generation: null, type: null, legendary: false, myth
 let filteredList: PokemonListItem[] = [];
 let offset = 0;
 let totalCount = 0;
+let viewMode: "grid" | "table" = "grid";
 
 // Cache para evitar llamadas repetidas a GetPokemonSpecies
 const legendaryCache = new Map<string, { isLegendary: boolean; isMythical: boolean }>();
+
+// Cache para datos completos de Pokémon (tabla)
+const pokemonDataCache = new Map<string, Pokemon>();
 
 // DOM refs
 let grid: HTMLDivElement;
@@ -44,6 +48,7 @@ let filterTypeSelect: HTMLSelectElement;
 let filterLegendaryBtn: HTMLButtonElement;
 let filterMythicalBtn: HTMLButtonElement;
 let filterResetBtn: HTMLButtonElement;
+let viewToggleBtn: HTMLButtonElement;
 
 function hasFilter(): boolean {
   return (
@@ -61,7 +66,7 @@ async function loadList(): Promise<void> {
   try {
     const data = await ListPokemon(offset, LIMIT);
     totalCount = data.Count;
-    renderGrid(data.Results);
+    await renderCurrentView(data.Results);
     updatePagination();
   } catch (err: unknown) {
     grid.innerHTML = `<p class="loading error-text">${String(err)}</p>`;
@@ -107,7 +112,7 @@ async function loadFiltered(): Promise<void> {
     offset = 0;
 
     const page = filteredList.slice(0, LIMIT);
-    renderGrid(page);
+    await renderCurrentView(page);
     updatePagination();
   } catch (err: unknown) {
     grid.innerHTML = `<p class="loading error-text">${String(err)}</p>`;
@@ -155,6 +160,7 @@ async function filterByLegendary(list: PokemonListItem[]): Promise<PokemonListIt
 // -- Render ------------------------------------------------------------------
 
 function renderGrid(items: PokemonListItem[]): void {
+  lastRenderedItems = items;
   if (!items || items.length === 0) {
     grid.innerHTML = '<p class="loading">No se encontraron Pokémon.</p>';
     return;
@@ -184,6 +190,95 @@ function renderGrid(items: PokemonListItem[]): void {
   staggerCards(grid);
 }
 
+async function renderCurrentView(items: PokemonListItem[]): Promise<void> {
+  lastRenderedItems = items;
+  if (viewMode === "table") {
+    await renderTable(items);
+  } else {
+    renderGrid(items);
+  }
+}
+
+async function renderTable(items: PokemonListItem[]): Promise<void> {
+  if (!items || items.length === 0) {
+    grid.innerHTML = '<p class="loading">No se encontraron Pokémon.</p>';
+    return;
+  }
+
+  grid.innerHTML = '<p class="loading">Cargando datos...</p>';
+
+  const pokemonData: Pokemon[] = await Promise.all(
+    items.map(async (item) => {
+      if (pokemonDataCache.has(item.Name)) {
+        return pokemonDataCache.get(item.Name)!;
+      }
+      const p = await GetPokemon(item.Name);
+      pokemonDataCache.set(item.Name, p);
+      return p;
+    }),
+  );
+
+  const rows = pokemonData
+    .map((p) => {
+      const sprite = p.Sprites.FrontDefault
+        ? `<img class="poke-table__sprite" src="${p.Sprites.FrontDefault}" alt="${p.Name}" loading="lazy" />`
+        : "";
+      const types = (p.Types || [])
+        .map((t) => `<span class="type-badge type-${t.Name}">${t.Name}</span>`)
+        .join(" ");
+      const stats = (p.Stats || []).map((s) => s.BaseStat);
+      const total = stats.reduce((a, b) => a + b, 0);
+      const statCells = (p.Stats || [])
+        .map((s) => `<td class="stat-cell">${s.BaseStat}</td>`)
+        .join("");
+
+      return `<tr class="poke-table__row" data-name="${p.Name}">
+        <td class="poke-table__id">#${String(p.ID).padStart(3, "0")}</td>
+        <td>${sprite}</td>
+        <td class="poke-table__name">${p.Name}</td>
+        <td>${types}</td>
+        ${statCells}
+        <td class="stat-cell stat-total">${total}</td>
+      </tr>`;
+    })
+    .join("");
+
+  const statHeaders = ["HP", "Atk", "Def", "SpA", "SpD", "Vel"]
+    .map((h) => `<th class="stat-cell">${h}</th>`)
+    .join("");
+
+  grid.innerHTML = `<table class="poke-table">
+    <thead><tr>
+      <th>#</th><th></th><th>Nombre</th><th>Tipo</th>
+      ${statHeaders}
+      <th class="stat-cell">Total</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  grid.querySelectorAll<HTMLTableRowElement>(".poke-table__row").forEach((row) => {
+    row.addEventListener("click", () => {
+      const name = row.dataset.name;
+      if (name) showDetail(name);
+    });
+  });
+
+  staggerTableRows(grid);
+}
+
+function staggerTableRows(container: HTMLElement): void {
+  const rows = container.querySelectorAll(".poke-table__row");
+  if (rows.length === 0) return;
+
+  import("gsap").then(({ default: gsap }) => {
+    gsap.fromTo(
+      rows,
+      { opacity: 0, x: -20 },
+      { opacity: 1, x: 0, duration: 0.2, stagger: 0.02, ease: "power2.out" },
+    );
+  });
+}
+
 function updatePagination(): void {
   const page = Math.floor(offset / LIMIT) + 1;
   const pages = Math.ceil(totalCount / LIMIT) || 1;
@@ -196,23 +291,23 @@ function updatePagination(): void {
 
 // -- Paginación --------------------------------------------------------------
 
-function prevPage(): void {
+async function prevPage(): Promise<void> {
   if (offset <= 0) return;
   offset -= LIMIT;
   if (hasFilter()) {
-    renderGrid(filteredList.slice(offset, offset + LIMIT));
+    await renderCurrentView(filteredList.slice(offset, offset + LIMIT));
     updatePagination();
   } else {
     loadList();
   }
 }
 
-function nextPage(): void {
+async function nextPage(): Promise<void> {
   const max = hasFilter() ? filteredList.length : totalCount;
   if (offset + LIMIT >= max) return;
   offset += LIMIT;
   if (hasFilter()) {
-    renderGrid(filteredList.slice(offset, offset + LIMIT));
+    await renderCurrentView(filteredList.slice(offset, offset + LIMIT));
     updatePagination();
   } else {
     loadList();
@@ -338,6 +433,14 @@ function spriteURL(id: string): string {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${numId}.png`;
 }
 
+// -- Current page items helper -----------------------------------------------
+
+let lastRenderedItems: PokemonListItem[] = [];
+
+function getCurrentPageItems(): PokemonListItem[] {
+  return lastRenderedItems;
+}
+
 // -- Init --------------------------------------------------------------------
 
 export function initPokedex(): void {
@@ -356,9 +459,27 @@ export function initPokedex(): void {
   filterLegendaryBtn = document.getElementById("filter-legendary") as HTMLButtonElement;
   filterMythicalBtn = document.getElementById("filter-mythical") as HTMLButtonElement;
   filterResetBtn = document.getElementById("filter-reset") as HTMLButtonElement;
+  viewToggleBtn = document.getElementById("view-toggle-btn") as HTMLButtonElement;
 
   prevBtn.addEventListener("click", prevPage);
   nextBtn.addEventListener("click", nextPage);
+
+  viewToggleBtn.addEventListener("click", async () => {
+    const oldMode = viewMode;
+    viewMode = viewMode === "grid" ? "table" : "grid";
+    viewToggleBtn.textContent = viewMode === "grid" ? "⊞ Tabla" : "⊟ Tarjetas";
+
+    const items = getCurrentPageItems();
+    if (oldMode === "grid" && viewMode === "table") {
+      await morphToTable(grid, async () => {
+        await renderTable(items);
+      });
+    } else {
+      await morphToGrid(grid, () => {
+        renderGrid(items);
+      });
+    }
+  });
 
   backBtn.addEventListener("click", async () => {
     const { disposeChart } = await import("../charts/stats-chart");
