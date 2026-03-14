@@ -83,11 +83,28 @@
   }
 }
 
-// Responsive: tabs shrink on small screens
-@media (max-width: 480px) {
+// Responsive: tabs adapt to tablet and mobile
+@include tablet {
   .tab-btn {
-    padding: 0.5rem 0.7rem;
-    font-size: 0.8rem;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.82rem;
+  }
+}
+
+@include mobile {
+  .tab-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+    flex-wrap: nowrap;
+  }
+
+  .tab-btn {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .header-brand {

@@ -33,10 +33,20 @@
 
   h2 {
     font-family: $font-display;
-    font-size: 1.8rem;
+    font-size: clamp(1.3rem, 4vw, 1.8rem);
     letter-spacing: 0.08em;
     margin: 0;
     line-height: 1;
+  }
+
+  @include tablet {
+    padding: 0.6rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  @include mobile {
+    padding: 0.5rem 0.85rem;
+    margin-bottom: 0.75rem;
   }
 }
 
@@ -50,6 +60,12 @@
   padding: 1rem 0 1.25rem;
   border-bottom: 1.5px solid #e2e8f0;
   margin-bottom: 1.5rem;
+
+  @include mobile {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
 }
 
 .filter-select {
@@ -77,6 +93,10 @@
   &:hover {
     border-color: #a0aec0;
   }
+
+  @include mobile {
+    width: 100%;
+  }
 }
 
 .filter-pill {
@@ -102,6 +122,11 @@
     color: #744210;
     box-shadow: 0 2px 6px rgba(214, 158, 46, 0.3);
   }
+
+  @include mobile {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.7rem;
+  }
 }
 
 .filter-reset-btn {
@@ -120,6 +145,11 @@
     color: $pokedex-red;
     border-color: $pokedex-red-light;
     background: $pokedex-red-hover;
+  }
+
+  @include mobile {
+    min-height: 44px;
+    width: 100%;
   }
 }
 
@@ -195,6 +225,18 @@
     &--active {
       background: $pokedex-red;
       color: white;
+    }
+  }
+
+  @include mobile {
+    max-height: 200px;
+
+    &__item {
+      padding: 0.6rem 0.9rem;
+      font-size: 0.9rem;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
     }
   }
 }
