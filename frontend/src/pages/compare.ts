@@ -19,6 +19,11 @@ let pokemonNames: string[] = [];
 
 function spriteURL(name: string): string {
   const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  return `/assets/sprites/home-normal/${safeName}.png`;
+}
+
+function spriteFallback(name: string): string {
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
   return `https://img.pokemondb.net/sprites/home/normal/${safeName}.png`;
 }
 
@@ -81,7 +86,7 @@ function renderResult(result: core.PokemonComparison): void {
     <div id="compare-result" class="compare-result">
       <div class="compare-header">
         <div class="compare-pokemon-card">
-          <img class="compare-sprite" src="${spriteURL(a.Name)}" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${a.ID}.png'" alt="${a.Name}" />
+          <img class="compare-sprite" src="${spriteURL(a.Name)}" onerror="this.onerror=null;this.src='${spriteFallback(a.Name)}'" alt="${a.Name}" />
           <div class="compare-pokemon-name">${a.Name}</div>
           <div class="compare-pokemon-types">${typeBadges(a.Types)}</div>
         </div>
@@ -89,7 +94,7 @@ function renderResult(result: core.PokemonComparison): void {
           ${Winner === "tie" ? ICON_SCALE : ICON_TROPHY} ${winnerLabel}
         </div>
         <div class="compare-pokemon-card">
-          <img class="compare-sprite" src="${spriteURL(b.Name)}" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${b.ID}.png'" alt="${b.Name}" />
+          <img class="compare-sprite" src="${spriteURL(b.Name)}" onerror="this.onerror=null;this.src='${spriteFallback(b.Name)}'" alt="${b.Name}" />
           <div class="compare-pokemon-name">${b.Name}</div>
           <div class="compare-pokemon-types">${typeBadges(b.Types)}</div>
         </div>

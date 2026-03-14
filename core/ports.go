@@ -5,6 +5,11 @@ type PokemonDBScraper interface {
 	FetchPokedex() ([]PokedexDBEntry, error)
 }
 
+// SpriteDownloader define la interfaz para descargar sprites a disco local.
+type SpriteDownloader interface {
+	DownloadAllSprites(destDir string, categories []SpriteCategory) (SpriteDownloadResult, error)
+}
+
 // TeamStorage define la interfaz para persistir equipos de Pokemon.
 type TeamStorage interface {
 	SaveTeam(team Team) error

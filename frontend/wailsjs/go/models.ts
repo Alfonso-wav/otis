@@ -1260,6 +1260,26 @@ export namespace core {
 		    return a;
 		}
 	}
+	export class SpriteDownloadResult {
+	    total: number;
+	    downloaded: number;
+	    skipped: number;
+	    failed: number;
+	    errors: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new SpriteDownloadResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.total = source["total"];
+	        this.downloaded = source["downloaded"];
+	        this.skipped = source["skipped"];
+	        this.failed = source["failed"];
+	        this.errors = source["errors"];
+	    }
+	}
 	
 	
 	export class StatCalculatorInput {

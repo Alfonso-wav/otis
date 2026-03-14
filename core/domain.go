@@ -345,6 +345,24 @@ type Team struct {
 	Members []TeamMember `json:"members"`
 }
 
+// --- Sprites ---
+
+type SpriteCategory string
+
+const (
+	SpriteCategoryHomeNormal SpriteCategory = "home-normal"
+	SpriteCategoryHomeShiny  SpriteCategory = "home-shiny"
+	SpriteCategoryIcons      SpriteCategory = "icons"
+)
+
+type SpriteDownloadResult struct {
+	Total      int      `json:"total"`
+	Downloaded int      `json:"downloaded"`
+	Skipped    int      `json:"skipped"`
+	Failed     int      `json:"failed"`
+	Errors     []string `json:"errors"`
+}
+
 // --- PokemonDB Scraper ---
 
 // PokedexDBEntry representa un Pokémon extraído de la tabla de pokemondb.net/pokedex/all.
