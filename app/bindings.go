@@ -173,7 +173,9 @@ func (a *App) InitBattle(attackerMaxHP, defenderMaxHP int) core.BattleState {
 
 // ExecuteTurn applies one turn of battle and returns the new state and damage result.
 func (a *App) ExecuteTurn(input core.TurnInput) core.TurnResult {
-	return core.ExecuteTurn(input)
+	return core.ExecuteTurn(input, func(n int) int {
+		return rand.Intn(n)
+	})
 }
 
 // SimulateFullBattle runs a complete automatic battle and returns the final state.

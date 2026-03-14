@@ -4,14 +4,15 @@ import "math"
 
 // DamageInput contiene todos los parámetros necesarios para calcular daño
 type DamageInput struct {
-	AttackerStats Stats       `json:"attackerStats"`
-	DefenderStats Stats       `json:"defenderStats"`
-	Move          Move        `json:"move"`
+	AttackerStats Stats         `json:"attackerStats"`
+	DefenderStats Stats         `json:"defenderStats"`
+	Move          Move          `json:"move"`
 	AttackerTypes []PokemonType `json:"attackerTypes"`
 	DefenderTypes []PokemonType `json:"defenderTypes"`
-	Level         int         `json:"level"`
-	IsCritical    bool        `json:"isCritical"`
-	WeatherBonus  float64     `json:"weatherBonus"`
+	Level         int           `json:"level"`
+	IsCritical    bool          `json:"isCritical"`
+	CriticalStage int           `json:"criticalStage"`
+	WeatherBonus  float64       `json:"weatherBonus"`
 }
 
 // DamageResult contiene el resultado del cálculo de daño
@@ -19,10 +20,12 @@ type DamageResult struct {
 	Min                int     `json:"min"`
 	Max                int     `json:"max"`
 	Average            int     `json:"average"`
+	ActualDamage       int     `json:"actualDamage"`
 	Multiplier         float64 `json:"multiplier"`
 	IsSuperEffective   bool    `json:"isSuperEffective"`
 	IsNotVeryEffective bool    `json:"isNotVeryEffective"`
 	HasNoEffect        bool    `json:"hasNoEffect"`
+	WasCritical        bool    `json:"wasCritical"`
 }
 
 // typeChart mapea [atacante][defensor] → multiplicador (solo entradas no-1.0)
@@ -178,9 +181,48 @@ func CalculateDamage(input DamageInput) DamageResult {
 		Min:                minDmg,
 		Max:                maxDmg,
 		Average:            (minDmg + maxDmg) / 2,
+		ActualDamage:       (minDmg + maxDmg) / 2,
 		Multiplier:         typeEff,
 		IsSuperEffective:   typeEff > 1,
 		IsNotVeryEffective: typeEff > 0 && typeEff < 1,
 		HasNoEffect:        typeEff == 0,
 	}
+}
+
+// critThresholds maps critical stage to the denominator for probability.
+// Stage 0 → 1/24, Stage 1 → 1/8, Stage 2 → 1/2, Stage ≥3 → 1/1 (always).
+var critThresholds = [4]int{24, 8, 2, 1}
+
+// CalculateBattleDamage computes damage with random roll (0.85–1.00) and
+// probabilistic critical hits. randSource(n) must return [0, n).
+func CalculateBattleDamage(input DamageInput, randSource func(n int) int) DamageResult {
+	// Determine probabilistic critical hit
+	stage := input.CriticalStage
+	if stage < 0 {
+		stage = 0
+	}
+	if stage > 3 {
+		stage = 3
+	}
+	threshold := critThresholds[stage]
+	wasCrit := input.IsCritical
+	if !wasCrit && threshold > 0 {
+		wasCrit = randSource(threshold) == 0
+	}
+
+	modInput := input
+	modInput.IsCritical = wasCrit
+
+	result := CalculateDamage(modInput)
+
+	// Apply random roll: integer between 85 and 100 inclusive (16 values)
+	roll := 85 + randSource(16)
+	actual := int(math.Floor(float64(result.Max) * float64(roll) / 100.0))
+	if actual < 1 && result.Max > 0 {
+		actual = 1
+	}
+
+	result.ActualDamage = actual
+	result.WasCritical = wasCrit
+	return result
 }

@@ -14,72 +14,50 @@ type FullBattleInput struct {
 	DefenderMoves []Move        `json:"defenderMoves"`
 }
 
+// resolveOrder determines who attacks first based on move priority, then speed.
+// Returns true if attacker goes first.
+func resolveOrder(atkSpeed, defSpeed int, atkMove, defMove Move, randSource func(n int) int) bool {
+	if atkMove.Priority != defMove.Priority {
+		return atkMove.Priority > defMove.Priority
+	}
+	if atkSpeed != defSpeed {
+		return atkSpeed > defSpeed
+	}
+	return randSource(2) == 0
+}
+
 // SimulateFullBattle simulates an entire battle automatically.
 // randSource is injected for testability; use rand.Intn in production.
-// Each side picks a random move each turn. Max 200 turns to prevent infinite loops.
+// Each turn both sides pick a random move, then order is resolved by priority/speed.
+// Max 200 turns to prevent infinite loops.
 func SimulateFullBattle(input FullBattleInput, randSource func(n int) int) BattleState {
 	if len(input.AttackerMoves) == 0 || len(input.DefenderMoves) == 0 {
 		return BattleState{}
 	}
 
 	state := InitBattle(input.AttackerStats.HP, input.DefenderStats.HP)
-	isAttackerTurn := true
 	const maxTurns = 200
 
 	for !state.IsOver && state.TurnCount < maxTurns {
-		if isAttackerTurn {
-			move := input.AttackerMoves[randSource(len(input.AttackerMoves))]
-			result := ExecuteTurn(TurnInput{
-				State:         state,
-				AttackerStats: input.AttackerStats,
-				DefenderStats: input.DefenderStats,
-				AttackerTypes: input.AttackerTypes,
-				DefenderTypes: input.DefenderTypes,
-				AttackerLevel: input.AttackerLevel,
-				DefenderLevel: input.DefenderLevel,
-				Move:          move,
-			})
-			state = result.NewState
+		atkMove := input.AttackerMoves[randSource(len(input.AttackerMoves))]
+		defMove := input.DefenderMoves[randSource(len(input.DefenderMoves))]
+
+		attackerFirst := resolveOrder(
+			input.AttackerStats.Speed, input.DefenderStats.Speed,
+			atkMove, defMove, randSource,
+		)
+
+		if attackerFirst {
+			state = executeAttackerTurn(state, input, atkMove, randSource)
+			if !state.IsOver {
+				state = executeDefenderTurn(state, input, defMove, randSource)
+			}
 		} else {
-			// Swap HP perspective so ExecuteTurn damages the attacker's HP.
-			swapped := BattleState{
-				AttackerHP:    state.DefenderHP,
-				DefenderHP:    state.AttackerHP,
-				AttackerMaxHP: state.DefenderMaxHP,
-				DefenderMaxHP: state.AttackerMaxHP,
-				TurnCount:     state.TurnCount,
-				Log:           state.Log,
-				IsOver:        state.IsOver,
-				Winner:        state.Winner,
-			}
-			move := input.DefenderMoves[randSource(len(input.DefenderMoves))]
-			result := ExecuteTurn(TurnInput{
-				State:         swapped,
-				AttackerStats: input.DefenderStats,
-				DefenderStats: input.AttackerStats,
-				AttackerTypes: input.DefenderTypes,
-				DefenderTypes: input.AttackerTypes,
-				AttackerLevel: input.DefenderLevel,
-				DefenderLevel: input.AttackerLevel,
-				Move:          move,
-			})
-			ns := result.NewState
-			// Restore HP perspective.
-			state = BattleState{
-				AttackerHP:    ns.DefenderHP,
-				DefenderHP:    ns.AttackerHP,
-				AttackerMaxHP: ns.DefenderMaxHP,
-				DefenderMaxHP: ns.AttackerMaxHP,
-				TurnCount:     ns.TurnCount,
-				Log:           ns.Log,
-				IsOver:        ns.IsOver,
-				Winner:        ns.Winner,
-			}
-			if state.IsOver {
-				state.Winner = "defender"
+			state = executeDefenderTurn(state, input, defMove, randSource)
+			if !state.IsOver {
+				state = executeAttackerTurn(state, input, atkMove, randSource)
 			}
 		}
-		isAttackerTurn = !isAttackerTurn
 	}
 
 	// Resolve draw by max turns: whoever has more HP wins.
@@ -95,6 +73,58 @@ func SimulateFullBattle(input FullBattleInput, randSource func(n int) int) Battl
 		}
 	}
 
+	return state
+}
+
+func executeAttackerTurn(state BattleState, input FullBattleInput, move Move, randSource func(n int) int) BattleState {
+	result := ExecuteTurn(TurnInput{
+		State:         state,
+		AttackerStats: input.AttackerStats,
+		DefenderStats: input.DefenderStats,
+		AttackerTypes: input.AttackerTypes,
+		DefenderTypes: input.DefenderTypes,
+		AttackerLevel: input.AttackerLevel,
+		DefenderLevel: input.DefenderLevel,
+		Move:          move,
+	}, randSource)
+	return result.NewState
+}
+
+func executeDefenderTurn(state BattleState, input FullBattleInput, move Move, randSource func(n int) int) BattleState {
+	swapped := BattleState{
+		AttackerHP:    state.DefenderHP,
+		DefenderHP:    state.AttackerHP,
+		AttackerMaxHP: state.DefenderMaxHP,
+		DefenderMaxHP: state.AttackerMaxHP,
+		TurnCount:     state.TurnCount,
+		Log:           state.Log,
+		IsOver:        state.IsOver,
+		Winner:        state.Winner,
+	}
+	result := ExecuteTurn(TurnInput{
+		State:         swapped,
+		AttackerStats: input.DefenderStats,
+		DefenderStats: input.AttackerStats,
+		AttackerTypes: input.DefenderTypes,
+		DefenderTypes: input.AttackerTypes,
+		AttackerLevel: input.DefenderLevel,
+		DefenderLevel: input.AttackerLevel,
+		Move:          move,
+	}, randSource)
+	ns := result.NewState
+	state = BattleState{
+		AttackerHP:    ns.DefenderHP,
+		DefenderHP:    ns.AttackerHP,
+		AttackerMaxHP: ns.DefenderMaxHP,
+		DefenderMaxHP: ns.AttackerMaxHP,
+		TurnCount:     ns.TurnCount,
+		Log:           ns.Log,
+		IsOver:        ns.IsOver,
+		Winner:        ns.Winner,
+	}
+	if state.IsOver {
+		state.Winner = "defender"
+	}
 	return state
 }
 
@@ -127,6 +157,7 @@ type TurnResult struct {
 	NewState BattleState  `json:"newState"`
 	Damage   DamageResult `json:"damage"`
 	LogEntry string       `json:"logEntry"`
+	Missed   bool         `json:"missed"`
 }
 
 // InitBattle returns a fresh BattleState with full HP for both sides.
@@ -143,9 +174,19 @@ func InitBattle(attackerMaxHP, defenderMaxHP int) BattleState {
 	}
 }
 
+// CheckAccuracy determines whether a move hits. Accuracy 0 means never-miss.
+// randSource(n) returns [0, n). Returns true if the move hits.
+func CheckAccuracy(accuracy int, randSource func(n int) int) bool {
+	if accuracy <= 0 || accuracy >= 100 {
+		return true
+	}
+	return randSource(100) < accuracy
+}
+
 // ExecuteTurn is a pure function: given the current state and the attacker's chosen move,
 // it returns the new state and the damage result. No side effects.
-func ExecuteTurn(input TurnInput) TurnResult {
+// If randSource is nil, damage is deterministic (average) with no accuracy/crit checks.
+func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 	state := input.State
 
 	// No-op if battle is already over.
@@ -155,16 +196,43 @@ func ExecuteTurn(input TurnInput) TurnResult {
 
 	state.TurnCount++
 
-	dmg := CalculateDamage(DamageInput{
-		AttackerStats: input.AttackerStats,
-		DefenderStats: input.DefenderStats,
-		Move:          input.Move,
-		AttackerTypes: input.AttackerTypes,
-		DefenderTypes: input.DefenderTypes,
-		Level:         input.AttackerLevel,
-		IsCritical:    false,
-		WeatherBonus:  1.0,
-	})
+	// Accuracy check
+	if randSource != nil && input.Move.Power > 0 && input.Move.Category != "status" {
+		if !CheckAccuracy(input.Move.Accuracy, randSource) {
+			logEntry := fmt.Sprintf("[T%d] usó %s → ¡Falló!",
+				state.TurnCount, input.Move.Name)
+			newLog := make([]string, len(state.Log)+1)
+			copy(newLog, state.Log)
+			newLog[len(state.Log)] = logEntry
+			state.Log = newLog
+			return TurnResult{NewState: state, LogEntry: logEntry, Missed: true}
+		}
+	}
+
+	var dmg DamageResult
+	if randSource != nil {
+		dmg = CalculateBattleDamage(DamageInput{
+			AttackerStats: input.AttackerStats,
+			DefenderStats: input.DefenderStats,
+			Move:          input.Move,
+			AttackerTypes: input.AttackerTypes,
+			DefenderTypes: input.DefenderTypes,
+			Level:         input.AttackerLevel,
+			IsCritical:    false,
+			WeatherBonus:  1.0,
+		}, randSource)
+	} else {
+		dmg = CalculateDamage(DamageInput{
+			AttackerStats: input.AttackerStats,
+			DefenderStats: input.DefenderStats,
+			Move:          input.Move,
+			AttackerTypes: input.AttackerTypes,
+			DefenderTypes: input.DefenderTypes,
+			Level:         input.AttackerLevel,
+			IsCritical:    false,
+			WeatherBonus:  1.0,
+		})
+	}
 
 	var logEntry string
 
@@ -172,7 +240,7 @@ func ExecuteTurn(input TurnInput) TurnResult {
 		logEntry = fmt.Sprintf("[T%d] usó %s → sin efecto de daño | HP Defensor: %d/%d",
 			state.TurnCount, input.Move.Name, state.DefenderHP, state.DefenderMaxHP)
 	} else {
-		applied := dmg.Average
+		applied := dmg.ActualDamage
 		if applied < 1 && !dmg.HasNoEffect {
 			applied = 1
 		}
@@ -192,8 +260,13 @@ func ExecuteTurn(input TurnInput) TurnResult {
 			effStr = fmt.Sprintf("Poco eficaz ×%.1f", dmg.Multiplier)
 		}
 
-		logEntry = fmt.Sprintf("[T%d] usó %s → %d daño (%s) | HP Defensor: %d/%d",
-			state.TurnCount, input.Move.Name, applied, effStr, state.DefenderHP, state.DefenderMaxHP)
+		critStr := ""
+		if dmg.WasCritical {
+			critStr = "¡Golpe crítico! "
+		}
+
+		logEntry = fmt.Sprintf("%s[T%d] usó %s → %d daño (%s) | HP Defensor: %d/%d",
+			critStr, state.TurnCount, input.Move.Name, applied, effStr, state.DefenderHP, state.DefenderMaxHP)
 
 		if state.DefenderHP <= 0 {
 			state.IsOver = true

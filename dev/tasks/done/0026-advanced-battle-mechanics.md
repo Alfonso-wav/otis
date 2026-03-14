@@ -2,7 +2,7 @@
 
 ## Estado
 
-todo
+done
 
 ## Descripción
 

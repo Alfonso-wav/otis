@@ -16,6 +16,7 @@ type Move struct {
 	Power       int
 	Accuracy    int
 	PP          int
+	Priority    int
 	Category    string
 	Description string
 }

@@ -106,6 +106,7 @@ export namespace core {
 	    Power: number;
 	    Accuracy: number;
 	    PP: number;
+	    Priority: number;
 	    Category: string;
 	    Description: string;
 	
@@ -120,6 +121,7 @@ export namespace core {
 	        this.Power = source["Power"];
 	        this.Accuracy = source["Accuracy"];
 	        this.PP = source["PP"];
+	        this.Priority = source["Priority"];
 	        this.Category = source["Category"];
 	        this.Description = source["Description"];
 	    }
@@ -154,6 +156,7 @@ export namespace core {
 	    defenderTypes: PokemonType[];
 	    level: number;
 	    isCritical: boolean;
+	    criticalStage: number;
 	    weatherBonus: number;
 	
 	    static createFrom(source: any = {}) {
@@ -169,6 +172,7 @@ export namespace core {
 	        this.defenderTypes = this.convertValues(source["defenderTypes"], PokemonType);
 	        this.level = source["level"];
 	        this.isCritical = source["isCritical"];
+	        this.criticalStage = source["criticalStage"];
 	        this.weatherBonus = source["weatherBonus"];
 	    }
 	
@@ -194,10 +198,12 @@ export namespace core {
 	    min: number;
 	    max: number;
 	    average: number;
+	    actualDamage: number;
 	    multiplier: number;
 	    isSuperEffective: boolean;
 	    isNotVeryEffective: boolean;
 	    hasNoEffect: boolean;
+	    wasCritical: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new DamageResult(source);
@@ -208,10 +214,12 @@ export namespace core {
 	        this.min = source["min"];
 	        this.max = source["max"];
 	        this.average = source["average"];
+	        this.actualDamage = source["actualDamage"];
 	        this.multiplier = source["multiplier"];
 	        this.isSuperEffective = source["isSuperEffective"];
 	        this.isNotVeryEffective = source["isNotVeryEffective"];
 	        this.hasNoEffect = source["hasNoEffect"];
+	        this.wasCritical = source["wasCritical"];
 	    }
 	}
 	export class EVCalculatorInput {
@@ -1323,6 +1331,7 @@ export namespace core {
 	    newState: BattleState;
 	    damage: DamageResult;
 	    logEntry: string;
+	    missed: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new TurnResult(source);
@@ -1333,6 +1342,7 @@ export namespace core {
 	        this.newState = this.convertValues(source["newState"], BattleState);
 	        this.damage = this.convertValues(source["damage"], DamageResult);
 	        this.logEntry = source["logEntry"];
+	        this.missed = source["missed"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
