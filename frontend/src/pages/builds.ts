@@ -3,10 +3,12 @@ import {
   GetPokemon,
   GetMove,
   GetNatures,
+  ListPokemon,
   CalculateStats,
   SimulateDamage,
 } from "../../wailsjs/go/app/App";
 import type { core } from "../../wailsjs/go/models";
+import { createAutocomplete } from "../autocomplete";
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -61,6 +63,7 @@ let state: BuildState = {
 };
 
 let natures: core.Nature[] = [];
+let pokemonNames: string[] = [];
 let container: HTMLElement;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -373,6 +376,11 @@ function bindEvents(): void {
     if (e.key === "Enter") fetchPokemon("def", defInput.value);
   });
 
+  if (pokemonNames.length > 0) {
+    if (atkInput) createAutocomplete(atkInput, pokemonNames, (name) => fetchPokemon("atk", name));
+    if (defInput) createAutocomplete(defInput, pokemonNames, (name) => fetchPokemon("def", name));
+  }
+
   container.querySelectorAll<HTMLSelectElement>(".build-move-select").forEach((sel) => {
     sel.addEventListener("change", () => {
       const idx = parseInt(sel.dataset.slot ?? "0");
@@ -528,7 +536,10 @@ export async function initBuilds(): Promise<void> {
     initialized = true;
 
     try {
-      natures = await GetNatures();
+      [natures] = await Promise.all([
+        GetNatures(),
+        ListPokemon(0, 2000).then((resp) => { pokemonNames = resp.Results.map((r) => r.Name); }),
+      ]);
     } catch {
       natures = [];
     }

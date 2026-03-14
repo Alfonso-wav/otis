@@ -1,6 +1,7 @@
 import gsap from "gsap";
-import { ComparePokemons } from "../../wailsjs/go/app/App";
+import { ComparePokemons, ListPokemon } from "../../wailsjs/go/app/App";
 import type { core } from "../../wailsjs/go/models";
+import { createAutocomplete } from "../autocomplete";
 
 const MAX_STAT = 255;
 
@@ -14,6 +15,7 @@ const STAT_LABELS: Record<string, string> = {
 };
 
 let container: HTMLElement;
+let pokemonNames: string[] = [];
 
 function spriteURL(id: number): string {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
@@ -155,6 +157,15 @@ function bindInputs(): void {
       if (e.key === "Enter") onCompare();
     });
   });
+
+  if (pokemonNames.length > 0) {
+    createAutocomplete(inputA, pokemonNames, (name) => {
+      inputA.value = name;
+    });
+    createAutocomplete(inputB, pokemonNames, (name) => {
+      inputB.value = name;
+    });
+  }
 }
 
 let initialized = false;
@@ -166,9 +177,17 @@ export function initCompare(): void {
   const tabBtn = document.querySelector<HTMLButtonElement>('[data-tab="compare"]');
   if (!tabBtn) return;
 
-  tabBtn.addEventListener("click", () => {
+  tabBtn.addEventListener("click", async () => {
     if (initialized) return;
     initialized = true;
+
+    try {
+      const resp = await ListPokemon(0, 2000);
+      pokemonNames = resp.Results.map((r) => r.Name);
+    } catch {
+      pokemonNames = [];
+    }
+
     buildInitialLayout();
     gsap.fromTo(
       container.querySelector(".section-header"),
