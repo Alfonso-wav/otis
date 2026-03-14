@@ -17,7 +17,8 @@ var assets embed.FS
 func main() {
 	cfg := app.LoadConfig()
 	fetcher := shell.NewPokeAPIClient(cfg.PokeAPIBaseURL)
-	a := app.NewApp(fetcher)
+	scraper := shell.NewPokemonDBClient(cfg.PokemonDBBaseURL)
+	a := app.NewApp(fetcher, scraper)
 
 	err := wails.Run(&options.App{
 		Title:  "Pokédex",

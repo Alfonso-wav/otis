@@ -326,3 +326,19 @@ type VersionGroup struct {
 	Pokedexes  []string
 	Regions    []string
 }
+
+// --- PokemonDB Scraper ---
+
+// PokedexDBEntry representa un Pokémon extraído de la tabla de pokemondb.net/pokedex/all.
+type PokedexDBEntry struct {
+	ID      int      `json:"id"`
+	Name    string   `json:"name"`
+	Types   []string `json:"types"`
+	Total   int      `json:"total"`
+	HP      int      `json:"hp"`
+	Attack  int      `json:"attack"`
+	Defense int      `json:"defense"`
+	SpAtk   int      `json:"spAtk"`
+	SpDef   int      `json:"spDef"`
+	Speed   int      `json:"speed"`
+}

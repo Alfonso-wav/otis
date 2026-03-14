@@ -3,7 +3,8 @@ package app
 import "os"
 
 type Config struct {
-	PokeAPIBaseURL string
+	PokeAPIBaseURL    string
+	PokemonDBBaseURL  string
 }
 
 func LoadConfig() Config {
@@ -12,7 +13,13 @@ func LoadConfig() Config {
 		baseURL = "https://pokeapi.co/api/v2"
 	}
 
+	pokemonDBURL := os.Getenv("POKEMONDB_BASE_URL")
+	if pokemonDBURL == "" {
+		pokemonDBURL = "https://pokemondb.net"
+	}
+
 	return Config{
-		PokeAPIBaseURL: baseURL,
+		PokeAPIBaseURL:   baseURL,
+		PokemonDBBaseURL: pokemonDBURL,
 	}
 }

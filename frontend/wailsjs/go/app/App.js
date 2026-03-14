@@ -162,6 +162,10 @@ export function ListVersionGroups() {
   return window['go']['app']['App']['ListVersionGroups']();
 }
 
+export function ScrapePokedex() {
+  return window['go']['app']['App']['ScrapePokedex']();
+}
+
 export function SimulateDamage(arg1) {
   return window['go']['app']['App']['SimulateDamage'](arg1);
 }

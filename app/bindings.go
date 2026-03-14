@@ -12,11 +12,12 @@ import (
 type App struct {
 	ctx     context.Context
 	fetcher core.PokemonFetcher
+	scraper core.PokemonDBScraper
 }
 
-// NewApp crea una instancia de App con el fetcher inyectado desde main.
-func NewApp(fetcher core.PokemonFetcher) *App {
-	return &App{fetcher: fetcher}
+// NewApp crea una instancia de App con el fetcher y scraper inyectados desde main.
+func NewApp(fetcher core.PokemonFetcher, scraper core.PokemonDBScraper) *App {
+	return &App{fetcher: fetcher, scraper: scraper}
 }
 
 // Startup es llamado por Wails al arrancar la ventana.
@@ -295,4 +296,11 @@ func (a *App) ListVersionGroups() ([]core.NamedResource, error) {
 
 func (a *App) GetVersionGroup(name string) (core.VersionGroup, error) {
 	return a.fetcher.FetchVersionGroup(core.NormalizeName(name))
+}
+
+// --- PokemonDB Scraper ---
+
+// ScrapePokedex extrae la tabla completa de Pokémon desde pokemondb.net.
+func (a *App) ScrapePokedex() ([]core.PokedexDBEntry, error) {
+	return a.scraper.FetchPokedex()
 }
