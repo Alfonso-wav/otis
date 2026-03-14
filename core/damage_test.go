@@ -164,6 +164,95 @@ func TestCalculateDamage_NotVeryEffective(t *testing.T) {
 	}
 }
 
+func TestCalculateDamage_HasSTAB(t *testing.T) {
+	input := DamageInput{
+		AttackerStats: Stats{SpAttack: 100},
+		DefenderStats: Stats{SpDefense: 100},
+		Move:          Move{Name: "thunderbolt", Type: "electric", Category: "special", Power: 90},
+		AttackerTypes: []PokemonType{{Name: "electric"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+		WeatherBonus:  1.0,
+	}
+	result := CalculateDamage(input)
+	if !result.HasSTAB {
+		t.Error("expected HasSTAB = true when attacker type matches move type")
+	}
+	if result.STABMultiplier != 1.5 {
+		t.Errorf("STABMultiplier = %.2f, want 1.5", result.STABMultiplier)
+	}
+}
+
+func TestCalculateDamage_NoSTAB(t *testing.T) {
+	input := DamageInput{
+		AttackerStats: Stats{SpAttack: 100},
+		DefenderStats: Stats{SpDefense: 100},
+		Move:          Move{Name: "thunderbolt", Type: "electric", Category: "special", Power: 90},
+		AttackerTypes: []PokemonType{{Name: "fire"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+		WeatherBonus:  1.0,
+	}
+	result := CalculateDamage(input)
+	if result.HasSTAB {
+		t.Error("expected HasSTAB = false when attacker type does not match move type")
+	}
+	if result.STABMultiplier != 1.0 {
+		t.Errorf("STABMultiplier = %.2f, want 1.0", result.STABMultiplier)
+	}
+}
+
+func TestCalculateDamage_BurnReducesPhysical(t *testing.T) {
+	base := DamageInput{
+		AttackerStats: Stats{Attack: 100},
+		DefenderStats: Stats{Defense: 100},
+		Move:          Move{Name: "tackle", Type: "normal", Category: "physical", Power: 40},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+		WeatherBonus:  1.0,
+	}
+
+	normal := CalculateDamage(base)
+	base.IsBurned = true
+	burned := CalculateDamage(base)
+
+	if !burned.BurnApplied {
+		t.Error("expected BurnApplied = true for burned physical attack")
+	}
+	if burned.Max >= normal.Max {
+		t.Errorf("burned max (%d) should be less than normal max (%d)", burned.Max, normal.Max)
+	}
+	// Burn halves damage: burned.Max should be ~half of normal.Max
+	expected := int(math.Floor(float64(normal.Max) * 0.5))
+	if burned.Max != expected {
+		t.Errorf("burned max = %d, want %d (half of %d)", burned.Max, expected, normal.Max)
+	}
+}
+
+func TestCalculateDamage_BurnDoesNotAffectSpecial(t *testing.T) {
+	base := DamageInput{
+		AttackerStats: Stats{SpAttack: 100},
+		DefenderStats: Stats{SpDefense: 100},
+		Move:          Move{Name: "flamethrower", Type: "fire", Category: "special", Power: 90},
+		AttackerTypes: []PokemonType{{Name: "fire"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+		WeatherBonus:  1.0,
+	}
+
+	normal := CalculateDamage(base)
+	base.IsBurned = true
+	burned := CalculateDamage(base)
+
+	if burned.BurnApplied {
+		t.Error("expected BurnApplied = false for special attack even when burned")
+	}
+	if burned.Max != normal.Max {
+		t.Errorf("burned special max (%d) should equal normal max (%d)", burned.Max, normal.Max)
+	}
+}
+
 func TestCalculateBattleDamage_RandomRoll(t *testing.T) {
 	input := DamageInput{
 		AttackerStats: Stats{Attack: 100},

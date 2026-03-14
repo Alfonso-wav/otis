@@ -13,6 +13,7 @@ type DamageInput struct {
 	IsCritical    bool          `json:"isCritical"`
 	CriticalStage int           `json:"criticalStage"`
 	WeatherBonus  float64       `json:"weatherBonus"`
+	IsBurned      bool          `json:"isBurned"`
 }
 
 // DamageResult contiene el resultado del cálculo de daño
@@ -26,6 +27,9 @@ type DamageResult struct {
 	IsNotVeryEffective bool    `json:"isNotVeryEffective"`
 	HasNoEffect        bool    `json:"hasNoEffect"`
 	WasCritical        bool    `json:"wasCritical"`
+	HasSTAB            bool    `json:"hasSTAB"`
+	STABMultiplier     float64 `json:"stabMultiplier"`
+	BurnApplied        bool    `json:"burnApplied"`
 }
 
 // typeChart mapea [atacante][defensor] → multiplicador (solo entradas no-1.0)
@@ -152,9 +156,11 @@ func CalculateDamage(input DamageInput) DamageResult {
 
 	// STAB
 	stab := 1.0
+	hasSTAB := false
 	for _, at := range input.AttackerTypes {
 		if at.Name == input.Move.Type {
 			stab = 1.5
+			hasSTAB = true
 			break
 		}
 	}
@@ -168,7 +174,15 @@ func CalculateDamage(input DamageInput) DamageResult {
 		crit = 1.5
 	}
 
-	modifier := stab * typeEff * crit * weather
+	// Quemadura: ×0.5 al daño físico si el atacante está quemado
+	burn := 1.0
+	burnApplied := false
+	if input.IsBurned && input.Move.Category == "physical" {
+		burn = 0.5
+		burnApplied = true
+	}
+
+	modifier := stab * typeEff * crit * weather * burn
 
 	minDmg := int(math.Floor(baseDmg * modifier * 0.85))
 	maxDmg := int(math.Floor(baseDmg * modifier * 1.00))
@@ -186,6 +200,9 @@ func CalculateDamage(input DamageInput) DamageResult {
 		IsSuperEffective:   typeEff > 1,
 		IsNotVeryEffective: typeEff > 0 && typeEff < 1,
 		HasNoEffect:        typeEff == 0,
+		HasSTAB:            hasSTAB,
+		STABMultiplier:     stab,
+		BurnApplied:        burnApplied,
 	}
 }
 

@@ -112,6 +112,11 @@ function effectLabel(result: core.DamageResult): string {
   return `×${result.multiplier}`;
 }
 
+function stabBadge(result: core.DamageResult): string {
+  if (result.hasSTAB) return `<span class="stab-badge">STAB</span>`;
+  return "";
+}
+
 function effectClass(result: core.DamageResult): string {
   if (result.hasNoEffect) return "damage-row--no-effect";
   if (result.isSuperEffective) return "damage-row--super";
@@ -290,7 +295,7 @@ async function loadDamageTable(): Promise<void> {
     .map(
       ({ slot, result }) => `
     <tr class="damage-row ${effectClass(result)}">
-      <td class="dmg-move">${slot.move!.Name}</td>
+      <td class="dmg-move">${slot.move!.Name} ${stabBadge(result)}</td>
       <td>${typeBadge(slot.move!.Type)}</td>
       <td class="dmg-cat">${categoryIcon(slot.move!.Category)}</td>
       <td class="dmg-val">${result.min}</td>

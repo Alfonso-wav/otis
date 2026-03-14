@@ -158,6 +158,7 @@ export namespace core {
 	    isCritical: boolean;
 	    criticalStage: number;
 	    weatherBonus: number;
+	    isBurned: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new DamageInput(source);
@@ -174,6 +175,7 @@ export namespace core {
 	        this.isCritical = source["isCritical"];
 	        this.criticalStage = source["criticalStage"];
 	        this.weatherBonus = source["weatherBonus"];
+	        this.isBurned = source["isBurned"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -204,6 +206,9 @@ export namespace core {
 	    isNotVeryEffective: boolean;
 	    hasNoEffect: boolean;
 	    wasCritical: boolean;
+	    hasSTAB: boolean;
+	    stabMultiplier: number;
+	    burnApplied: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new DamageResult(source);
@@ -220,6 +225,9 @@ export namespace core {
 	        this.isNotVeryEffective = source["isNotVeryEffective"];
 	        this.hasNoEffect = source["hasNoEffect"];
 	        this.wasCritical = source["wasCritical"];
+	        this.hasSTAB = source["hasSTAB"];
+	        this.stabMultiplier = source["stabMultiplier"];
+	        this.burnApplied = source["burnApplied"];
 	    }
 	}
 	export class EVCalculatorInput {
