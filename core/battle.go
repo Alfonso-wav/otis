@@ -2,6 +2,102 @@ package core
 
 import "fmt"
 
+// FullBattleInput contains everything needed to simulate a complete battle.
+type FullBattleInput struct {
+	AttackerStats Stats         `json:"attackerStats"`
+	DefenderStats Stats         `json:"defenderStats"`
+	AttackerTypes []PokemonType `json:"attackerTypes"`
+	DefenderTypes []PokemonType `json:"defenderTypes"`
+	AttackerLevel int           `json:"attackerLevel"`
+	DefenderLevel int           `json:"defenderLevel"`
+	AttackerMoves []Move        `json:"attackerMoves"`
+	DefenderMoves []Move        `json:"defenderMoves"`
+}
+
+// SimulateFullBattle simulates an entire battle automatically.
+// randSource is injected for testability; use rand.Intn in production.
+// Each side picks a random move each turn. Max 200 turns to prevent infinite loops.
+func SimulateFullBattle(input FullBattleInput, randSource func(n int) int) BattleState {
+	if len(input.AttackerMoves) == 0 || len(input.DefenderMoves) == 0 {
+		return BattleState{}
+	}
+
+	state := InitBattle(input.AttackerStats.HP, input.DefenderStats.HP)
+	isAttackerTurn := true
+	const maxTurns = 200
+
+	for !state.IsOver && state.TurnCount < maxTurns {
+		if isAttackerTurn {
+			move := input.AttackerMoves[randSource(len(input.AttackerMoves))]
+			result := ExecuteTurn(TurnInput{
+				State:         state,
+				AttackerStats: input.AttackerStats,
+				DefenderStats: input.DefenderStats,
+				AttackerTypes: input.AttackerTypes,
+				DefenderTypes: input.DefenderTypes,
+				AttackerLevel: input.AttackerLevel,
+				DefenderLevel: input.DefenderLevel,
+				Move:          move,
+			})
+			state = result.NewState
+		} else {
+			// Swap HP perspective so ExecuteTurn damages the attacker's HP.
+			swapped := BattleState{
+				AttackerHP:    state.DefenderHP,
+				DefenderHP:    state.AttackerHP,
+				AttackerMaxHP: state.DefenderMaxHP,
+				DefenderMaxHP: state.AttackerMaxHP,
+				TurnCount:     state.TurnCount,
+				Log:           state.Log,
+				IsOver:        state.IsOver,
+				Winner:        state.Winner,
+			}
+			move := input.DefenderMoves[randSource(len(input.DefenderMoves))]
+			result := ExecuteTurn(TurnInput{
+				State:         swapped,
+				AttackerStats: input.DefenderStats,
+				DefenderStats: input.AttackerStats,
+				AttackerTypes: input.DefenderTypes,
+				DefenderTypes: input.AttackerTypes,
+				AttackerLevel: input.DefenderLevel,
+				DefenderLevel: input.AttackerLevel,
+				Move:          move,
+			})
+			ns := result.NewState
+			// Restore HP perspective.
+			state = BattleState{
+				AttackerHP:    ns.DefenderHP,
+				DefenderHP:    ns.AttackerHP,
+				AttackerMaxHP: ns.DefenderMaxHP,
+				DefenderMaxHP: ns.AttackerMaxHP,
+				TurnCount:     ns.TurnCount,
+				Log:           ns.Log,
+				IsOver:        ns.IsOver,
+				Winner:        ns.Winner,
+			}
+			if state.IsOver {
+				state.Winner = "defender"
+			}
+		}
+		isAttackerTurn = !isAttackerTurn
+	}
+
+	// Resolve draw by max turns: whoever has more HP wins.
+	if !state.IsOver {
+		state.IsOver = true
+		switch {
+		case state.AttackerHP > state.DefenderHP:
+			state.Winner = "attacker"
+		case state.DefenderHP > state.AttackerHP:
+			state.Winner = "defender"
+		default:
+			state.Winner = "draw"
+		}
+	}
+
+	return state
+}
+
 // BattleState represents the current state of a turn-based battle.
 type BattleState struct {
 	AttackerHP    int      `json:"attackerHP"`

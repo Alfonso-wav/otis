@@ -165,3 +165,7 @@ export function ListVersionGroups() {
 export function SimulateDamage(arg1) {
   return window['go']['app']['App']['SimulateDamage'](arg1);
 }
+
+export function SimulateFullBattle(arg1) {
+  return window['go']['app']['App']['SimulateFullBattle'](arg1);
+}

@@ -397,6 +397,50 @@ export namespace core {
 		}
 	}
 	
+	export class FullBattleInput {
+	    attackerStats: Stats;
+	    defenderStats: Stats;
+	    attackerTypes: PokemonType[];
+	    defenderTypes: PokemonType[];
+	    attackerLevel: number;
+	    defenderLevel: number;
+	    attackerMoves: Move[];
+	    defenderMoves: Move[];
+	
+	    static createFrom(source: any = {}) {
+	        return new FullBattleInput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.attackerStats = this.convertValues(source["attackerStats"], Stats);
+	        this.defenderStats = this.convertValues(source["defenderStats"], Stats);
+	        this.attackerTypes = this.convertValues(source["attackerTypes"], PokemonType);
+	        this.defenderTypes = this.convertValues(source["defenderTypes"], PokemonType);
+	        this.attackerLevel = source["attackerLevel"];
+	        this.defenderLevel = source["defenderLevel"];
+	        this.attackerMoves = this.convertValues(source["attackerMoves"], Move);
+	        this.defenderMoves = this.convertValues(source["defenderMoves"], Move);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class Gender {
 	    Name: string;
 	    Pokemon: string[];
@@ -1231,32 +1275,6 @@ export namespace core {
 	}
 	
 	
-	export class BattleState {
-	    attackerHP: number;
-	    defenderHP: number;
-	    attackerMaxHP: number;
-	    defenderMaxHP: number;
-	    turnCount: number;
-	    log: string[];
-	    isOver: boolean;
-	    winner: string;
-
-	    static createFrom(source: any = {}) {
-	        return new BattleState(source);
-	    }
-
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.attackerHP = source["attackerHP"];
-	        this.defenderHP = source["defenderHP"];
-	        this.attackerMaxHP = source["attackerMaxHP"];
-	        this.defenderMaxHP = source["defenderMaxHP"];
-	        this.turnCount = source["turnCount"];
-	        this.log = source["log"];
-	        this.isOver = source["isOver"];
-	        this.winner = source["winner"];
-	    }
-	}
 	export class TurnInput {
 	    state: BattleState;
 	    attackerStats: Stats;
