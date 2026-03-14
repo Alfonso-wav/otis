@@ -17,9 +17,14 @@ const STAT_LABELS: Record<string, string> = {
 let container: HTMLElement;
 let pokemonNames: string[] = [];
 
-function spriteURL(id: number): string {
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+function spriteURL(name: string): string {
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  return `https://img.pokemondb.net/sprites/home/normal/${safeName}.png`;
 }
+
+const ICON_TROPHY = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="ui-icon" aria-label="Winner"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" /></svg>`;
+
+const ICON_SCALE = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="ui-icon" aria-label="Tie"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971Z" /></svg>`;
 
 function typeBadges(types: Array<{ Name: string }>): string {
   return types
@@ -76,15 +81,15 @@ function renderResult(result: core.PokemonComparison): void {
     <div id="compare-result" class="compare-result">
       <div class="compare-header">
         <div class="compare-pokemon-card">
-          <img class="compare-sprite" src="${spriteURL(a.ID)}" alt="${a.Name}" />
+          <img class="compare-sprite" src="${spriteURL(a.Name)}" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${a.ID}.png'" alt="${a.Name}" />
           <div class="compare-pokemon-name">${a.Name}</div>
           <div class="compare-pokemon-types">${typeBadges(a.Types)}</div>
         </div>
         <div class="compare-winner ${winnerClass}">
-          ${Winner === "tie" ? "⚖️" : "🏆"} ${winnerLabel}
+          ${Winner === "tie" ? ICON_SCALE : ICON_TROPHY} ${winnerLabel}
         </div>
         <div class="compare-pokemon-card">
-          <img class="compare-sprite" src="${spriteURL(b.ID)}" alt="${b.Name}" />
+          <img class="compare-sprite" src="${spriteURL(b.Name)}" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${b.ID}.png'" alt="${b.Name}" />
           <div class="compare-pokemon-name">${b.Name}</div>
           <div class="compare-pokemon-types">${typeBadges(b.Types)}</div>
         </div>

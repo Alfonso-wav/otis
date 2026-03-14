@@ -79,8 +79,9 @@ let container: HTMLElement;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function spriteURL(id: number): string {
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+function spriteURL(name: string): string {
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  return `https://img.pokemondb.net/sprites/home/normal/${safeName}.png`;
 }
 
 function typeBadge(type: string): string {
@@ -92,12 +93,13 @@ function typeBadges(types: Array<{ Name: string }>): string {
 }
 
 function categoryIcon(cat: string): string {
-  const icons: Record<string, string> = {
-    physical: "⚔️",
-    special: "✨",
-    status: "🛡️",
+  const base = "https://img.pokemondb.net/images/icons";
+  const map: Record<string, string> = {
+    physical: `<img src="${base}/move-physical.png" class="move-cat-icon" alt="Physical" title="Physical">`,
+    special:  `<img src="${base}/move-special.png"  class="move-cat-icon" alt="Special"  title="Special">`,
+    status:   `<img src="${base}/move-status.png"   class="move-cat-icon" alt="Status"   title="Status">`,
   };
-  return icons[cat] ?? cat;
+  return map[cat] ?? `<span class="move-cat-unknown">?</span>`;
 }
 
 function effectLabel(result: core.DamageResult): string {
@@ -140,7 +142,7 @@ function renderPokemonCard(pokemon: core.Pokemon, stats: core.Stats | null): str
   const displayStats = stats ?? bst;
   return `
     <div class="build-poke-card">
-      <img class="build-sprite" src="${spriteURL(pokemon.ID)}" alt="${pokemon.Name}" />
+      <img class="build-sprite" src="${spriteURL(pokemon.Name)}" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.ID}.png'" alt="${pokemon.Name}" />
       <div class="build-poke-name">${pokemon.Name}</div>
       <div class="build-poke-types">${typeBadges(pokemon.Types)}</div>
       <div class="build-stats-grid">

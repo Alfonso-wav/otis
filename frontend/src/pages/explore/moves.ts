@@ -46,12 +46,13 @@ function typeColor(type: string): string {
 }
 
 function categoryIcon(cat: string): string {
-  const icons: Record<string, string> = {
-    physical: "⚔️",
-    special: "✨",
-    status: "💤",
+  const base = "https://img.pokemondb.net/images/icons";
+  const map: Record<string, string> = {
+    physical: `<img src="${base}/move-physical.png" class="move-cat-icon" alt="Physical" title="Physical">`,
+    special:  `<img src="${base}/move-special.png"  class="move-cat-icon" alt="Special"  title="Special">`,
+    status:   `<img src="${base}/move-status.png"   class="move-cat-icon" alt="Status"   title="Status">`,
   };
-  return icons[cat] ?? "❓";
+  return map[cat] ?? `<span class="move-cat-unknown">?</span>`;
 }
 
 function filteredMoves(): string[] {
@@ -154,9 +155,9 @@ export function initMoves(container: HTMLElement): void {
       />
       <div class="moves-filters">
         <button class="filter-btn active" data-cat="all">Todos</button>
-        <button class="filter-btn" data-cat="physical">⚔️ Físico</button>
-        <button class="filter-btn" data-cat="special">✨ Especial</button>
-        <button class="filter-btn" data-cat="status">💤 Estado</button>
+        <button class="filter-btn" data-cat="physical"><img src="https://img.pokemondb.net/images/icons/move-physical.png" class="move-cat-icon" alt="Physical"> Físico</button>
+        <button class="filter-btn" data-cat="special"><img src="https://img.pokemondb.net/images/icons/move-special.png" class="move-cat-icon" alt="Special"> Especial</button>
+        <button class="filter-btn" data-cat="status"><img src="https://img.pokemondb.net/images/icons/move-status.png" class="move-cat-icon" alt="Status"> Estado</button>
       </div>
     </div>
     <div id="moves-grid" class="moves-grid"></div>`;

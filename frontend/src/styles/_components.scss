@@ -1,5 +1,27 @@
 @use "variables" as *;
 
+// ─── Icon helpers ─────────────────────────────────────────────────────────────
+
+.move-cat-icon {
+  width: 20px;
+  height: 14px;
+  vertical-align: middle;
+  image-rendering: pixelated;
+}
+
+.ui-icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  display: inline-block;
+  stroke: currentColor;
+}
+
+.move-cat-unknown {
+  font-size: 0.85em;
+  color: #a0aec0;
+}
+
 // ─── Section header ──────────────────────────────────────────────────────────
 
 .section-header {
