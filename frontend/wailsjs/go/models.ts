@@ -842,6 +842,36 @@ export namespace core {
 		    return a;
 		}
 	}
+	export class PokedexDBEntry {
+	    id: number;
+	    name: string;
+	    types: string[];
+	    total: number;
+	    hp: number;
+	    attack: number;
+	    defense: number;
+	    spAtk: number;
+	    spDef: number;
+	    speed: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new PokedexDBEntry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.types = source["types"];
+	        this.total = source["total"];
+	        this.hp = source["hp"];
+	        this.attack = source["attack"];
+	        this.defense = source["defense"];
+	        this.spAtk = source["spAtk"];
+	        this.spDef = source["spDef"];
+	        this.speed = source["speed"];
+	    }
+	}
 	
 	export class PokemonMoveEntry {
 	    Name: string;

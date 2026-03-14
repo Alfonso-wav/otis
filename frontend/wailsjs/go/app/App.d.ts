@@ -82,6 +82,8 @@ export function ListTypes():Promise<core.TypeListResponse>;
 
 export function ListVersionGroups():Promise<Array<core.NamedResource>>;
 
+export function ScrapePokedex():Promise<Array<core.PokedexDBEntry>>;
+
 export function SimulateDamage(arg1:core.DamageInput):Promise<core.DamageResult>;
 
 export function SimulateFullBattle(arg1:core.FullBattleInput):Promise<core.BattleState>;

@@ -1,5 +1,10 @@
 package core
 
+// PokemonDBScraper define la interfaz para extraer datos de pokemondb.net.
+type PokemonDBScraper interface {
+	FetchPokedex() ([]PokedexDBEntry, error)
+}
+
 type PokemonFetcher interface {
 	// --- Pokémon base ---
 	FetchPokemon(name string) (Pokemon, error)
