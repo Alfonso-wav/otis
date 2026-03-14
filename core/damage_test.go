@@ -163,3 +163,128 @@ func TestCalculateDamage_NotVeryEffective(t *testing.T) {
 		t.Errorf("multiplier = %.2f, want 0.5", result.Multiplier)
 	}
 }
+
+func TestCalculateBattleDamage_RandomRoll(t *testing.T) {
+	input := DamageInput{
+		AttackerStats: Stats{Attack: 100},
+		DefenderStats: Stats{Defense: 100},
+		Move:          Move{Name: "tackle", Type: "normal", Category: "physical", Power: 40},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+		WeatherBonus:  1.0,
+	}
+
+	detResult := CalculateDamage(input)
+
+	// Roll=0 → factor 85/100 (min), crit roll=5 (no crit at stage 0)
+	callCount := 0
+	minRoll := func(n int) int {
+		callCount++
+		switch callCount {
+		case 1:
+			return 5 // crit: 5 != 0 → no crit
+		case 2:
+			return 0 // roll: 85+0=85 → min roll
+		}
+		return 0
+	}
+	minResult := CalculateBattleDamage(input, minRoll)
+
+	// Roll=15 → factor 100/100 (max), crit roll=5 (no crit)
+	callCount = 0
+	maxRoll := func(n int) int {
+		callCount++
+		switch callCount {
+		case 1:
+			return 5 // crit: no crit
+		case 2:
+			return 15 // roll: 85+15=100 → max roll
+		}
+		return 0
+	}
+	maxResult := CalculateBattleDamage(input, maxRoll)
+
+	if minResult.ActualDamage > maxResult.ActualDamage {
+		t.Errorf("min roll (%d) should be <= max roll (%d)", minResult.ActualDamage, maxResult.ActualDamage)
+	}
+	if maxResult.ActualDamage != detResult.Max {
+		t.Errorf("max roll actual (%d) should equal deterministic max (%d)", maxResult.ActualDamage, detResult.Max)
+	}
+}
+
+func TestCalculateBattleDamage_ProbabilisticCrit(t *testing.T) {
+	input := DamageInput{
+		AttackerStats: Stats{Attack: 100},
+		DefenderStats: Stats{Defense: 100},
+		Move:          Move{Name: "tackle", Type: "normal", Category: "physical", Power: 40},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+		WeatherBonus:  1.0,
+		CriticalStage: 0,
+	}
+
+	// Crit roll = 0 → crit (1/24 threshold, 0 == 0 → crit)
+	critRand := func(n int) int { return 0 }
+	critResult := CalculateBattleDamage(input, critRand)
+	if !critResult.WasCritical {
+		t.Error("Expected critical hit when crit roll is 0 at stage 0")
+	}
+
+	// Crit roll = 5 → no crit (5 != 0)
+	noCritRand := func(n int) int { return 5 }
+	noCritResult := CalculateBattleDamage(input, noCritRand)
+	if noCritResult.WasCritical {
+		t.Error("Expected no critical hit when crit roll is 5 at stage 0")
+	}
+
+	if critResult.ActualDamage <= noCritResult.ActualDamage {
+		t.Errorf("crit damage (%d) should be > non-crit damage (%d)", critResult.ActualDamage, noCritResult.ActualDamage)
+	}
+}
+
+func TestCalculateBattleDamage_CritStage3AlwaysCrits(t *testing.T) {
+	input := DamageInput{
+		AttackerStats: Stats{Attack: 100},
+		DefenderStats: Stats{Defense: 100},
+		Move:          Move{Name: "tackle", Type: "normal", Category: "physical", Power: 40},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+		WeatherBonus:  1.0,
+		CriticalStage: 3,
+	}
+
+	// At stage 3, threshold is 1, so randSource(1) always returns 0 → always crit
+	anyRand := func(n int) int { return 0 }
+	result := CalculateBattleDamage(input, anyRand)
+	if !result.WasCritical {
+		t.Error("Expected always critical at stage 3")
+	}
+}
+
+func TestCheckAccuracy(t *testing.T) {
+	alwaysHit := func(n int) int { return 0 }
+	alwaysMiss := func(n int) int { return 99 }
+
+	// Accuracy 100 → always hits
+	if !CheckAccuracy(100, alwaysMiss) {
+		t.Error("Accuracy 100 should always hit")
+	}
+
+	// Accuracy 0 → always hits (never-miss)
+	if !CheckAccuracy(0, alwaysMiss) {
+		t.Error("Accuracy 0 should always hit (never-miss)")
+	}
+
+	// Accuracy 70, roll 0 → hit
+	if !CheckAccuracy(70, alwaysHit) {
+		t.Error("Accuracy 70, roll 0 should hit")
+	}
+
+	// Accuracy 70, roll 99 → miss
+	if CheckAccuracy(70, alwaysMiss) {
+		t.Error("Accuracy 70, roll 99 should miss")
+	}
+}

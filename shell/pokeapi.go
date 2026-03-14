@@ -304,6 +304,7 @@ type apiMove struct {
 	Power    *int   `json:"power"`
 	Accuracy *int   `json:"accuracy"`
 	PP       int    `json:"pp"`
+	Priority int    `json:"priority"`
 	DamageClass struct{ Name string `json:"name"` } `json:"damage_class"`
 	FlavorTextEntries []struct {
 		FlavorText string `json:"flavor_text"`
@@ -354,6 +355,7 @@ func (c *PokeAPIClient) FetchMove(name string) (core.Move, error) {
 		Power:       power,
 		Accuracy:    accuracy,
 		PP:          raw.PP,
+		Priority:    raw.Priority,
 		Category:    raw.DamageClass.Name,
 		Description: desc,
 	}, nil
