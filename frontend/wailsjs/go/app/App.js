@@ -14,6 +14,10 @@ export function ComparePokemons(arg1, arg2) {
   return window['go']['app']['App']['ComparePokemons'](arg1, arg2);
 }
 
+export function ExecuteTurn(arg1) {
+  return window['go']['app']['App']['ExecuteTurn'](arg1);
+}
+
 export function GetAbility(arg1) {
   return window['go']['app']['App']['GetAbility'](arg1);
 }
@@ -104,6 +108,10 @@ export function GetType(arg1) {
 
 export function GetVersionGroup(arg1) {
   return window['go']['app']['App']['GetVersionGroup'](arg1);
+}
+
+export function InitBattle(arg1, arg2) {
+  return window['go']['app']['App']['InitBattle'](arg1, arg2);
 }
 
 export function ListAbilities(arg1, arg2) {
