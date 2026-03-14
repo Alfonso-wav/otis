@@ -4,6 +4,7 @@ import { initPokedex } from "./pages/pokedex";
 import { initTypes } from "./pages/types";
 import { initExplore } from "./pages/explore";
 import { initCompare } from "./pages/compare";
+import { initBuilds } from "./pages/builds";
 
 registerPage({
   id: "pokedex",
@@ -21,6 +22,10 @@ registerPage({
   id: "explore",
   container: document.getElementById("tab-explore") as HTMLElement,
 });
+registerPage({
+  id: "builds",
+  container: document.getElementById("tab-builds") as HTMLElement,
+});
 
 initRouter("pokedex");
 
@@ -28,3 +33,4 @@ initPokedex();
 initTypes();
 initCompare();
 initExplore();
+initBuilds();

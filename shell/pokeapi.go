@@ -44,6 +44,17 @@ type apiPokemon struct {
 		FrontDefault string `json:"front_default"`
 		FrontShiny   string `json:"front_shiny"`
 	} `json:"sprites"`
+	Moves []struct {
+		Move struct {
+			Name string `json:"name"`
+		} `json:"move"`
+		VersionGroupDetails []struct {
+			LevelLearnedAt  int `json:"level_learned_at"`
+			MoveLearnMethod struct {
+				Name string `json:"name"`
+			} `json:"move_learn_method"`
+		} `json:"version_group_details"`
+	} `json:"moves"`
 }
 
 // apiList es la estructura raw que devuelve PokéAPI para /pokemon?offset=&limit=.
@@ -127,9 +138,20 @@ func toDomainPokemon(raw apiPokemon) core.Pokemon {
 		stats[i] = core.Stat{Name: s.Stat.Name, BaseStat: s.BaseStat}
 	}
 
+	moves := make([]core.PokemonMoveEntry, 0, len(raw.Moves))
+	for _, m := range raw.Moves {
+		entry := core.PokemonMoveEntry{Name: m.Move.Name}
+		if len(m.VersionGroupDetails) > 0 {
+			last := m.VersionGroupDetails[len(m.VersionGroupDetails)-1]
+			entry.Method = last.MoveLearnMethod.Name
+			entry.Level = last.LevelLearnedAt
+		}
+		moves = append(moves, entry)
+	}
+
 	return core.Pokemon{
-		ID:   raw.ID,
-		Name: raw.Name,
+		ID:    raw.ID,
+		Name:  raw.Name,
 		Types: types,
 		Stats: stats,
 		Sprites: core.Sprites{
@@ -138,6 +160,7 @@ func toDomainPokemon(raw apiPokemon) core.Pokemon {
 		},
 		Height: raw.Height,
 		Weight: raw.Weight,
+		Moves:  moves,
 	}
 }
 

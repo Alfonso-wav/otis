@@ -62,6 +62,42 @@ export namespace core {
 		    return a;
 		}
 	}
+	export class PokemonType {
+	    Name: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PokemonType(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	    }
+	}
+	export class Move {
+	    Name: string;
+	    Type: string;
+	    Power: number;
+	    Accuracy: number;
+	    PP: number;
+	    Category: string;
+	    Description: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Move(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Type = source["Type"];
+	        this.Power = source["Power"];
+	        this.Accuracy = source["Accuracy"];
+	        this.PP = source["PP"];
+	        this.Category = source["Category"];
+	        this.Description = source["Description"];
+	    }
+	}
 	export class Stats {
 	    hp: number;
 	    attack: number;
@@ -82,6 +118,74 @@ export namespace core {
 	        this.spAttack = source["spAttack"];
 	        this.spDefense = source["spDefense"];
 	        this.speed = source["speed"];
+	    }
+	}
+	export class DamageInput {
+	    attackerStats: Stats;
+	    defenderStats: Stats;
+	    move: Move;
+	    attackerTypes: PokemonType[];
+	    defenderTypes: PokemonType[];
+	    level: number;
+	    isCritical: boolean;
+	    weatherBonus: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new DamageInput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.attackerStats = this.convertValues(source["attackerStats"], Stats);
+	        this.defenderStats = this.convertValues(source["defenderStats"], Stats);
+	        this.move = this.convertValues(source["move"], Move);
+	        this.attackerTypes = this.convertValues(source["attackerTypes"], PokemonType);
+	        this.defenderTypes = this.convertValues(source["defenderTypes"], PokemonType);
+	        this.level = source["level"];
+	        this.isCritical = source["isCritical"];
+	        this.weatherBonus = source["weatherBonus"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class DamageResult {
+	    min: number;
+	    max: number;
+	    average: number;
+	    multiplier: number;
+	    isSuperEffective: boolean;
+	    isNotVeryEffective: boolean;
+	    hasNoEffect: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new DamageResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.min = source["min"];
+	        this.max = source["max"];
+	        this.average = source["average"];
+	        this.multiplier = source["multiplier"];
+	        this.isSuperEffective = source["isSuperEffective"];
+	        this.isNotVeryEffective = source["isNotVeryEffective"];
+	        this.hasNoEffect = source["hasNoEffect"];
 	    }
 	}
 	export class EVCalculatorInput {
@@ -484,30 +588,7 @@ export namespace core {
 	        this.VersionGroup = source["VersionGroup"];
 	    }
 	}
-	export class Move {
-	    Name: string;
-	    Type: string;
-	    Power: number;
-	    Accuracy: number;
-	    PP: number;
-	    Category: string;
-	    Description: string;
 	
-	    static createFrom(source: any = {}) {
-	        return new Move(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Name = source["Name"];
-	        this.Type = source["Type"];
-	        this.Power = source["Power"];
-	        this.Accuracy = source["Accuracy"];
-	        this.PP = source["PP"];
-	        this.Category = source["Category"];
-	        this.Description = source["Description"];
-	    }
-	}
 	export class MoveAilment {
 	    Name: string;
 	    Moves: string[];
@@ -672,6 +753,22 @@ export namespace core {
 		}
 	}
 	
+	export class PokemonMoveEntry {
+	    Name: string;
+	    Method: string;
+	    Level: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new PokemonMoveEntry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Method = source["Method"];
+	        this.Level = source["Level"];
+	    }
+	}
 	export class Sprites {
 	    FrontDefault: string;
 	    FrontShiny: string;
@@ -700,18 +797,6 @@ export namespace core {
 	        this.BaseStat = source["BaseStat"];
 	    }
 	}
-	export class PokemonType {
-	    Name: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new PokemonType(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Name = source["Name"];
-	    }
-	}
 	export class Pokemon {
 	    ID: number;
 	    Name: string;
@@ -720,6 +805,7 @@ export namespace core {
 	    Sprites: Sprites;
 	    Height: number;
 	    Weight: number;
+	    Moves: PokemonMoveEntry[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Pokemon(source);
@@ -734,6 +820,67 @@ export namespace core {
 	        this.Sprites = this.convertValues(source["Sprites"], Sprites);
 	        this.Height = source["Height"];
 	        this.Weight = source["Weight"];
+	        this.Moves = this.convertValues(source["Moves"], PokemonMoveEntry);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class StatComparison {
+	    Name: string;
+	    StatA: number;
+	    StatB: number;
+	    Diff: number;
+	    Winner: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new StatComparison(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.StatA = source["StatA"];
+	        this.StatB = source["StatB"];
+	        this.Diff = source["Diff"];
+	        this.Winner = source["Winner"];
+	    }
+	}
+	export class PokemonComparison {
+	    PokemonA: Pokemon;
+	    PokemonB: Pokemon;
+	    Stats: StatComparison[];
+	    TotalA: number;
+	    TotalB: number;
+	    Winner: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PokemonComparison(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.PokemonA = this.convertValues(source["PokemonA"], Pokemon);
+	        this.PokemonB = this.convertValues(source["PokemonB"], Pokemon);
+	        this.Stats = this.convertValues(source["Stats"], StatComparison);
+	        this.TotalA = source["TotalA"];
+	        this.TotalB = source["TotalB"];
+	        this.Winner = source["Winner"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -832,6 +979,7 @@ export namespace core {
 		    return a;
 		}
 	}
+	
 	export class PokemonVariety {
 	    IsDefault: boolean;
 	    Pokemon: string;
@@ -1032,6 +1180,7 @@ export namespace core {
 		    return a;
 		}
 	}
+	
 	export class StatDetail {
 	    Name: string;
 	    IsBattleOnly: boolean;
@@ -1109,55 +1258,6 @@ export namespace core {
 	        this.Versions = source["Versions"];
 	        this.Pokedexes = source["Pokedexes"];
 	        this.Regions = source["Regions"];
-	    }
-	}
-	export class StatComparison {
-	    Name: string;
-	    StatA: number;
-	    StatB: number;
-	    Diff: number;
-	    Winner: string;
-
-	    static createFrom(source: any = {}) {
-	        return new StatComparison(source);
-	    }
-
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Name = source["Name"];
-	        this.StatA = source["StatA"];
-	        this.StatB = source["StatB"];
-	        this.Diff = source["Diff"];
-	        this.Winner = source["Winner"];
-	    }
-	}
-	export class PokemonComparison {
-	    PokemonA: Pokemon;
-	    PokemonB: Pokemon;
-	    Stats: StatComparison[];
-	    TotalA: number;
-	    TotalB: number;
-	    Winner: string;
-
-	    static createFrom(source: any = {}) {
-	        return new PokemonComparison(source);
-	    }
-
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.PokemonA = this.convertValues(source["PokemonA"], Pokemon);
-	        this.PokemonB = this.convertValues(source["PokemonB"], Pokemon);
-	        this.Stats = this.convertValues(source["Stats"], StatComparison);
-	        this.TotalA = source["TotalA"];
-	        this.TotalB = source["TotalB"];
-	        this.Winner = source["Winner"];
-	    }
-
-	    convertValues(a: any, classs: any, asMap: boolean = false): any {
-	        if (!a) { return a; }
-	        if (a.slice && a.map) { return (a as any[]).map(elem => this.convertValues(elem, classs)); }
-	        else if ("object" === typeof a) { if (asMap) { for (const key of Object.keys(a)) { a[key] = new classs(a[key]); } return a; } return new classs(a); }
-	        return a;
 	    }
 	}
 
