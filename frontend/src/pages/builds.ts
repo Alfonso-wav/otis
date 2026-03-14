@@ -48,7 +48,7 @@ const defaultIVs = (): core.Stats => ({
 });
 const emptySlot = (): BuildSlot => ({ moveName: null, move: null, isCritical: false });
 
-type BattlePhase = "idle" | "attacker-turn" | "defender-turn" | "over";
+type BattlePhase = "idle" | "attacker-turn" | "over";
 
 interface BattleUIState {
   battleState: core.BattleState | null;
@@ -364,12 +364,9 @@ function renderBattleSection(): string {
 
   const turnLabel = bs.isOver
     ? ""
-    : phase === "attacker-turn"
-    ? `<div class="battle-turn-label">Turno ${bs.turnCount + 1} — Elige movimiento de <strong>${atkName}</strong></div>`
-    : `<div class="battle-turn-label">Turno ${bs.turnCount + 1} — Elige movimiento de <strong>${defName}</strong></div>`;
+    : `<div class="battle-turn-label">Turno ${bs.turnCount + 1} — Elige movimiento de <strong>${atkName}</strong></div>`;
 
-  const activeSlots = phase === "defender-turn" ? state.defenderSlots : state.slots;
-  const moveBtns = activeSlots
+  const moveBtns = state.slots
     .map((slot, i) => {
       if (!slot.move) return "";
       const disabled = bs.isOver ? "disabled" : "";
@@ -406,6 +403,12 @@ function renderBattleSection(): string {
 async function startBattle(): Promise<void> {
   if (!state.attacker || !state.defender) return;
 
+  const defenderHasMoves = state.defenderSlots.some((s) => s.move !== null);
+  if (!defenderHasMoves) {
+    alert("El defensor necesita al menos un movimiento configurado para iniciar la batalla.");
+    return;
+  }
+
   const attackerStats = state.attackerStats ?? statsFromPokemon(state.attacker);
   const defenderStats = state.defenderStats ?? statsFromPokemon(state.defender);
 
@@ -415,63 +418,78 @@ async function startBattle(): Promise<void> {
 }
 
 async function handleMoveClick(slotIdx: number): Promise<void> {
-  const bs = battleUI.battleState;
+  let bs = battleUI.battleState;
   if (!bs || bs.isOver) return;
   if (!state.attacker || !state.defender) return;
 
-  const activeSlots = isAttackerTurn ? state.slots : state.defenderSlots;
-  const slot = activeSlots[slotIdx];
+  const slot = state.slots[slotIdx];
   if (!slot.move) return;
 
-  const isAttackerTurn = battleUI.phase === "attacker-turn";
+  // ── Attacker turn ──
+  const atkStats = state.attackerStats ?? statsFromPokemon(state.attacker);
+  const defStats = state.defenderStats ?? statsFromPokemon(state.defender);
 
-  const attackerStats = isAttackerTurn
-    ? (state.attackerStats ?? statsFromPokemon(state.attacker))
-    : (state.defenderStats ?? statsFromPokemon(state.defender));
-  const defenderStats = isAttackerTurn
-    ? (state.defenderStats ?? statsFromPokemon(state.defender))
-    : (state.attackerStats ?? statsFromPokemon(state.attacker));
-  const attackerTypes = isAttackerTurn ? state.attacker.Types : state.defender.Types;
-  const defenderTypes = isAttackerTurn ? state.defender.Types : state.attacker.Types;
-  const attackerLevel = isAttackerTurn ? state.attackerLevel : state.defenderLevel;
-  const defenderLevel = isAttackerTurn ? state.defenderLevel : state.attackerLevel;
-
-  // Swap HP perspective when defender attacks
-  const stateForTurn = isAttackerTurn
-    ? bs
-    : { ...bs, attackerHP: bs.defenderHP, defenderHP: bs.attackerHP, attackerMaxHP: bs.defenderMaxHP, defenderMaxHP: bs.attackerMaxHP };
-
-  const result = await ExecuteTurn({
-    state: stateForTurn,
-    attackerStats,
-    defenderStats,
-    attackerTypes,
-    defenderTypes,
-    attackerLevel,
-    defenderLevel,
+  const atkResult = await ExecuteTurn({
+    state: bs,
+    attackerStats: atkStats,
+    defenderStats: defStats,
+    attackerTypes: state.attacker.Types,
+    defenderTypes: state.defender.Types,
+    attackerLevel: state.attackerLevel,
+    defenderLevel: state.defenderLevel,
     move: slot.move,
   } as core.TurnInput);
 
-  // Restore HP perspective after the turn
-  let newBs = result.newState;
-  if (!isAttackerTurn) {
-    newBs = { ...newBs, attackerHP: newBs.defenderHP, defenderHP: newBs.attackerHP, attackerMaxHP: newBs.defenderMaxHP, defenderMaxHP: newBs.attackerMaxHP };
-    if (newBs.isOver) newBs = { ...newBs, winner: "defender" };
+  bs = atkResult.newState;
+
+  // If attacker KO'd the defender, battle is over
+  if (bs.isOver) {
+    battleUI = { battleState: bs, phase: "over" };
+    renderBattleInPlace();
+    return;
   }
 
-  let nextPhase: BattlePhase = newBs.isOver
-    ? "over"
-    : isAttackerTurn
-    ? "defender-turn"
-    : "attacker-turn";
+  // ── Defender auto-response ──
+  const defenderFilledSlots = state.defenderSlots.filter((s) => s.move !== null);
+  const defMove = defenderFilledSlots[Math.floor(Math.random() * defenderFilledSlots.length)].move!;
 
-  battleUI = { battleState: newBs, phase: nextPhase };
+  // Swap HP perspective for defender's turn
+  const swappedState = {
+    ...bs,
+    attackerHP: bs.defenderHP,
+    defenderHP: bs.attackerHP,
+    attackerMaxHP: bs.defenderMaxHP,
+    defenderMaxHP: bs.attackerMaxHP,
+  };
+
+  const defResult = await ExecuteTurn({
+    state: swappedState,
+    attackerStats: defStats,
+    defenderStats: atkStats,
+    attackerTypes: state.defender.Types,
+    defenderTypes: state.attacker.Types,
+    attackerLevel: state.defenderLevel,
+    defenderLevel: state.attackerLevel,
+    move: defMove,
+  } as core.TurnInput);
+
+  // Restore HP perspective
+  let finalBs = defResult.newState;
+  finalBs = {
+    ...finalBs,
+    attackerHP: finalBs.defenderHP,
+    defenderHP: finalBs.attackerHP,
+    attackerMaxHP: finalBs.defenderMaxHP,
+    defenderMaxHP: finalBs.attackerMaxHP,
+    log: [...(bs.log ?? []), ...(finalBs.log ?? []).slice((bs.log ?? []).length)],
+  };
+  if (finalBs.isOver) {
+    finalBs = { ...finalBs, winner: "defender" };
+  }
+
+  const nextPhase: BattlePhase = finalBs.isOver ? "over" : "attacker-turn";
+  battleUI = { battleState: finalBs, phase: nextPhase };
   renderBattleInPlace();
-
-  // Animate HP bar
-  const barId = isAttackerTurn ? ".battle-hp-bars .battle-pokemon-hp:nth-child(3)" : ".battle-hp-bars .battle-pokemon-hp:nth-child(1)";
-  const bar = container.querySelector<HTMLElement>(`${barId} .hp-bar-fill`);
-  if (bar) gsap.from(bar, { scaleX: 1.1, duration: 0.3, ease: "power2.out" });
 }
 
 async function simulateFullBattle(): Promise<void> {
