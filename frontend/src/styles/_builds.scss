@@ -424,6 +424,66 @@
   font-weight: 600;
 }
 
+// ─── Sección de movimientos del defensor ─────────────────────────────────────
+
+.defender-moves-section {
+  margin-top: 0;
+  border-top: 2px dashed #bee3f8;
+  padding-top: 1rem;
+}
+
+.build-moves-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+
+  .build-section-title { margin-bottom: 0; }
+}
+
+.battle-random-fill-btn {
+  padding: 0.35rem 1rem;
+  background: transparent;
+  color: #3182ce;
+  border: 2px solid #3182ce;
+  border-radius: $border-radius-pill;
+  font-family: $font-body;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.12s;
+
+  &:hover { background: #3182ce; color: white; transform: translateY(-1px); }
+  &:active { transform: none; }
+}
+
+.battle-idle-btns {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.battle-auto-btn {
+  display: inline-block;
+  padding: 0.55rem 1.5rem;
+  background: #6b46c1;
+  color: white;
+  border: none;
+  border-radius: $border-radius-pill;
+  font-family: $font-body;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+
+  &:hover { background: darken(#6b46c1, 8%); transform: translateY(-1px); }
+  &:active { transform: none; }
+}
+
 // ─── Sección de batalla ───────────────────────────────────────────────────────
 
 .battle-section {
@@ -448,7 +508,6 @@
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s, transform 0.12s;
-  margin-top: 0.5rem;
 
   &:hover { background: darken($pokedex-red, 8%); transform: translateY(-1px); }
   &:active { transform: none; }

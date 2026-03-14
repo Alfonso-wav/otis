@@ -107,6 +107,95 @@ func TestExecuteTurn_WinCondition(t *testing.T) {
 	}
 }
 
+func TestSimulateFullBattle_AttackerWins(t *testing.T) {
+	strongMove := Move{Name: "Hyper Beam", Type: "normal", Power: 150, Category: "special", Accuracy: 100}
+	weakMove := Move{Name: "Splash", Type: "water", Power: 0, Category: "status"}
+
+	input := FullBattleInput{
+		AttackerStats: Stats{HP: 200, Attack: 200, SpAttack: 200, Defense: 80, SpDefense: 80, Speed: 80},
+		DefenderStats: Stats{HP: 10, Attack: 10, SpAttack: 10, Defense: 10, SpDefense: 10, Speed: 10},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		AttackerLevel: 100,
+		DefenderLevel: 50,
+		AttackerMoves: []Move{strongMove},
+		DefenderMoves: []Move{weakMove},
+	}
+
+	alwaysZero := func(n int) int { return 0 }
+	result := SimulateFullBattle(input, alwaysZero)
+
+	if !result.IsOver {
+		t.Error("Battle should be over")
+	}
+	if result.Winner != "attacker" {
+		t.Errorf("Winner: want 'attacker', got %q", result.Winner)
+	}
+	if result.TurnCount == 0 {
+		t.Error("TurnCount should be > 0")
+	}
+	if len(result.Log) == 0 {
+		t.Error("Log should not be empty")
+	}
+}
+
+func TestSimulateFullBattle_DefenderWins(t *testing.T) {
+	strongMove := Move{Name: "Hyper Beam", Type: "normal", Power: 150, Category: "special", Accuracy: 100}
+	weakMove := Move{Name: "Splash", Type: "water", Power: 0, Category: "status"}
+
+	input := FullBattleInput{
+		AttackerStats: Stats{HP: 10, Attack: 10, SpAttack: 10, Defense: 10, SpDefense: 10, Speed: 10},
+		DefenderStats: Stats{HP: 200, Attack: 200, SpAttack: 200, Defense: 80, SpDefense: 80, Speed: 80},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		AttackerLevel: 50,
+		DefenderLevel: 100,
+		AttackerMoves: []Move{weakMove},
+		DefenderMoves: []Move{strongMove},
+	}
+
+	alwaysZero := func(n int) int { return 0 }
+	result := SimulateFullBattle(input, alwaysZero)
+
+	if !result.IsOver {
+		t.Error("Battle should be over")
+	}
+	if result.Winner != "defender" {
+		t.Errorf("Winner: want 'defender', got %q", result.Winner)
+	}
+}
+
+func TestSimulateFullBattle_EmptyMoves(t *testing.T) {
+	input := FullBattleInput{
+		AttackerStats: Stats{HP: 100},
+		DefenderStats: Stats{HP: 100},
+		AttackerMoves: []Move{},
+		DefenderMoves: []Move{{Name: "Tackle", Type: "normal", Power: 40, Category: "physical"}},
+	}
+	result := SimulateFullBattle(input, func(n int) int { return 0 })
+	if result.IsOver {
+		t.Error("Should return empty state when attacker has no moves")
+	}
+}
+
+func TestSimulateFullBattle_MaxTurns(t *testing.T) {
+	// Both use status moves → no damage → resolves by HP (equal → draw)
+	statusMove := Move{Name: "Splash", Type: "water", Power: 0, Category: "status"}
+	input := FullBattleInput{
+		AttackerStats: Stats{HP: 100, Attack: 80, SpAttack: 80, Defense: 80, SpDefense: 80, Speed: 80},
+		DefenderStats: Stats{HP: 100, Attack: 80, SpAttack: 80, Defense: 80, SpDefense: 80, Speed: 80},
+		AttackerMoves: []Move{statusMove},
+		DefenderMoves: []Move{statusMove},
+	}
+	result := SimulateFullBattle(input, func(n int) int { return 0 })
+	if !result.IsOver {
+		t.Error("Battle should be over after max turns")
+	}
+	if result.Winner != "draw" {
+		t.Errorf("Winner: want 'draw', got %q", result.Winner)
+	}
+}
+
 func TestExecuteTurn_NoopWhenOver(t *testing.T) {
 	state := InitBattle(200, 0)
 	state.IsOver = true

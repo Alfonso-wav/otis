@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"math/rand"
 
 	"github.com/alfon/pokemon-app/core"
 )
@@ -173,6 +174,13 @@ func (a *App) InitBattle(attackerMaxHP, defenderMaxHP int) core.BattleState {
 // ExecuteTurn applies one turn of battle and returns the new state and damage result.
 func (a *App) ExecuteTurn(input core.TurnInput) core.TurnResult {
 	return core.ExecuteTurn(input)
+}
+
+// SimulateFullBattle runs a complete automatic battle and returns the final state.
+func (a *App) SimulateFullBattle(input core.FullBattleInput) core.BattleState {
+	return core.SimulateFullBattle(input, func(n int) int {
+		return rand.Intn(n)
+	})
 }
 
 // --- Grupo A: Pokémon extendido ---

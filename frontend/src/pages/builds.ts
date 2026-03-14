@@ -8,6 +8,7 @@ import {
   SimulateDamage,
   InitBattle,
   ExecuteTurn,
+  SimulateFullBattle,
 } from "../../wailsjs/go/app/App";
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
@@ -36,6 +37,7 @@ interface BuildState {
   defenderEVs: core.Stats;
 
   slots: [BuildSlot, BuildSlot, BuildSlot, BuildSlot];
+  defenderSlots: [BuildSlot, BuildSlot, BuildSlot, BuildSlot];
 }
 
 const defaultStats = (): core.Stats => ({
@@ -71,6 +73,7 @@ let state: BuildState = {
   defenderEVs: defaultStats(),
 
   slots: [emptySlot(), emptySlot(), emptySlot(), emptySlot()],
+  defenderSlots: [emptySlot(), emptySlot(), emptySlot(), emptySlot()],
 };
 
 let natures: core.Nature[] = [];
@@ -156,7 +159,8 @@ function renderPokemonCard(pokemon: core.Pokemon, stats: core.Stats | null): str
     </div>`;
 }
 
-function renderMoveSlots(moves: core.PokemonMoveEntry[]): string {
+function renderMoveSlots(moves: core.PokemonMoveEntry[], prefix: "atk" | "def"): string {
+  const slots = prefix === "atk" ? state.slots : state.defenderSlots;
   const moveOptions = [...moves]
     .sort((a, b) => a.Name.localeCompare(b.Name))
     .map(
@@ -165,13 +169,13 @@ function renderMoveSlots(moves: core.PokemonMoveEntry[]): string {
     )
     .join("");
 
-  return state.slots
+  return slots
     .map(
       (slot, i) => `
-    <div class="build-slot ${slot.move ? "type-" + slot.move.Type : ""}" data-slot="${i}">
+    <div class="build-slot ${slot.move ? "type-" + slot.move.Type : ""}" data-slot="${i}" data-prefix="${prefix}">
       <div class="build-slot-header">
         <span class="build-slot-num">Slot ${i + 1}</span>
-        ${slot.move ? `<button class="build-slot-clear" data-slot="${i}">✕</button>` : ""}
+        ${slot.move ? `<button class="build-slot-clear" data-slot="${i}" data-prefix="${prefix}">✕</button>` : ""}
       </div>
       ${
         slot.move
@@ -183,12 +187,12 @@ function renderMoveSlots(moves: core.PokemonMoveEntry[]): string {
             <span class="build-move-power">Pwr: ${slot.move.Power || "—"}</span>
             <span class="build-move-acc">Acc: ${slot.move.Accuracy || "—"}</span>
           </div>
-          <label class="build-crit-toggle">
+          ${prefix === "atk" ? `<label class="build-crit-toggle">
             <input type="checkbox" class="build-crit-cb" data-slot="${i}" ${slot.isCritical ? "checked" : ""} />
             Crítico
-          </label>
+          </label>` : ""}
         </div>`
-          : `<select class="build-move-select" data-slot="${i}">
+          : `<select class="build-move-select" data-slot="${i}" data-prefix="${prefix}">
           <option value="">— Elegir movimiento —</option>
           ${moveOptions}
         </select>`
@@ -333,6 +337,9 @@ function renderBattleSection(): string {
   const filledSlots = state.slots.filter((s) => s.move !== null);
   if (!state.attacker || !state.defender || filledSlots.length === 0) return "";
 
+  const filledDefSlots = state.defenderSlots.filter((s) => s.move !== null);
+  const canAutoSimulate = filledSlots.length > 0 && filledDefSlots.length > 0;
+
   const bs = battleUI.battleState;
   const phase = battleUI.phase;
 
@@ -340,15 +347,19 @@ function renderBattleSection(): string {
     return `
       <div class="battle-section" id="battle-section">
         <h3 class="build-section-title">Simulación de batalla</h3>
-        <button class="battle-start-btn" id="battle-start-btn">Iniciar batalla</button>
+        <div class="battle-idle-btns">
+          <button class="battle-start-btn" id="battle-start-btn">Iniciar batalla turno a turno</button>
+          ${canAutoSimulate ? `<button class="battle-auto-btn" id="battle-auto-btn">Simular batalla completa</button>` : ""}
+        </div>
       </div>`;
   }
 
   const atkName = state.attacker.Name;
   const defName = state.defender.Name;
 
+  const winnerName = bs.winner === "attacker" ? atkName : bs.winner === "defender" ? defName : "Empate";
   const winnerBanner = bs.isOver
-    ? `<div class="battle-winner-banner">${bs.winner === "attacker" ? atkName : defName} gana la batalla!</div>`
+    ? `<div class="battle-winner-banner">${bs.winner === "draw" ? "¡Empate!" : winnerName + " gana la batalla!"}</div>`
     : "";
 
   const turnLabel = bs.isOver
@@ -357,7 +368,7 @@ function renderBattleSection(): string {
     ? `<div class="battle-turn-label">Turno ${bs.turnCount + 1} — Elige movimiento de <strong>${atkName}</strong></div>`
     : `<div class="battle-turn-label">Turno ${bs.turnCount + 1} — Elige movimiento de <strong>${defName}</strong></div>`;
 
-  const activeSlots = phase === "attacker-turn" ? state.slots : state.slots;
+  const activeSlots = phase === "defender-turn" ? state.defenderSlots : state.slots;
   const moveBtns = activeSlots
     .map((slot, i) => {
       if (!slot.move) return "";
@@ -370,7 +381,7 @@ function renderBattleSection(): string {
     })
     .join("");
 
-  const logEntries = [...(bs.log ?? [])].reverse().slice(0, 10);
+  const logEntries = [...(bs.log ?? [])].reverse().slice(0, 20);
   const logHTML = logEntries.map((entry) => `<div class="battle-log-entry">${entry}</div>`).join("");
 
   return `
@@ -383,11 +394,12 @@ function renderBattleSection(): string {
         ${renderHPBar(defName, bs.defenderHP, bs.defenderMaxHP)}
       </div>
       ${turnLabel}
-      <div class="battle-move-btns" id="battle-move-btns">
-        ${moveBtns}
-      </div>
+      ${!bs.isOver ? `<div class="battle-move-btns" id="battle-move-btns">${moveBtns}</div>` : ""}
       <div class="battle-log" id="battle-log">${logHTML}</div>
-      <button class="battle-reset-btn" id="battle-reset-btn">Reiniciar</button>
+      <div class="battle-idle-btns">
+        <button class="battle-reset-btn" id="battle-reset-btn">Reiniciar</button>
+        ${canAutoSimulate && !bs.isOver ? `<button class="battle-auto-btn" id="battle-auto-btn">Simular batalla completa</button>` : ""}
+      </div>
     </div>`;
 }
 
@@ -407,7 +419,8 @@ async function handleMoveClick(slotIdx: number): Promise<void> {
   if (!bs || bs.isOver) return;
   if (!state.attacker || !state.defender) return;
 
-  const slot = state.slots[slotIdx];
+  const activeSlots = isAttackerTurn ? state.slots : state.defenderSlots;
+  const slot = activeSlots[slotIdx];
   if (!slot.move) return;
 
   const isAttackerTurn = battleUI.phase === "attacker-turn";
@@ -461,6 +474,35 @@ async function handleMoveClick(slotIdx: number): Promise<void> {
   if (bar) gsap.from(bar, { scaleX: 1.1, duration: 0.3, ease: "power2.out" });
 }
 
+async function simulateFullBattle(): Promise<void> {
+  if (!state.attacker || !state.defender) return;
+
+  const atkMoves = state.slots.filter((s) => s.move !== null).map((s) => s.move!);
+  const defMoves = state.defenderSlots.filter((s) => s.move !== null).map((s) => s.move!);
+
+  if (atkMoves.length === 0 || defMoves.length === 0) {
+    alert("Ambos lados necesitan al menos un movimiento para simular la batalla completa.");
+    return;
+  }
+
+  const attackerStats = state.attackerStats ?? statsFromPokemon(state.attacker);
+  const defenderStats = state.defenderStats ?? statsFromPokemon(state.defender);
+
+  const result = await SimulateFullBattle({
+    attackerStats,
+    defenderStats,
+    attackerTypes: state.attacker.Types,
+    defenderTypes: state.defender.Types,
+    attackerLevel: state.attackerLevel,
+    defenderLevel: state.defenderLevel,
+    attackerMoves: atkMoves,
+    defenderMoves: defMoves,
+  } as core.FullBattleInput);
+
+  battleUI = { battleState: result, phase: "over" };
+  renderBattleInPlace();
+}
+
 function renderBattleInPlace(): void {
   const existing = container.querySelector<HTMLElement>("#battle-section");
   if (!existing) {
@@ -474,6 +516,7 @@ function renderBattleInPlace(): void {
 function bindBattleEvents(): void {
   container.querySelector<HTMLButtonElement>("#battle-start-btn")?.addEventListener("click", () => startBattle());
   container.querySelector<HTMLButtonElement>("#battle-reset-btn")?.addEventListener("click", () => startBattle());
+  container.querySelector<HTMLButtonElement>("#battle-auto-btn")?.addEventListener("click", () => simulateFullBattle());
   container.querySelectorAll<HTMLButtonElement>(".move-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const idx = parseInt(btn.dataset.slot ?? "0");
@@ -503,8 +546,21 @@ function buildLayout(): void {
 
   const movesSection = state.attacker
     ? `<div class="build-moves-section">
-        <h3 class="build-section-title">Movimientos (máx. 4)</h3>
-        <div class="build-slots">${renderMoveSlots(state.attacker.Moves ?? [])}</div>
+        <div class="build-moves-header">
+          <h3 class="build-section-title">Movimientos atacante (máx. 4)</h3>
+          <button class="battle-random-fill-btn" id="atk-random-fill-btn">Rellenar aleatoriamente</button>
+        </div>
+        <div class="build-slots">${renderMoveSlots(state.attacker.Moves ?? [], "atk")}</div>
+      </div>`
+    : "";
+
+  const defenderMovesSection = state.defender
+    ? `<div class="build-moves-section defender-moves-section">
+        <div class="build-moves-header">
+          <h3 class="build-section-title">Movimientos defensor (máx. 4)</h3>
+          <button class="battle-random-fill-btn" id="def-random-fill-btn">Rellenar aleatoriamente</button>
+        </div>
+        <div class="build-slots">${renderMoveSlots(state.defender.Moves ?? [], "def")}</div>
       </div>`
     : "";
 
@@ -537,6 +593,7 @@ function buildLayout(): void {
     </div>
 
     ${movesSection}
+    ${defenderMovesSection}
     ${dmgSection}
     ${btlSection}
   `;
@@ -571,17 +628,23 @@ function bindEvents(): void {
     if (defInput) createAutocomplete(defInput, pokemonNames, (name) => fetchPokemon("def", name));
   }
 
+  container.querySelector<HTMLButtonElement>("#atk-random-fill-btn")?.addEventListener("click", () => randomFillSlots("atk"));
+  container.querySelector<HTMLButtonElement>("#def-random-fill-btn")?.addEventListener("click", () => randomFillSlots("def"));
+
   container.querySelectorAll<HTMLSelectElement>(".build-move-select").forEach((sel) => {
     sel.addEventListener("change", () => {
       const idx = parseInt(sel.dataset.slot ?? "0");
-      if (sel.value) loadMove(idx, sel.value);
+      const prefix = (sel.dataset.prefix as "atk" | "def") ?? "atk";
+      if (sel.value) loadMove(idx, sel.value, prefix);
     });
   });
 
   container.querySelectorAll<HTMLButtonElement>(".build-slot-clear").forEach((btn) => {
     btn.addEventListener("click", () => {
       const idx = parseInt(btn.dataset.slot ?? "0");
-      state.slots[idx] = emptySlot();
+      const prefix = (btn.dataset.prefix as "atk" | "def") ?? "atk";
+      if (prefix === "atk") state.slots[idx] = emptySlot();
+      else state.defenderSlots[idx] = emptySlot();
       buildLayout();
     });
   });
@@ -659,6 +722,7 @@ async function fetchPokemon(prefix: "atk" | "def", name: string): Promise<void> 
     } else {
       state.defender = pokemon;
       state.defenderStats = null;
+      state.defenderSlots = [emptySlot(), emptySlot(), emptySlot(), emptySlot()];
     }
     battleUI = { battleState: null, phase: "idle" };
 
@@ -674,13 +738,47 @@ async function fetchPokemon(prefix: "atk" | "def", name: string): Promise<void> 
   }
 }
 
-async function loadMove(slotIdx: number, moveName: string): Promise<void> {
+async function loadMove(slotIdx: number, moveName: string, prefix: "atk" | "def" = "atk"): Promise<void> {
   try {
     const move = await GetMove(moveName);
-    state.slots[slotIdx] = { moveName, move, isCritical: false };
+    if (prefix === "atk") {
+      state.slots[slotIdx] = { moveName, move, isCritical: false };
+    } else {
+      state.defenderSlots[slotIdx] = { moveName, move, isCritical: false };
+    }
     buildLayout();
   } catch (err: unknown) {
     alert(`Error al cargar movimiento: ${String(err)}`);
+  }
+}
+
+async function randomFillSlots(prefix: "atk" | "def"): Promise<void> {
+  const pokemon = prefix === "atk" ? state.attacker : state.defender;
+  if (!pokemon) return;
+
+  const available = pokemon.Moves ?? [];
+  if (available.length === 0) return;
+
+  // Pick up to 4 random moves (unique).
+  const shuffled = [...available].sort(() => Math.random() - 0.5);
+  const picked = shuffled.slice(0, 4);
+
+  try {
+    const moves = await Promise.all(picked.map((m) => GetMove(m.Name)));
+    const newSlots: [BuildSlot, BuildSlot, BuildSlot, BuildSlot] = [
+      emptySlot(), emptySlot(), emptySlot(), emptySlot(),
+    ];
+    moves.forEach((move, i) => {
+      newSlots[i] = { moveName: move.Name, move, isCritical: false };
+    });
+    if (prefix === "atk") {
+      state.slots = newSlots;
+    } else {
+      state.defenderSlots = newSlots;
+    }
+    buildLayout();
+  } catch (err: unknown) {
+    alert(`Error al rellenar movimientos: ${String(err)}`);
   }
 }
 
