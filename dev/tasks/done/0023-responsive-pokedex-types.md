@@ -26,7 +26,7 @@ Hacer que las paginas de Pokedex (grid + tabla) y Types se adapten completamente
 - Asegurar que las imagenes de los Pokemon escalen proporcionalmente.
 - Card hover effects: desactivar en touch devices.
 
-- [ ] Completado
+- [x] Completado
 
 ### Paso 2 — Pokemon tabla responsive
 
@@ -35,7 +35,7 @@ Hacer que las paginas de Pokedex (grid + tabla) y Types se adapten completamente
 - Mantener la primera columna (nombre/imagen) sticky en mobile si es posible.
 - Ajustar los indicadores de sorting para que sean visibles en mobile.
 
-- [ ] Completado
+- [x] Completado
 
 ### Paso 3 — Paginacion responsive
 
@@ -43,7 +43,7 @@ Hacer que las paginas de Pokedex (grid + tabla) y Types se adapten completamente
 - Simplificar el texto de paginacion ("1/50" en vez de "Pagina 1 de 50").
 - Centrar controles de paginacion.
 
-- [ ] Completado
+- [x] Completado
 
 ### Paso 4 — Types page responsive
 
@@ -51,16 +51,16 @@ Hacer que las paginas de Pokedex (grid + tabla) y Types se adapten completamente
 - Contenido expandible dentro de type cards: stack vertical en mobile.
 - Asegurar que las badges de tipo sean legibles en todos los tamaños.
 
-- [ ] Completado
+- [x] Completado
 
 ## Criterios de aceptacion
 
-- [ ] Pokemon grid muestra 2-3 cards por fila en mobile, 4+ en desktop.
-- [ ] Tabla de Pokemon tiene scroll horizontal en mobile sin romper el layout.
-- [ ] Paginacion usable en mobile con botones de tamaño tactil.
-- [ ] Type cards se reorganizan correctamente en todos los breakpoints.
-- [ ] No se pierde funcionalidad (sorting, filtros, toggle grid/tabla) en ningún tamaño.
-- [ ] No se introducen cambios en Core ni Shell.
+- [x] Pokemon grid muestra 2-3 cards por fila en mobile, 4+ en desktop.
+- [x] Tabla de Pokemon tiene scroll horizontal en mobile sin romper el layout.
+- [x] Paginacion usable en mobile con botones de tamaño tactil.
+- [x] Type cards se reorganizan correctamente en todos los breakpoints.
+- [x] No se pierde funcionalidad (sorting, filtros, toggle grid/tabla) en ningún tamaño.
+- [x] No se introducen cambios en Core ni Shell.
 
 ## Dependencias externas nuevas
 

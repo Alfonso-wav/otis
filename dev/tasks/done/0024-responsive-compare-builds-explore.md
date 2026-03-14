@@ -26,7 +26,7 @@ Hacer que las paginas de Compare (comparador de Pokemon), Builds (simulador de b
 - Pokemon cards en compare: reducir tamaño de imagen y stats en mobile.
 - "VS" divider: ocultar o reducir en mobile.
 
-- [ ] Completado
+- [x] Completado
 
 ### Paso 2 — Builds page responsive
 
@@ -35,7 +35,7 @@ Hacer que las paginas de Compare (comparador de Pokemon), Builds (simulador de b
 - Damage table: scroll horizontal en mobile, reducir font-size.
 - EV calculator: stack inputs en mobile, reducir el grid de stats de 3 a 2 o 1 columna.
 
-- [ ] Completado
+- [x] Completado
 
 ### Paso 3 — Battle section responsive
 
@@ -44,7 +44,7 @@ Hacer que las paginas de Compare (comparador de Pokemon), Builds (simulador de b
 - Battle log: altura reducida en mobile, scroll funcional.
 - Control buttons (auto-simulate, reset): stack vertical o wrap en mobile.
 
-- [ ] Completado
+- [x] Completado
 
 ### Paso 4 — Explore pages responsive
 
@@ -53,16 +53,16 @@ Hacer que las paginas de Compare (comparador de Pokemon), Builds (simulador de b
 - Abilities grid: similar a moves, cards compactas en mobile.
 - Mini-tabs de explore: scroll horizontal si no caben.
 
-- [ ] Completado
+- [x] Completado
 
 ## Criterios de aceptacion
 
-- [ ] Compare page usable en mobile: stats legibles, chart visible, inputs accesibles.
-- [ ] Builds page: todos los controles accesibles en mobile, damage table legible.
-- [ ] Battle section: botones de tamaño tactil, log scrollable, HP bars visibles.
-- [ ] Explore: todas las sub-paginas (regions, moves, abilities) usables en mobile.
-- [ ] Transiciones entre tamaños de ventana son fluidas (sin saltos bruscos).
-- [ ] No se introducen cambios en Core ni Shell.
+- [x] Compare page usable en mobile: stats legibles, chart visible, inputs accesibles.
+- [x] Builds page: todos los controles accesibles en mobile, damage table legible.
+- [x] Battle section: botones de tamaño tactil, log scrollable, HP bars visibles.
+- [x] Explore: todas las sub-paginas (regions, moves, abilities) usables en mobile.
+- [x] Transiciones entre tamaños de ventana son fluidas (sin saltos bruscos).
+- [x] No se introducen cambios en Core ni Shell.
 
 ## Dependencias externas nuevas
 

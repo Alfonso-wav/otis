@@ -240,7 +240,46 @@
 
 // ─── Responsive ──────────────────────────────────────────────────────────────
 
-@media (max-width: 480px) {
+// Tablet breakpoint — partial stack for inputs, smaller chart
+@include tablet {
+  .compare-inputs {
+    flex-wrap: wrap;
+
+    .compare-input {
+      flex: 1 1 40%;
+      min-width: 150px;
+    }
+
+    .compare-vs {
+      flex: 0 0 auto;
+    }
+
+    .compare-btn {
+      flex: 1 1 100%;
+    }
+  }
+
+  .compare-header {
+    gap: 0.75rem;
+  }
+
+  .compare-sprite {
+    width: 96px;
+    height: 96px;
+  }
+
+  .compare-pokemon-name {
+    font-size: 1.3rem;
+  }
+
+  // Reduce chart canvas on tablet
+  .compare-chart {
+    max-height: 280px;
+  }
+}
+
+// Mobile breakpoint — full stack
+@include mobile {
   .compare-inputs {
     flex-direction: column;
     align-items: stretch;
@@ -250,6 +289,11 @@
     width: 100%;
   }
 
+  .compare-vs {
+    text-align: center;
+    font-size: 1.2rem;
+  }
+
   .compare-header {
     flex-direction: column;
     align-items: center;
@@ -257,5 +301,48 @@
 
   .compare-winner {
     order: -1;
+    font-size: 1.1rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .compare-sprite {
+    width: 80px;
+    height: 80px;
+  }
+
+  .compare-pokemon-name {
+    font-size: 1.2rem;
+  }
+
+  // Stats table: horizontal scroll on mobile
+  .compare-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .compare-table {
+    min-width: 340px;
+  }
+
+  .compare-stat-name {
+    font-size: 0.72rem;
+    padding: 0.4rem 0.4rem;
+  }
+
+  .compare-stat-val {
+    font-size: 0.82rem;
+    padding: 0.3rem 0.3rem;
+  }
+
+  .compare-diff {
+    font-size: 0.7rem;
+  }
+
+  // Reduce chart canvas on mobile
+  .compare-chart {
+    max-height: 220px;
   }
 }
