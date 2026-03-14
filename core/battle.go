@@ -270,8 +270,13 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 			critStr = "¡Golpe crítico! "
 		}
 
-		logEntry = fmt.Sprintf("%s[T%d] %s usó %s → %d daño (%s) | HP Defensor: %d/%d",
-			critStr, state.TurnCount, input.AttackerName, input.Move.Name, applied, effStr, state.DefenderHP, state.DefenderMaxHP)
+		stabStr := ""
+		if dmg.HasSTAB {
+			stabStr = "(STAB) "
+		}
+
+		logEntry = fmt.Sprintf("%s%s[T%d] %s usó %s → %d daño (%s) | HP Defensor: %d/%d",
+			critStr, stabStr, state.TurnCount, input.AttackerName, input.Move.Name, applied, effStr, state.DefenderHP, state.DefenderMaxHP)
 
 		if state.DefenderHP <= 0 {
 			state.IsOver = true
