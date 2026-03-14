@@ -123,9 +123,41 @@ type mockScraper struct{}
 
 func (m *mockScraper) FetchPokedex() ([]core.PokedexDBEntry, error) { return nil, nil }
 
+// mockTeamStorage implementa core.TeamStorage para tests.
+type mockTeamStorage struct {
+	teams map[string]core.Team
+}
+
+func newMockTeamStorage() *mockTeamStorage {
+	return &mockTeamStorage{teams: make(map[string]core.Team)}
+}
+
+func (m *mockTeamStorage) SaveTeam(team core.Team) error {
+	m.teams[team.Name] = team
+	return nil
+}
+func (m *mockTeamStorage) ListTeams() ([]core.Team, error) {
+	var result []core.Team
+	for _, t := range m.teams {
+		result = append(result, t)
+	}
+	return result, nil
+}
+func (m *mockTeamStorage) GetTeam(name string) (core.Team, error) {
+	t, ok := m.teams[name]
+	if !ok {
+		return core.Team{}, errors.New("not found")
+	}
+	return t, nil
+}
+func (m *mockTeamStorage) DeleteTeam(name string) error {
+	delete(m.teams, name)
+	return nil
+}
+
 func TestGetPokemon(t *testing.T) {
 	expected := core.Pokemon{ID: 25, Name: "pikachu"}
-	a := NewApp(&mockFetcher{pokemon: expected}, &mockScraper{})
+	a := NewApp(&mockFetcher{pokemon: expected}, &mockScraper{}, newMockTeamStorage())
 
 	got, err := a.GetPokemon("Pikachu")
 	if err != nil {
@@ -137,7 +169,7 @@ func TestGetPokemon(t *testing.T) {
 }
 
 func TestGetPokemonError(t *testing.T) {
-	a := NewApp(&mockFetcher{pokemonErr: errors.New("not found")}, &mockScraper{})
+	a := NewApp(&mockFetcher{pokemonErr: errors.New("not found")}, &mockScraper{}, newMockTeamStorage())
 
 	_, err := a.GetPokemon("unknown")
 	if err == nil {
@@ -150,7 +182,7 @@ func TestListPokemon(t *testing.T) {
 		Count:   2,
 		Results: []core.PokemonListItem{{Name: "bulbasaur"}, {Name: "ivysaur"}},
 	}
-	a := NewApp(&mockFetcher{list: expected}, &mockScraper{})
+	a := NewApp(&mockFetcher{list: expected}, &mockScraper{}, newMockTeamStorage())
 
 	got, err := a.ListPokemon(0, 2)
 	if err != nil {
@@ -162,7 +194,7 @@ func TestListPokemon(t *testing.T) {
 }
 
 func TestListPokemonError(t *testing.T) {
-	a := NewApp(&mockFetcher{listErr: errors.New("api error")}, &mockScraper{})
+	a := NewApp(&mockFetcher{listErr: errors.New("api error")}, &mockScraper{}, newMockTeamStorage())
 
 	_, err := a.ListPokemon(0, 20)
 	if err == nil {
@@ -175,7 +207,7 @@ func TestListTypes(t *testing.T) {
 		Count:   2,
 		Results: []core.PokemonListItem{{Name: "fire"}, {Name: "water"}},
 	}
-	a := NewApp(&mockFetcher{typeList: expected}, &mockScraper{})
+	a := NewApp(&mockFetcher{typeList: expected}, &mockScraper{}, newMockTeamStorage())
 
 	got, err := a.ListTypes()
 	if err != nil {
@@ -187,7 +219,7 @@ func TestListTypes(t *testing.T) {
 }
 
 func TestListTypesError(t *testing.T) {
-	a := NewApp(&mockFetcher{typeListErr: errors.New("api error")}, &mockScraper{})
+	a := NewApp(&mockFetcher{typeListErr: errors.New("api error")}, &mockScraper{}, newMockTeamStorage())
 
 	_, err := a.ListTypes()
 	if err == nil {
@@ -200,7 +232,7 @@ func TestGetType(t *testing.T) {
 		Name:    "fire",
 		Pokemon: []core.TypePokemonEntry{{Name: "charmander"}},
 	}
-	a := NewApp(&mockFetcher{typeDetail: expected}, &mockScraper{})
+	a := NewApp(&mockFetcher{typeDetail: expected}, &mockScraper{}, newMockTeamStorage())
 
 	got, err := a.GetType("Fire")
 	if err != nil {
@@ -212,7 +244,7 @@ func TestGetType(t *testing.T) {
 }
 
 func TestGetTypeError(t *testing.T) {
-	a := NewApp(&mockFetcher{typeDetailErr: errors.New("not found")}, &mockScraper{})
+	a := NewApp(&mockFetcher{typeDetailErr: errors.New("not found")}, &mockScraper{}, newMockTeamStorage())
 
 	_, err := a.GetType("unknown")
 	if err == nil {

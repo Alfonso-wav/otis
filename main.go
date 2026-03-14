@@ -18,7 +18,8 @@ func main() {
 	cfg := app.LoadConfig()
 	fetcher := shell.NewPokeAPIClient(cfg.PokeAPIBaseURL)
 	scraper := shell.NewPokemonDBClient(cfg.PokemonDBBaseURL)
-	a := app.NewApp(fetcher, scraper)
+	teams := shell.NewFileTeamStorage("data/teams")
+	a := app.NewApp(fetcher, scraper, teams)
 
 	err := wails.Run(&options.App{
 		Title:  "Pokédex",

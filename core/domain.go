@@ -327,6 +327,24 @@ type VersionGroup struct {
 	Regions    []string
 }
 
+// --- Teams ---
+
+// TeamMember representa un Pokemon guardado en un equipo con su build completa.
+type TeamMember struct {
+	PokemonName string   `json:"pokemonName"`
+	Moves       []string `json:"moves"`
+	Level       int      `json:"level"`
+	Nature      string   `json:"nature"`
+	IVs         Stats    `json:"ivs"`
+	EVs         Stats    `json:"evs"`
+}
+
+// Team representa un equipo de Pokemon con nombre personalizado.
+type Team struct {
+	Name    string       `json:"name"`
+	Members []TeamMember `json:"members"`
+}
+
 // --- PokemonDB Scraper ---
 
 // PokedexDBEntry representa un Pokémon extraído de la tabla de pokemondb.net/pokedex/all.

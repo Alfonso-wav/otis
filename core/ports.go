@@ -5,6 +5,14 @@ type PokemonDBScraper interface {
 	FetchPokedex() ([]PokedexDBEntry, error)
 }
 
+// TeamStorage define la interfaz para persistir equipos de Pokemon.
+type TeamStorage interface {
+	SaveTeam(team Team) error
+	ListTeams() ([]Team, error)
+	GetTeam(name string) (Team, error)
+	DeleteTeam(name string) error
+}
+
 type PokemonFetcher interface {
 	// --- Pokémon base ---
 	FetchPokemon(name string) (Pokemon, error)
