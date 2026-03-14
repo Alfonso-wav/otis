@@ -12,6 +12,8 @@ export function DeleteTeam(arg1:string):Promise<void>;
 
 export function DeleteTeamMember(arg1:string,arg2:number):Promise<void>;
 
+export function DownloadSprites(arg1:Array<core.SpriteCategory>):Promise<core.SpriteDownloadResult>;
+
 export function ExecuteTurn(arg1:core.TurnInput):Promise<core.TurnResult>;
 
 export function GetAbility(arg1:string):Promise<core.Ability>;

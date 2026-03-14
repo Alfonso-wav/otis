@@ -2,6 +2,9 @@
 node_modules/
 frontend/dist/
 
+# Downloaded sprites (large, generated at runtime)
+assets/sprites/
+
 # Binaries
 build/bin/
 *.exe

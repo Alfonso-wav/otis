@@ -14,11 +14,12 @@ type App struct {
 	fetcher core.PokemonFetcher
 	scraper core.PokemonDBScraper
 	teams   core.TeamStorage
+	sprites core.SpriteDownloader
 }
 
-// NewApp crea una instancia de App con el fetcher, scraper y team storage inyectados desde main.
-func NewApp(fetcher core.PokemonFetcher, scraper core.PokemonDBScraper, teams core.TeamStorage) *App {
-	return &App{fetcher: fetcher, scraper: scraper, teams: teams}
+// NewApp crea una instancia de App con el fetcher, scraper, team storage y sprite downloader inyectados desde main.
+func NewApp(fetcher core.PokemonFetcher, scraper core.PokemonDBScraper, teams core.TeamStorage, sprites core.SpriteDownloader) *App {
+	return &App{fetcher: fetcher, scraper: scraper, teams: teams, sprites: sprites}
 }
 
 // Startup es llamado por Wails al arrancar la ventana.
@@ -304,6 +305,13 @@ func (a *App) GetVersionGroup(name string) (core.VersionGroup, error) {
 // ScrapePokedex extrae la tabla completa de Pokémon desde pokemondb.net.
 func (a *App) ScrapePokedex() ([]core.PokedexDBEntry, error) {
 	return a.scraper.FetchPokedex()
+}
+
+// --- Sprites ---
+
+// DownloadSprites descarga sprites de pokemondb.net a disco local.
+func (a *App) DownloadSprites(categories []core.SpriteCategory) (core.SpriteDownloadResult, error) {
+	return a.sprites.DownloadAllSprites("assets/sprites", categories)
 }
 
 // --- Teams ---

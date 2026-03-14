@@ -22,6 +22,10 @@ export function DeleteTeamMember(arg1, arg2) {
   return window['go']['app']['App']['DeleteTeamMember'](arg1, arg2);
 }
 
+export function DownloadSprites(arg1) {
+  return window['go']['app']['App']['DownloadSprites'](arg1);
+}
+
 export function ExecuteTurn(arg1) {
   return window['go']['app']['App']['ExecuteTurn'](arg1);
 }

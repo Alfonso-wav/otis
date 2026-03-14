@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"log"
+	"net/http"
 
 	"github.com/alfon/pokemon-app/app"
 	"github.com/alfon/pokemon-app/shell"
@@ -19,14 +20,15 @@ func main() {
 	fetcher := shell.NewPokeAPIClient(cfg.PokeAPIBaseURL)
 	scraper := shell.NewPokemonDBClient(cfg.PokemonDBBaseURL)
 	teams := shell.NewFileTeamStorage("data/teams")
-	a := app.NewApp(fetcher, scraper, teams)
+	a := app.NewApp(fetcher, scraper, teams, scraper)
 
 	err := wails.Run(&options.App{
 		Title:  "Pokédex",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
-			Assets: assets,
+			Assets:  assets,
+			Handler: http.FileServer(http.Dir(".")),
 		},
 		OnStartup: a.Startup,
 		Bind:      []interface{}{a},

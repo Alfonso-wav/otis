@@ -89,6 +89,11 @@ let cachedTeams: core.Team[] = [];
 
 function spriteURL(name: string): string {
   const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  return `/assets/sprites/home-normal/${safeName}.png`;
+}
+
+function spriteFallback(name: string): string {
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
   return `https://img.pokemondb.net/sprites/home/normal/${safeName}.png`;
 }
 
@@ -101,11 +106,12 @@ function typeBadges(types: Array<{ Name: string }>): string {
 }
 
 function categoryIcon(cat: string): string {
-  const base = "https://img.pokemondb.net/images/icons";
+  const localBase = "/assets/sprites/icons";
+  const cdnBase = "https://img.pokemondb.net/images/icons";
   const map: Record<string, string> = {
-    physical: `<img src="${base}/move-physical.png" class="move-cat-icon" alt="Physical" title="Physical">`,
-    special:  `<img src="${base}/move-special.png"  class="move-cat-icon" alt="Special"  title="Special">`,
-    status:   `<img src="${base}/move-status.png"   class="move-cat-icon" alt="Status"   title="Status">`,
+    physical: `<img src="${localBase}/move-physical.png" class="move-cat-icon" alt="Physical" title="Physical" onerror="this.onerror=null;this.src='${cdnBase}/move-physical.png'">`,
+    special:  `<img src="${localBase}/move-special.png"  class="move-cat-icon" alt="Special"  title="Special"  onerror="this.onerror=null;this.src='${cdnBase}/move-special.png'">`,
+    status:   `<img src="${localBase}/move-status.png"   class="move-cat-icon" alt="Status"   title="Status"   onerror="this.onerror=null;this.src='${cdnBase}/move-status.png'">`,
   };
   return map[cat] ?? `<span class="move-cat-unknown">?</span>`;
 }
@@ -156,7 +162,7 @@ function renderPokemonCard(pokemon: core.Pokemon, stats: core.Stats | null): str
   const displayStats = stats ?? bst;
   return `
     <div class="build-poke-card">
-      <img class="build-sprite" src="${spriteURL(pokemon.Name)}" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.ID}.png'" alt="${pokemon.Name}" />
+      <img class="build-sprite" src="${spriteURL(pokemon.Name)}" onerror="this.onerror=null;this.src='${spriteFallback(pokemon.Name)}'" alt="${pokemon.Name}" />
       <div class="build-poke-name">${pokemon.Name}</div>
       <div class="build-poke-types">${typeBadges(pokemon.Types)}</div>
       <div class="build-stats-grid">
@@ -670,7 +676,7 @@ function renderTeamsSection(): string {
     const membersHTML = team.members
       .map((m, i) => `
         <div class="team-member-row">
-          <img class="team-member-sprite" src="${spriteURL(m.pokemonName)}" onerror="this.style.display='none'" alt="${m.pokemonName}" />
+          <img class="team-member-sprite" src="${spriteURL(m.pokemonName)}" onerror="this.onerror=null;this.src='${spriteFallback(m.pokemonName)}'" alt="${m.pokemonName}" />
           <span class="team-member-name">${m.pokemonName}</span>
           <span class="team-member-detail">Lv.${m.level} ${m.nature}</span>
           <span class="team-member-moves">${m.moves.join(", ")}</span>

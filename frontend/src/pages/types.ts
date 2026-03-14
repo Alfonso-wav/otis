@@ -18,7 +18,12 @@ function idFromURL(url: string): string {
   return parts[parts.length - 1];
 }
 
-function spriteURL(id: string): string {
+function spriteURL(name: string): string {
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  return `/assets/sprites/home-normal/${safeName}.png`;
+}
+
+function spriteFallbackById(id: string): string {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
 }
 
@@ -104,7 +109,7 @@ async function toggleType(card: HTMLDivElement): Promise<void> {
       .map((p) => {
         const id = idFromURL(p.URL);
         return `<div class="type-pokemon-item" data-name="${p.Name}">
-          <img src="${spriteURL(id)}" alt="${p.Name}" loading="lazy" />
+          <img src="${spriteURL(p.Name)}" onerror="this.onerror=null;this.src='${spriteFallbackById(id)}'" alt="${p.Name}" loading="lazy" />
           <span>${p.Name}</span>
         </div>`;
       })
