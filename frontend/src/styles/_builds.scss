@@ -1,0 +1,425 @@
+@use "variables" as *;
+
+// ─── Layout principal ─────────────────────────────────────────────────────────
+
+.build-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.build-col {
+  background: white;
+  border-radius: $border-radius-lg;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+
+  &-title {
+    font-family: $font-display;
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+    color: #2d3748;
+    margin-bottom: 0.75rem;
+  }
+
+  &--attacker .build-col-title { color: $pokedex-red; }
+  &--defender .build-col-title { color: #3182ce; }
+}
+
+// ─── Búsqueda ────────────────────────────────────────────────────────────────
+
+.build-search-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.build-search-input {
+  flex: 1;
+  padding: 0.45rem 0.9rem;
+  border: 2px solid #e2e8f0;
+  border-radius: $border-radius-pill;
+  font-family: $font-body;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: $pokedex-red;
+    box-shadow: 0 0 0 3px rgba($pokedex-red, 0.12);
+  }
+}
+
+.build-search-btn {
+  padding: 0.45rem 1.1rem;
+  background: $pokedex-red;
+  color: white;
+  border: none;
+  border-radius: $border-radius-pill;
+  font-family: $font-body;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+
+  &:hover { background: darken($pokedex-red, 8%); transform: translateY(-1px); }
+  &:active { transform: none; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+}
+
+// ─── Tarjeta Pokémon ──────────────────────────────────────────────────────────
+
+.build-poke-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 0;
+
+  &--empty {
+    padding: 2rem 0;
+    color: #a0aec0;
+    font-size: 0.9rem;
+  }
+}
+
+.build-sprite {
+  width: 96px;
+  height: 96px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+}
+
+.build-poke-name {
+  font-family: $font-display;
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
+  text-transform: capitalize;
+  color: #2d3748;
+}
+
+.build-poke-types {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+
+.build-stats-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.15rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.build-stat-label {
+  font-weight: 700;
+  color: #718096;
+  text-align: right;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.build-stat-val {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+// ─── Configuración de stats ───────────────────────────────────────────────────
+
+.build-stats-config {
+  margin-top: 1rem;
+  border-top: 1px solid #edf2f7;
+  padding-top: 0.75rem;
+}
+
+.build-stats-config-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.sc-field-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #718096;
+  text-transform: uppercase;
+}
+
+.sc-input {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.82rem;
+  width: 60px;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &.sc-level { width: 60px; }
+
+  &:focus { border-color: $pokedex-red; }
+}
+
+.sc-select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:focus { border-color: $pokedex-red; }
+}
+
+.sc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-bottom: 0.75rem;
+
+  th {
+    font-weight: 700;
+    color: #718096;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    text-align: center;
+    padding: 0.2rem;
+    border-bottom: 1px solid #edf2f7;
+  }
+
+  td {
+    padding: 0.2rem 0.3rem;
+    text-align: center;
+    vertical-align: middle;
+  }
+}
+
+.sc-label {
+  font-weight: 700;
+  color: #4a5568;
+  text-align: right;
+  font-size: 0.78rem;
+}
+
+.build-calc-btn {
+  width: 100%;
+  padding: 0.4rem;
+  background: #edf2f7;
+  border: 1px solid #e2e8f0;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #4a5568;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: #e2e8f0; }
+}
+
+// ─── Slots de movimientos ─────────────────────────────────────────────────────
+
+.build-moves-section {
+  margin-bottom: 1.5rem;
+}
+
+.build-section-title {
+  font-family: $font-display;
+  font-size: 1.3rem;
+  letter-spacing: 0.05em;
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+}
+
+.build-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.build-slot {
+  background: white;
+  border-radius: $border-radius-lg;
+  border: 2px solid #e2e8f0;
+  padding: 0.9rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.2s;
+
+  // Colorear el borde según el tipo del move equipado
+  @each $type, $color in $type-colors {
+    &.type-#{$type} { border-color: $color; }
+  }
+}
+
+.build-slot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.build-slot-num {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #a0aec0;
+  text-transform: uppercase;
+}
+
+.build-slot-clear {
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s;
+
+  &:hover { color: $pokedex-red; }
+}
+
+.build-move-select {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.8rem;
+  cursor: pointer;
+  outline: none;
+
+  &:focus { border-color: $pokedex-red; }
+}
+
+.build-move-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.build-move-name {
+  font-family: $font-display;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+  color: #2d3748;
+}
+
+.build-move-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+}
+
+.build-move-cat,
+.build-move-power,
+.build-move-acc {
+  font-size: 0.75rem;
+  color: #718096;
+}
+
+.build-crit-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #4a5568;
+  cursor: pointer;
+  margin-top: 0.25rem;
+}
+
+// ─── Tabla de daño ────────────────────────────────────────────────────────────
+
+.build-damage-section {
+  background: white;
+  border-radius: $border-radius-lg;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.damage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+
+  th {
+    font-weight: 700;
+    color: #718096;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 2px solid #edf2f7;
+  }
+}
+
+.damage-row {
+  border-bottom: 1px solid #f7fafc;
+  transition: background 0.15s;
+
+  td {
+    padding: 0.55rem 0.75rem;
+    vertical-align: middle;
+  }
+
+  &:hover { background: #f7fafc; }
+
+  &--super {
+    background: #f0fff4;
+    td { color: #276749; }
+    &:hover { background: #e6ffed; }
+  }
+
+  &--weak {
+    background: #fff5f5;
+    td { color: #9b2c2c; }
+    &:hover { background: #ffe8e8; }
+  }
+
+  &--no-effect {
+    background: #f7fafc;
+    td { color: #a0aec0; }
+  }
+}
+
+.dmg-move {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.dmg-val {
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.dmg-cat {
+  font-size: 1rem;
+}
+
+.dmg-eff {
+  font-size: 0.82rem;
+  font-weight: 600;
+}

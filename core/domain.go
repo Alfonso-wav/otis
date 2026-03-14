@@ -38,6 +38,13 @@ type EvolutionChain struct {
 	Chain EvolutionStage
 }
 
+// PokemonMoveEntry representa un movimiento que puede aprender un Pokémon
+type PokemonMoveEntry struct {
+	Name   string
+	Method string // level-up, machine, egg, tutor
+	Level  int    // nivel al que se aprende (0 si no aplica)
+}
+
 type Pokemon struct {
 	ID      int
 	Name    string
@@ -46,6 +53,7 @@ type Pokemon struct {
 	Sprites Sprites
 	Height  int
 	Weight  int
+	Moves   []PokemonMoveEntry
 }
 
 type PokemonType struct {

@@ -58,6 +58,11 @@ func (a *App) GetMove(name string) (core.Move, error) {
 	return a.fetcher.FetchMove(core.NormalizeName(name))
 }
 
+// SimulateDamage calcula el daño de un movimiento dado atacante y defensor.
+func (a *App) SimulateDamage(input core.DamageInput) (core.DamageResult, error) {
+	return core.CalculateDamage(input), nil
+}
+
 // ComparePokemons fetcha ambos Pokémon y devuelve la comparación de sus stats base.
 func (a *App) ComparePokemons(nameA, nameB string) (core.PokemonComparison, error) {
 	pkA, err := a.fetcher.FetchPokemon(core.NormalizeName(nameA))
