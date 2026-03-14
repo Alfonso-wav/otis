@@ -14,13 +14,13 @@ import { renderEVCalculatorForm, initEVCalculator } from "../ev-calculator";
 const LIMIT = 20;
 
 interface FilterState {
-  generation: string | null;
-  type: string | null;
+  generations: string[];
+  types: string[];
   legendary: boolean;
   mythical: boolean;
 }
 
-let filter: FilterState = { generation: null, type: null, legendary: false, mythical: false };
+let filter: FilterState = { generations: [], types: [], legendary: false, mythical: false };
 let filteredList: PokemonListItem[] = [];
 let offset = 0;
 let totalCount = 0;
@@ -112,8 +112,8 @@ let pageInfo: HTMLSpanElement;
 let searchInput: HTMLInputElement;
 let searchBtn: HTMLButtonElement;
 let backBtn: HTMLButtonElement;
-let filterGenSelect: HTMLSelectElement;
-let filterTypeSelect: HTMLSelectElement;
+let filterGenContainer: HTMLDivElement;
+let filterTypeContainer: HTMLDivElement;
 let filterLegendaryBtn: HTMLButtonElement;
 let filterMythicalBtn: HTMLButtonElement;
 let filterResetBtn: HTMLButtonElement;
@@ -121,8 +121,8 @@ let viewToggleBtn: HTMLButtonElement;
 
 function hasFilter(): boolean {
   return (
-    filter.generation !== null ||
-    filter.type !== null ||
+    filter.generations.length > 0 ||
+    filter.types.length > 0 ||
     filter.legendary ||
     filter.mythical
   );
@@ -149,28 +149,51 @@ async function loadFiltered(): Promise<void> {
   grid.innerHTML = '<p class="loading">Aplicando filtros...</p>';
   try {
     let base: PokemonListItem[] = [];
+    const hasGens = filter.generations.length > 0;
+    const hasTypes = filter.types.length > 0;
 
-    if (filter.generation && filter.type) {
-      // Ambos filtros: intersección
-      const [gen, typeData] = await Promise.all([
-        GetGeneration(filter.generation),
-        GetType(filter.type),
+    if (hasGens && hasTypes) {
+      // Both: union of gens INTERSECT union of types
+      const [genResults, typeResults] = await Promise.all([
+        Promise.all(filter.generations.map((g) => GetGeneration(g))),
+        Promise.all(filter.types.map((t) => GetType(t))),
       ]);
-      const genNames = new Set(gen.PokemonSpecies.map((p) => p.Name));
-      base = typeData.Pokemon.filter((p) => genNames.has(p.Name)).map((p) => ({
-        Name: p.Name,
-        URL: p.URL,
-      }));
-    } else if (filter.generation) {
-      const gen = await GetGeneration(filter.generation);
-      base = gen.PokemonSpecies.map((p) => ({ Name: p.Name, URL: p.URL }));
-    } else if (filter.type) {
-      const typeData = await GetType(filter.type);
-      base = typeData.Pokemon.map((p) => ({ Name: p.Name, URL: p.URL }));
+      const genNames = new Set<string>();
+      for (const gen of genResults) {
+        for (const p of gen.PokemonSpecies) genNames.add(p.Name);
+      }
+      const typeMap = new Map<string, PokemonListItem>();
+      for (const td of typeResults) {
+        for (const p of td.Pokemon) {
+          if (!typeMap.has(p.Name)) typeMap.set(p.Name, { Name: p.Name, URL: p.URL });
+        }
+      }
+      base = [...typeMap.values()].filter((p) => genNames.has(p.Name));
+    } else if (hasGens) {
+      const genResults = await Promise.all(filter.generations.map((g) => GetGeneration(g)));
+      const seen = new Set<string>();
+      for (const gen of genResults) {
+        for (const p of gen.PokemonSpecies) {
+          if (!seen.has(p.Name)) {
+            seen.add(p.Name);
+            base.push({ Name: p.Name, URL: p.URL });
+          }
+        }
+      }
+    } else if (hasTypes) {
+      const typeResults = await Promise.all(filter.types.map((t) => GetType(t)));
+      const seen = new Set<string>();
+      for (const td of typeResults) {
+        for (const p of td.Pokemon) {
+          if (!seen.has(p.Name)) {
+            seen.add(p.Name);
+            base.push({ Name: p.Name, URL: p.URL });
+          }
+        }
+      }
     } else if (filter.legendary || filter.mythical) {
-      grid.innerHTML =
-        '<p class="loading">Selecciona una generación o tipo para filtrar por legendario / mítico.</p>';
-      return;
+      // No gen/type selected: load all pokemon progressively
+      base = await loadAllPokemonList();
     }
 
     if ((filter.legendary || filter.mythical) && base.length > 0) {
@@ -187,6 +210,27 @@ async function loadFiltered(): Promise<void> {
   } catch (err: unknown) {
     grid.innerHTML = `<p class="loading error-text">${String(err)}</p>`;
   }
+}
+
+async function loadAllPokemonList(): Promise<PokemonListItem[]> {
+  const BATCH_SIZE = 100;
+  const all: PokemonListItem[] = [];
+  let currentOffset = 0;
+  // First call to get count
+  const first = await ListPokemon(0, BATCH_SIZE);
+  const total = first.Count;
+  all.push(...first.Results);
+  currentOffset += BATCH_SIZE;
+
+  while (currentOffset < total) {
+    const pct = Math.round((currentOffset / total) * 100);
+    grid.innerHTML = `<p class="loading">Cargando lista completa... ${pct}% (${currentOffset}/${total})</p>`;
+    const batch = await ListPokemon(currentOffset, BATCH_SIZE);
+    all.push(...batch.Results);
+    currentOffset += BATCH_SIZE;
+  }
+
+  return all;
 }
 
 async function filterByLegendary(list: PokemonListItem[]): Promise<PokemonListItem[]> {
@@ -495,7 +539,7 @@ async function search(): Promise<void> {
   const query = searchInput.value.trim().toLowerCase();
   if (!query) {
     offset = 0;
-    filter = { generation: null, type: null, legendary: false, mythical: false };
+    filter = { generations: [], types: [], legendary: false, mythical: false };
     filteredList = [];
     resetSorting();
     resetFilterUI();
@@ -507,23 +551,88 @@ async function search(): Promise<void> {
 
 // -- Filtros -----------------------------------------------------------------
 
+function updateDropdownTrigger(dropdownId: string, label: string, count: number): void {
+  const dropdown = document.getElementById(dropdownId);
+  if (!dropdown) return;
+  const trigger = dropdown.querySelector(".filter-dropdown__trigger") as HTMLButtonElement;
+  trigger.textContent = count > 0 ? `${label} (${count})` : label;
+  trigger.classList.toggle("filter-dropdown__trigger--active", count > 0);
+}
+
+function toggleDropdown(dropdownId: string): void {
+  const dropdown = document.getElementById(dropdownId)!;
+  const isOpen = dropdown.classList.contains("open");
+
+  // Close all dropdowns first
+  document.querySelectorAll(".filter-dropdown.open").forEach((d) => d.classList.remove("open"));
+
+  if (!isOpen) {
+    dropdown.classList.add("open");
+  }
+}
+
+function closeAllDropdowns(): void {
+  document.querySelectorAll(".filter-dropdown.open").forEach((d) => d.classList.remove("open"));
+}
+
 async function populateFilters(): Promise<void> {
   try {
     const [gens, types] = await Promise.all([ListGenerations(), ListTypes()]);
 
+    // Setup trigger click handlers
+    const genDropdown = document.getElementById("dropdown-gen")!;
+    const typeDropdown = document.getElementById("dropdown-type")!;
+
+    genDropdown.querySelector(".filter-dropdown__trigger")!.addEventListener("click", () => {
+      toggleDropdown("dropdown-gen");
+    });
+    typeDropdown.querySelector(".filter-dropdown__trigger")!.addEventListener("click", () => {
+      toggleDropdown("dropdown-type");
+    });
+
+    // Close dropdowns on outside click
+    document.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".filter-dropdown")) {
+        closeAllDropdowns();
+      }
+    });
+
     gens.forEach((g) => {
-      const opt = document.createElement("option");
-      opt.value = g.Name;
-      opt.textContent = formatGenName(g.Name);
-      filterGenSelect.appendChild(opt);
+      const chip = document.createElement("button");
+      chip.className = "filter-chip";
+      chip.dataset.value = g.Name;
+      chip.textContent = formatGenName(g.Name);
+      chip.addEventListener("click", () => {
+        chip.classList.toggle("active");
+        if (chip.classList.contains("active")) {
+          filter.generations.push(g.Name);
+        } else {
+          filter.generations = filter.generations.filter((v) => v !== g.Name);
+        }
+        updateDropdownTrigger("dropdown-gen", "Generación", filter.generations.length);
+        applyFilters();
+      });
+      filterGenContainer.appendChild(chip);
     });
 
     types.Results.forEach((t) => {
       if (t.Name === "shadow" || t.Name === "unknown") return;
-      const opt = document.createElement("option");
-      opt.value = t.Name;
-      opt.textContent = t.Name.charAt(0).toUpperCase() + t.Name.slice(1);
-      filterTypeSelect.appendChild(opt);
+      const chip = document.createElement("button");
+      chip.className = "filter-chip";
+      chip.dataset.value = t.Name;
+      chip.textContent = t.Name.charAt(0).toUpperCase() + t.Name.slice(1);
+      chip.addEventListener("click", () => {
+        chip.classList.toggle("active");
+        if (chip.classList.contains("active")) {
+          filter.types.push(t.Name);
+        } else {
+          filter.types = filter.types.filter((v) => v !== t.Name);
+        }
+        updateDropdownTrigger("dropdown-type", "Tipo", filter.types.length);
+        applyFilters();
+      });
+      filterTypeContainer.appendChild(chip);
     });
   } catch (err) {
     console.error("Error cargando filtros:", err);
@@ -539,23 +648,31 @@ function formatGenName(name: string): string {
 function applyFilters(): void {
   offset = 0;
   filteredList = [];
-  filter.generation = filterGenSelect.value || null;
-  filter.type = filterTypeSelect.value || null;
 
   if (hasFilter()) {
     loadFiltered();
   } else {
+    resetSorting();
     loadList();
   }
 }
 
 function resetFilterUI(): void {
-  filterGenSelect.value = "";
-  filterTypeSelect.value = "";
+  filterGenContainer.querySelectorAll(".filter-chip.active").forEach((chip) => {
+    chip.classList.remove("active");
+  });
+  filterTypeContainer.querySelectorAll(".filter-chip.active").forEach((chip) => {
+    chip.classList.remove("active");
+  });
+  filter.generations = [];
+  filter.types = [];
   filter.legendary = false;
   filter.mythical = false;
   filterLegendaryBtn.classList.remove("active");
   filterMythicalBtn.classList.remove("active");
+  closeAllDropdowns();
+  updateDropdownTrigger("dropdown-gen", "Generación", 0);
+  updateDropdownTrigger("dropdown-type", "Tipo", 0);
 }
 
 // -- Helpers -----------------------------------------------------------------
@@ -596,8 +713,8 @@ export function initPokedex(): void {
   searchInput = document.getElementById("search-input") as HTMLInputElement;
   searchBtn = document.getElementById("search-btn") as HTMLButtonElement;
   backBtn = document.getElementById("back-btn") as HTMLButtonElement;
-  filterGenSelect = document.getElementById("filter-gen") as HTMLSelectElement;
-  filterTypeSelect = document.getElementById("filter-type") as HTMLSelectElement;
+  filterGenContainer = document.getElementById("filter-gen") as HTMLDivElement;
+  filterTypeContainer = document.getElementById("filter-type") as HTMLDivElement;
   filterLegendaryBtn = document.getElementById("filter-legendary") as HTMLButtonElement;
   filterMythicalBtn = document.getElementById("filter-mythical") as HTMLButtonElement;
   filterResetBtn = document.getElementById("filter-reset") as HTMLButtonElement;
@@ -635,9 +752,6 @@ export function initPokedex(): void {
     if (e.key === "Enter") search();
   });
 
-  filterGenSelect.addEventListener("change", applyFilters);
-  filterTypeSelect.addEventListener("change", applyFilters);
-
   filterLegendaryBtn.addEventListener("click", () => {
     filter.legendary = !filter.legendary;
     filterLegendaryBtn.classList.toggle("active", filter.legendary);
@@ -658,7 +772,7 @@ export function initPokedex(): void {
 
   filterResetBtn.addEventListener("click", () => {
     offset = 0;
-    filter = { generation: null, type: null, legendary: false, mythical: false };
+    filter = { generations: [], types: [], legendary: false, mythical: false };
     filteredList = [];
     resetSorting();
     resetFilterUI();

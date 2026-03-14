@@ -414,6 +414,8 @@ export namespace core {
 	    defenderLevel: number;
 	    attackerMoves: Move[];
 	    defenderMoves: Move[];
+	    attackerName: string;
+	    defenderName: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new FullBattleInput(source);
@@ -429,6 +431,8 @@ export namespace core {
 	        this.defenderLevel = source["defenderLevel"];
 	        this.attackerMoves = this.convertValues(source["attackerMoves"], Move);
 	        this.defenderMoves = this.convertValues(source["defenderMoves"], Move);
+	        this.attackerName = source["attackerName"];
+	        this.defenderName = source["defenderName"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1292,6 +1296,7 @@ export namespace core {
 	    attackerLevel: number;
 	    defenderLevel: number;
 	    move: Move;
+	    attackerName: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new TurnInput(source);
@@ -1307,6 +1312,7 @@ export namespace core {
 	        this.attackerLevel = source["attackerLevel"];
 	        this.defenderLevel = source["defenderLevel"];
 	        this.move = this.convertValues(source["move"], Move);
+	        this.attackerName = source["attackerName"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

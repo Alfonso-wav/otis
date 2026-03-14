@@ -12,6 +12,8 @@ type FullBattleInput struct {
 	DefenderLevel int           `json:"defenderLevel"`
 	AttackerMoves []Move        `json:"attackerMoves"`
 	DefenderMoves []Move        `json:"defenderMoves"`
+	AttackerName  string        `json:"attackerName"`
+	DefenderName  string        `json:"defenderName"`
 }
 
 // resolveOrder determines who attacks first based on move priority, then speed.
@@ -86,6 +88,7 @@ func executeAttackerTurn(state BattleState, input FullBattleInput, move Move, ra
 		AttackerLevel: input.AttackerLevel,
 		DefenderLevel: input.DefenderLevel,
 		Move:          move,
+		AttackerName:  input.AttackerName,
 	}, randSource)
 	return result.NewState
 }
@@ -110,6 +113,7 @@ func executeDefenderTurn(state BattleState, input FullBattleInput, move Move, ra
 		AttackerLevel: input.DefenderLevel,
 		DefenderLevel: input.AttackerLevel,
 		Move:          move,
+		AttackerName:  input.DefenderName,
 	}, randSource)
 	ns := result.NewState
 	state = BattleState{
@@ -150,6 +154,7 @@ type TurnInput struct {
 	AttackerLevel int           `json:"attackerLevel"`
 	DefenderLevel int           `json:"defenderLevel"`
 	Move          Move          `json:"move"`
+	AttackerName  string        `json:"attackerName"`
 }
 
 // TurnResult is the outcome of one executed turn.
@@ -199,8 +204,8 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 	// Accuracy check
 	if randSource != nil && input.Move.Power > 0 && input.Move.Category != "status" {
 		if !CheckAccuracy(input.Move.Accuracy, randSource) {
-			logEntry := fmt.Sprintf("[T%d] usó %s → ¡Falló!",
-				state.TurnCount, input.Move.Name)
+			logEntry := fmt.Sprintf("[T%d] %s usó %s → ¡Falló!",
+				state.TurnCount, input.AttackerName, input.Move.Name)
 			newLog := make([]string, len(state.Log)+1)
 			copy(newLog, state.Log)
 			newLog[len(state.Log)] = logEntry
@@ -237,8 +242,8 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 	var logEntry string
 
 	if input.Move.Power <= 0 || input.Move.Category == "status" {
-		logEntry = fmt.Sprintf("[T%d] usó %s → sin efecto de daño | HP Defensor: %d/%d",
-			state.TurnCount, input.Move.Name, state.DefenderHP, state.DefenderMaxHP)
+		logEntry = fmt.Sprintf("[T%d] %s usó %s → sin efecto de daño | HP Defensor: %d/%d",
+			state.TurnCount, input.AttackerName, input.Move.Name, state.DefenderHP, state.DefenderMaxHP)
 	} else {
 		applied := dmg.ActualDamage
 		if applied < 1 && !dmg.HasNoEffect {
@@ -265,8 +270,8 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 			critStr = "¡Golpe crítico! "
 		}
 
-		logEntry = fmt.Sprintf("%s[T%d] usó %s → %d daño (%s) | HP Defensor: %d/%d",
-			critStr, state.TurnCount, input.Move.Name, applied, effStr, state.DefenderHP, state.DefenderMaxHP)
+		logEntry = fmt.Sprintf("%s[T%d] %s usó %s → %d daño (%s) | HP Defensor: %d/%d",
+			critStr, state.TurnCount, input.AttackerName, input.Move.Name, applied, effStr, state.DefenderHP, state.DefenderMaxHP)
 
 		if state.DefenderHP <= 0 {
 			state.IsOver = true

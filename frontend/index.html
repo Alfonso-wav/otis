@@ -30,12 +30,14 @@
     <div id="tab-pokedex" class="tab-page">
       <section id="list-view">
         <div id="filter-bar" class="filter-bar">
-          <select id="filter-gen" class="filter-select">
-            <option value="">Todas las generaciones</option>
-          </select>
-          <select id="filter-type" class="filter-select">
-            <option value="">Todos los tipos</option>
-          </select>
+          <div class="filter-dropdown" id="dropdown-gen">
+            <button class="filter-dropdown__trigger" type="button">Generación</button>
+            <div class="filter-dropdown__panel" id="filter-gen"></div>
+          </div>
+          <div class="filter-dropdown" id="dropdown-type">
+            <button class="filter-dropdown__trigger" type="button">Tipo</button>
+            <div class="filter-dropdown__panel" id="filter-type"></div>
+          </div>
           <button id="filter-legendary" class="filter-pill" title="Mostrar solo legendarios">⭐ Legendario</button>
           <button id="filter-mythical" class="filter-pill" title="Mostrar solo míticos">✨ Mítico</button>
           <button id="filter-reset" class="filter-reset-btn">✕ Todos</button>
