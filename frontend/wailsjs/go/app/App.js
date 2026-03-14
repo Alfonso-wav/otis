@@ -14,6 +14,14 @@ export function ComparePokemons(arg1, arg2) {
   return window['go']['app']['App']['ComparePokemons'](arg1, arg2);
 }
 
+export function DeleteTeam(arg1) {
+  return window['go']['app']['App']['DeleteTeam'](arg1);
+}
+
+export function DeleteTeamMember(arg1, arg2) {
+  return window['go']['app']['App']['DeleteTeamMember'](arg1, arg2);
+}
+
 export function ExecuteTurn(arg1) {
   return window['go']['app']['App']['ExecuteTurn'](arg1);
 }
@@ -102,6 +110,10 @@ export function GetStatDetail(arg1) {
   return window['go']['app']['App']['GetStatDetail'](arg1);
 }
 
+export function GetTeam(arg1) {
+  return window['go']['app']['App']['GetTeam'](arg1);
+}
+
 export function GetType(arg1) {
   return window['go']['app']['App']['GetType'](arg1);
 }
@@ -154,12 +166,20 @@ export function ListRegions() {
   return window['go']['app']['App']['ListRegions']();
 }
 
+export function ListTeams() {
+  return window['go']['app']['App']['ListTeams']();
+}
+
 export function ListTypes() {
   return window['go']['app']['App']['ListTypes']();
 }
 
 export function ListVersionGroups() {
   return window['go']['app']['App']['ListVersionGroups']();
+}
+
+export function SaveToTeam(arg1, arg2) {
+  return window['go']['app']['App']['SaveToTeam'](arg1, arg2);
 }
 
 export function ScrapePokedex() {

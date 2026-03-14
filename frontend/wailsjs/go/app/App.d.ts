@@ -8,6 +8,10 @@ export function CalculateStats(arg1:core.StatCalculatorInput):Promise<core.Stats
 
 export function ComparePokemons(arg1:string,arg2:string):Promise<core.PokemonComparison>;
 
+export function DeleteTeam(arg1:string):Promise<void>;
+
+export function DeleteTeamMember(arg1:string,arg2:number):Promise<void>;
+
 export function ExecuteTurn(arg1:core.TurnInput):Promise<core.TurnResult>;
 
 export function GetAbility(arg1:string):Promise<core.Ability>;
@@ -52,6 +56,8 @@ export function GetRegion(arg1:string):Promise<core.Region>;
 
 export function GetStatDetail(arg1:string):Promise<core.StatDetail>;
 
+export function GetTeam(arg1:string):Promise<core.Team>;
+
 export function GetType(arg1:string):Promise<core.PokemonTypeDetail>;
 
 export function GetVersionGroup(arg1:string):Promise<core.VersionGroup>;
@@ -78,9 +84,13 @@ export function ListPokemonShapes():Promise<Array<core.NamedResource>>;
 
 export function ListRegions():Promise<Array<core.Region>>;
 
+export function ListTeams():Promise<Array<core.Team>>;
+
 export function ListTypes():Promise<core.TypeListResponse>;
 
 export function ListVersionGroups():Promise<Array<core.NamedResource>>;
+
+export function SaveToTeam(arg1:string,arg2:core.TeamMember):Promise<void>;
 
 export function ScrapePokedex():Promise<Array<core.PokedexDBEntry>>;
 

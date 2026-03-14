@@ -9,6 +9,10 @@ import {
   InitBattle,
   ExecuteTurn,
   SimulateFullBattle,
+  SaveToTeam,
+  ListTeams,
+  DeleteTeam,
+  DeleteTeamMember,
 } from "../../wailsjs/go/app/App";
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
@@ -79,6 +83,7 @@ let state: BuildState = {
 let natures: core.Nature[] = [];
 let pokemonNames: string[] = [];
 let container: HTMLElement;
+let cachedTeams: core.Team[] = [];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -553,6 +558,178 @@ function bindBattleEvents(): void {
   });
 }
 
+// ─── Teams ────────────────────────────────────────────────────────────────────
+
+function buildTeamMember(prefix: "atk" | "def"): core.TeamMember | null {
+  const pokemon = prefix === "atk" ? state.attacker : state.defender;
+  if (!pokemon) return null;
+
+  const slots = prefix === "atk" ? state.slots : state.defenderSlots;
+  const moves = slots.filter((s) => s.move !== null).map((s) => s.move!.Name);
+
+  return {
+    pokemonName: pokemon.Name,
+    moves,
+    level: prefix === "atk" ? state.attackerLevel : state.defenderLevel,
+    nature: prefix === "atk" ? state.attackerNature : state.defenderNature,
+    ivs: prefix === "atk" ? state.attackerIVs : state.defenderIVs,
+    evs: prefix === "atk" ? state.attackerEVs : state.defenderEVs,
+  } as core.TeamMember;
+}
+
+async function saveToTeam(prefix: "atk" | "def"): Promise<void> {
+  const member = buildTeamMember(prefix);
+  if (!member) return;
+
+  const teamName = prompt("Nombre del equipo:");
+  if (!teamName || !teamName.trim()) return;
+
+  try {
+    await SaveToTeam(teamName.trim(), member);
+    alert(`${member.pokemonName} guardado en "${teamName.trim()}"`);
+    cachedTeams = await ListTeams();
+    buildLayout();
+  } catch (err: unknown) {
+    alert(`Error al guardar: ${String(err)}`);
+  }
+}
+
+async function importFromTeam(prefix: "atk" | "def", member: core.TeamMember): Promise<void> {
+  try {
+    const pokemon = await GetPokemon(member.pokemonName);
+
+    if (prefix === "atk") {
+      state.attacker = pokemon;
+      state.attackerLevel = member.level;
+      state.attackerNature = member.nature;
+      state.attackerIVs = { ...member.ivs };
+      state.attackerEVs = { ...member.evs };
+      state.slots = [emptySlot(), emptySlot(), emptySlot(), emptySlot()];
+    } else {
+      state.defender = pokemon;
+      state.defenderLevel = member.level;
+      state.defenderNature = member.nature;
+      state.defenderIVs = { ...member.ivs };
+      state.defenderEVs = { ...member.evs };
+      state.defenderSlots = [emptySlot(), emptySlot(), emptySlot(), emptySlot()];
+    }
+
+    // Load moves
+    const slots = prefix === "atk" ? state.slots : state.defenderSlots;
+    const movePromises = member.moves.slice(0, 4).map((name) => GetMove(name));
+    const moves = await Promise.all(movePromises);
+    moves.forEach((move, i) => {
+      slots[i] = { moveName: move.Name, move, isCritical: false };
+    });
+
+    // Calculate stats
+    const stats = await CalculateStats({
+      pokemonName: member.pokemonName,
+      level: member.level,
+      natureName: member.nature,
+      ivs: member.ivs,
+      evs: member.evs,
+    } as core.StatCalculatorInput);
+
+    if (prefix === "atk") state.attackerStats = stats;
+    else state.defenderStats = stats;
+
+    battleUI = { battleState: null, phase: "idle" };
+    buildLayout();
+  } catch (err: unknown) {
+    alert(`Error al importar: ${String(err)}`);
+  }
+}
+
+async function handleDeleteTeam(name: string): Promise<void> {
+  if (!confirm(`Eliminar equipo "${name}"?`)) return;
+  try {
+    await DeleteTeam(name);
+    cachedTeams = await ListTeams();
+    buildLayout();
+  } catch (err: unknown) {
+    alert(`Error: ${String(err)}`);
+  }
+}
+
+async function handleDeleteTeamMember(teamName: string, index: number): Promise<void> {
+  if (!confirm("Eliminar este miembro del equipo?")) return;
+  try {
+    await DeleteTeamMember(teamName, index);
+    cachedTeams = await ListTeams();
+    buildLayout();
+  } catch (err: unknown) {
+    alert(`Error: ${String(err)}`);
+  }
+}
+
+function renderTeamsSection(): string {
+  if (cachedTeams.length === 0) return "";
+
+  const teamsHTML = cachedTeams.map((team) => {
+    const membersHTML = team.members
+      .map((m, i) => `
+        <div class="team-member-row">
+          <img class="team-member-sprite" src="${spriteURL(m.pokemonName)}" onerror="this.style.display='none'" alt="${m.pokemonName}" />
+          <span class="team-member-name">${m.pokemonName}</span>
+          <span class="team-member-detail">Lv.${m.level} ${m.nature}</span>
+          <span class="team-member-moves">${m.moves.join(", ")}</span>
+          <button class="team-import-btn" data-team="${team.name}" data-idx="${i}" data-prefix="atk" title="Importar como atacante">Atk</button>
+          <button class="team-import-btn" data-team="${team.name}" data-idx="${i}" data-prefix="def" title="Importar como defensor">Def</button>
+          <button class="team-member-delete-btn" data-team="${team.name}" data-idx="${i}" title="Eliminar miembro">✕</button>
+        </div>`)
+      .join("");
+
+    return `
+      <div class="team-card">
+        <div class="team-card-header">
+          <span class="team-card-name">${team.name} (${team.members.length}/6)</span>
+          <button class="team-delete-btn" data-team="${team.name}">Eliminar equipo</button>
+        </div>
+        <div class="team-members-list">${membersHTML}</div>
+      </div>`;
+  }).join("");
+
+  return `
+    <div class="teams-section">
+      <details class="teams-details">
+        <summary class="build-section-title teams-summary">Mis equipos (${cachedTeams.length})</summary>
+        <div class="teams-list">${teamsHTML}</div>
+      </details>
+    </div>`;
+}
+
+function bindTeamEvents(): void {
+  container.querySelectorAll<HTMLButtonElement>(".team-save-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const prefix = btn.dataset.prefix as "atk" | "def";
+      saveToTeam(prefix);
+    });
+  });
+
+  container.querySelectorAll<HTMLButtonElement>(".team-import-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const teamName = btn.dataset.team!;
+      const idx = parseInt(btn.dataset.idx!);
+      const prefix = btn.dataset.prefix as "atk" | "def";
+      const team = cachedTeams.find((t) => t.name === teamName);
+      if (team && team.members[idx]) {
+        importFromTeam(prefix, team.members[idx]);
+      }
+    });
+  });
+
+  container.querySelectorAll<HTMLButtonElement>(".team-delete-btn").forEach((btn) => {
+    btn.addEventListener("click", () => handleDeleteTeam(btn.dataset.team!));
+  });
+
+  container.querySelectorAll<HTMLButtonElement>(".team-member-delete-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      handleDeleteTeamMember(btn.dataset.team!, parseInt(btn.dataset.idx!));
+    });
+  });
+}
+
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
 function buildLayout(): void {
@@ -594,6 +771,7 @@ function buildLayout(): void {
 
   const dmgSection = renderDamageSection();
   const btlSection = renderBattleSection();
+  const teamsSection = renderTeamsSection();
 
   container.innerHTML = `
     <div class="section-header"><h2>Builds & Simulador</h2></div>
@@ -607,6 +785,7 @@ function buildLayout(): void {
         </div>
         ${atkCard}
         ${atkConfig}
+        ${state.attacker ? `<button class="team-save-btn" data-prefix="atk">Guardar en equipo</button>` : ""}
       </div>
 
       <div class="build-col build-col--defender">
@@ -617,6 +796,7 @@ function buildLayout(): void {
         </div>
         ${defCard}
         ${defConfig}
+        ${state.defender ? `<button class="team-save-btn" data-prefix="def">Guardar en equipo</button>` : ""}
       </div>
     </div>
 
@@ -624,10 +804,12 @@ function buildLayout(): void {
     ${defenderMovesSection}
     ${dmgSection}
     ${btlSection}
+    ${teamsSection}
   `;
 
   bindEvents();
   bindBattleEvents();
+  bindTeamEvents();
 
   if (dmgSection) {
     loadDamageTable();
@@ -856,6 +1038,7 @@ export async function initBuilds(): Promise<void> {
       [natures] = await Promise.all([
         GetNatures(),
         ListPokemon(0, 2000).then((resp) => { pokemonNames = resp.Results.map((r) => r.Name); }),
+        ListTeams().then((teams) => { cachedTeams = teams ?? []; }),
       ]);
     } catch {
       natures = [];

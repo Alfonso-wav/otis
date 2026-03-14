@@ -13,11 +13,12 @@ type App struct {
 	ctx     context.Context
 	fetcher core.PokemonFetcher
 	scraper core.PokemonDBScraper
+	teams   core.TeamStorage
 }
 
-// NewApp crea una instancia de App con el fetcher y scraper inyectados desde main.
-func NewApp(fetcher core.PokemonFetcher, scraper core.PokemonDBScraper) *App {
-	return &App{fetcher: fetcher, scraper: scraper}
+// NewApp crea una instancia de App con el fetcher, scraper y team storage inyectados desde main.
+func NewApp(fetcher core.PokemonFetcher, scraper core.PokemonDBScraper, teams core.TeamStorage) *App {
+	return &App{fetcher: fetcher, scraper: scraper, teams: teams}
 }
 
 // Startup es llamado por Wails al arrancar la ventana.
@@ -303,4 +304,47 @@ func (a *App) GetVersionGroup(name string) (core.VersionGroup, error) {
 // ScrapePokedex extrae la tabla completa de Pokémon desde pokemondb.net.
 func (a *App) ScrapePokedex() ([]core.PokedexDBEntry, error) {
 	return a.scraper.FetchPokedex()
+}
+
+// --- Teams ---
+
+// SaveToTeam agrega un miembro a un equipo existente o crea uno nuevo.
+func (a *App) SaveToTeam(teamName string, member core.TeamMember) error {
+	team, err := a.teams.GetTeam(teamName)
+	if err != nil {
+		team = core.Team{Name: teamName}
+	}
+	team, err = core.AddMemberToTeam(team, member)
+	if err != nil {
+		return err
+	}
+	return a.teams.SaveTeam(team)
+}
+
+// ListTeams retorna todos los equipos guardados.
+func (a *App) ListTeams() ([]core.Team, error) {
+	return a.teams.ListTeams()
+}
+
+// GetTeam retorna un equipo por nombre.
+func (a *App) GetTeam(name string) (core.Team, error) {
+	return a.teams.GetTeam(name)
+}
+
+// DeleteTeam elimina un equipo completo.
+func (a *App) DeleteTeam(name string) error {
+	return a.teams.DeleteTeam(name)
+}
+
+// DeleteTeamMember elimina un miembro de un equipo por indice.
+func (a *App) DeleteTeamMember(teamName string, memberIndex int) error {
+	team, err := a.teams.GetTeam(teamName)
+	if err != nil {
+		return err
+	}
+	team, err = core.RemoveMemberFromTeam(team, memberIndex)
+	if err != nil {
+		return err
+	}
+	return a.teams.SaveTeam(team)
 }
