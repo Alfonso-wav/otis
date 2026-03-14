@@ -131,6 +131,29 @@
   }
 }
 
+.poke-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+
+th.sortable.active .sort-indicator {
+  opacity: 1;
+}
+
+.sort-indicator {
+  margin-left: 0.25rem;
+  font-size: 0.7rem;
+  opacity: 0.4;
+
+  &.asc::after { content: '\25B2'; opacity: 1; }
+  &.desc::after { content: '\25BC'; opacity: 1; }
+}
+
 .poke-table__id {
   font-size: 0.75rem;
   font-weight: 700;
