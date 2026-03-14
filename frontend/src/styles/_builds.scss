@@ -653,3 +653,240 @@
 
   &:first-child { color: #90cdf4; }
 }
+
+// ─── Responsive — Builds ─────────────────────────────────────────────────────
+
+// Desktop breakpoint — EV calculator grid adjustment
+@include desktop {
+  .sc-table {
+    font-size: 0.78rem;
+
+    th { font-size: 0.68rem; }
+  }
+}
+
+// Tablet breakpoint
+@include tablet {
+  .build-slots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .build-col {
+    padding: 1rem;
+  }
+
+  .build-sprite {
+    width: 80px;
+    height: 80px;
+  }
+
+  .build-poke-name {
+    font-size: 1.25rem;
+  }
+
+  // Damage table horizontal scroll
+  .build-damage-section {
+    padding: 1rem;
+  }
+
+  .damage-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .damage-table {
+    min-width: 420px;
+    font-size: 0.82rem;
+
+    th { font-size: 0.7rem; padding: 0.4rem 0.5rem; }
+  }
+
+  .damage-row td {
+    padding: 0.4rem 0.5rem;
+  }
+
+  // EV calculator: stack inputs
+  .build-stats-config-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+// Mobile breakpoint
+@include mobile {
+  .build-layout {
+    gap: 1rem;
+  }
+
+  .build-col {
+    padding: 0.75rem;
+  }
+
+  .build-col-title {
+    font-size: 1.2rem;
+  }
+
+  .build-slots {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .build-slot {
+    padding: 0.75rem;
+  }
+
+  .build-sprite {
+    width: 72px;
+    height: 72px;
+  }
+
+  .build-poke-name {
+    font-size: 1.15rem;
+  }
+
+  .build-section-title {
+    font-size: 1.1rem;
+  }
+
+  // Damage table
+  .damage-table {
+    font-size: 0.78rem;
+
+    th { font-size: 0.68rem; padding: 0.3rem 0.4rem; }
+  }
+
+  .damage-row td {
+    padding: 0.35rem 0.4rem;
+  }
+
+  .dmg-val {
+    font-size: 0.88rem;
+  }
+
+  // EV calculator compact
+  .sc-table {
+    font-size: 0.75rem;
+
+    th {
+      font-size: 0.65rem;
+      padding: 0.15rem;
+    }
+
+    td {
+      padding: 0.15rem 0.2rem;
+    }
+  }
+
+  .sc-input {
+    width: 48px;
+    font-size: 0.78rem;
+    padding: 0.25rem 0.35rem;
+
+    &.sc-level { width: 50px; }
+  }
+}
+
+// ─── Responsive — Battle section ─────────────────────────────────────────────
+
+@include tablet {
+  .battle-section {
+    padding: 1rem;
+  }
+
+  .battle-hp-bars {
+    gap: 0.75rem;
+  }
+
+  .battle-vs {
+    font-size: 1.4rem;
+  }
+
+  .battle-move-btns {
+    gap: 0.5rem;
+  }
+
+  .move-btn {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+  }
+}
+
+@include mobile {
+  .battle-section {
+    padding: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .battle-winner-banner {
+    font-size: 1.2rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .battle-hp-bars {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .battle-pokemon-hp {
+    min-width: 100%;
+  }
+
+  .battle-vs {
+    display: none;
+  }
+
+  .battle-pokemon-name {
+    font-size: 1rem;
+  }
+
+  .hp-bar-track {
+    height: 12px;
+  }
+
+  // Move buttons: grid layout for touch targets
+  .battle-move-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .move-btn {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.82rem;
+    justify-content: center;
+    min-height: 44px; // touch target size
+  }
+
+  // Battle log compact
+  .battle-log {
+    height: 120px;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .battle-log-entry {
+    font-size: 0.72rem;
+  }
+
+  // Control buttons stack
+  .battle-idle-btns {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .battle-auto-btn,
+  .battle-start-btn,
+  .battle-reset-btn {
+    width: 100%;
+    text-align: center;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .battle-turn-label {
+    font-size: 0.82rem;
+  }
+}

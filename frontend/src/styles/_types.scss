@@ -4,6 +4,16 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.875rem;
+
+  @include mobile {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.625rem;
+  }
+
+  @include wide {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
 }
 
 .type-card {
@@ -13,9 +23,11 @@
   cursor: pointer;
   transition: box-shadow 0.2s, transform 0.2s;
 
-  &:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-    transform: translateY(-3px);
+  @media (hover: hover) {
+    &:hover {
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      transform: translateY(-3px);
+    }
   }
 }
 
@@ -30,6 +42,10 @@
   .type-card.expanded & {
     border-radius: $border-radius-lg $border-radius-lg 0 0;
   }
+
+  @include mobile {
+    padding: 0.85rem 1rem;
+  }
 }
 
 .type-card__name {
@@ -37,6 +53,10 @@
   font-size: 1.4rem;
   letter-spacing: 0.06em;
   text-transform: capitalize;
+
+  @include mobile {
+    font-size: 1.2rem;
+  }
 }
 
 .type-card__chevron {
@@ -60,6 +80,12 @@
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 0.5rem;
   padding: 1rem;
+
+  @include mobile {
+    grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+    gap: 0.35rem;
+    padding: 0.65rem;
+  }
 }
 
 .type-pokemon-item {
@@ -72,15 +98,22 @@
   padding: 0.4rem;
   transition: background 0.15s, transform 0.15s;
 
-  &:hover {
-    background: #f7f9fc;
-    transform: translateY(-2px);
+  @media (hover: hover) {
+    &:hover {
+      background: #f7f9fc;
+      transform: translateY(-2px);
+    }
   }
 
   img {
     width: 56px;
     height: 56px;
     image-rendering: pixelated;
+
+    @include mobile {
+      width: 44px;
+      height: 44px;
+    }
   }
 
   span {
@@ -90,6 +123,10 @@
     color: #4a5568;
     line-height: 1.2;
     word-break: break-word;
+
+    @include mobile {
+      font-size: 0.6rem;
+    }
   }
 }
 
