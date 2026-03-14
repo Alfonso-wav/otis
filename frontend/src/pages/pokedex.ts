@@ -33,6 +33,8 @@ type SortColumn = 'id' | 'name' | 'hp' | 'atk' | 'def' | 'spa' | 'spd' | 'vel' |
 
 let currentSortColumn: SortColumn = null;
 let currentSortDirection: SortDirection = null;
+let sortedFullList: Pokemon[] | null = null;
+let sortingLoading = false;
 
 function sortPokemonData(data: Pokemon[], column: SortColumn, direction: SortDirection): Pokemon[] {
   if (!column || !direction) return data;
@@ -57,6 +59,40 @@ function sortPokemonData(data: Pokemon[], column: SortColumn, direction: SortDir
     }
   });
   return sorted;
+}
+
+async function ensureAllPokemonLoaded(): Promise<Pokemon[]> {
+  let itemsToLoad: PokemonListItem[] = [];
+
+  if (hasFilter()) {
+    itemsToLoad = filteredList;
+  } else {
+    // Get full list from backend
+    const fullList = await ListPokemon(0, totalCount);
+    itemsToLoad = fullList.Results;
+  }
+
+  // Find which ones are not cached
+  const uncached = itemsToLoad.filter((item) => !pokemonDataCache.has(item.Name));
+
+  // Load in batches of 50
+  const BATCH = 50;
+  for (let i = 0; i < uncached.length; i += BATCH) {
+    const batch = uncached.slice(i, i + BATCH);
+    await Promise.all(
+      batch.map(async (item) => {
+        const p = await GetPokemon(item.Name);
+        pokemonDataCache.set(item.Name, p);
+      }),
+    );
+    // Update loading progress
+    const loaded = Math.min(i + BATCH, uncached.length);
+    const total = uncached.length;
+    const pct = Math.round((loaded / total) * 100);
+    grid.innerHTML = `<p class="loading">Cargando Pokémon para ordenar... ${pct}% (${loaded}/${total})</p>`;
+  }
+
+  return itemsToLoad.map((item) => pokemonDataCache.get(item.Name)!);
 }
 
 // Cache para evitar llamadas repetidas a GetPokemonSpecies
@@ -315,17 +351,41 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
   });
 
   grid.querySelectorAll<HTMLTableCellElement>("th.sortable").forEach((th) => {
-    th.addEventListener("click", (e) => {
+    th.addEventListener("click", async (e) => {
       e.stopPropagation();
+      if (sortingLoading) return;
       const col = th.dataset.sort as SortColumn;
       if (currentSortColumn === col) {
-        if (currentSortDirection === 'asc') currentSortDirection = 'desc';
-        else if (currentSortDirection === 'desc') { currentSortDirection = null; currentSortColumn = null; }
+        if (currentSortDirection === 'asc') {
+          currentSortDirection = 'desc';
+        } else if (currentSortDirection === 'desc') {
+          currentSortDirection = null;
+          currentSortColumn = null;
+          sortedFullList = null;
+          offset = 0;
+          if (hasFilter()) {
+            await renderCurrentView(filteredList.slice(offset, offset + LIMIT));
+          } else {
+            await loadList();
+          }
+          updatePagination();
+          return;
+        }
       } else {
         currentSortColumn = col;
         currentSortDirection = 'asc';
       }
-      renderTable(getCurrentPageItems());
+
+      sortingLoading = true;
+      try {
+        const allPokemon = await ensureAllPokemonLoaded();
+        sortedFullList = sortPokemonData(allPokemon, currentSortColumn, currentSortDirection);
+        offset = 0;
+        await renderTable(getCurrentPageItems());
+        updatePagination();
+      } finally {
+        sortingLoading = false;
+      }
     });
   });
 
@@ -346,13 +406,12 @@ function staggerTableRows(container: HTMLElement): void {
 }
 
 function updatePagination(): void {
+  const total = sortedFullList ? sortedFullList.length : totalCount;
   const page = Math.floor(offset / LIMIT) + 1;
-  const pages = Math.ceil(totalCount / LIMIT) || 1;
+  const pages = Math.ceil(total / LIMIT) || 1;
   pageInfo.textContent = `Pág. ${page} / ${pages}`;
   prevBtn.disabled = offset === 0;
-  nextBtn.disabled = hasFilter()
-    ? offset + LIMIT >= filteredList.length
-    : offset + LIMIT >= totalCount;
+  nextBtn.disabled = offset + LIMIT >= total;
 }
 
 // -- Paginación --------------------------------------------------------------
@@ -360,13 +419,16 @@ function updatePagination(): void {
 function resetSorting(): void {
   currentSortColumn = null;
   currentSortDirection = null;
+  sortedFullList = null;
 }
 
 async function prevPage(): Promise<void> {
   if (offset <= 0) return;
   offset -= LIMIT;
-  resetSorting();
-  if (hasFilter()) {
+  if (sortedFullList) {
+    await renderCurrentView(getCurrentPageItems());
+    updatePagination();
+  } else if (hasFilter()) {
     await renderCurrentView(filteredList.slice(offset, offset + LIMIT));
     updatePagination();
   } else {
@@ -375,11 +437,13 @@ async function prevPage(): Promise<void> {
 }
 
 async function nextPage(): Promise<void> {
-  const max = hasFilter() ? filteredList.length : totalCount;
+  const max = sortedFullList ? sortedFullList.length : hasFilter() ? filteredList.length : totalCount;
   if (offset + LIMIT >= max) return;
   offset += LIMIT;
-  resetSorting();
-  if (hasFilter()) {
+  if (sortedFullList) {
+    await renderCurrentView(getCurrentPageItems());
+    updatePagination();
+  } else if (hasFilter()) {
     await renderCurrentView(filteredList.slice(offset, offset + LIMIT));
     updatePagination();
   } else {
@@ -433,6 +497,7 @@ async function search(): Promise<void> {
     offset = 0;
     filter = { generation: null, type: null, legendary: false, mythical: false };
     filteredList = [];
+    resetSorting();
     resetFilterUI();
     loadList();
     return;
@@ -511,6 +576,10 @@ function spriteURL(id: string): string {
 let lastRenderedItems: PokemonListItem[] = [];
 
 function getCurrentPageItems(): PokemonListItem[] {
+  if (sortedFullList) {
+    const pageItems = sortedFullList.slice(offset, offset + LIMIT);
+    return pageItems.map((p) => ({ Name: p.Name, URL: "" }));
+  }
   return lastRenderedItems;
 }
 
@@ -591,6 +660,7 @@ export function initPokedex(): void {
     offset = 0;
     filter = { generation: null, type: null, legendary: false, mythical: false };
     filteredList = [];
+    resetSorting();
     resetFilterUI();
     loadList();
   });
