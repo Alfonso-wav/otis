@@ -107,9 +107,10 @@ function categoryIcon(cat: string): string {
 
 function effectLabel(result: core.DamageResult): string {
   if (result.hasNoEffect) return "Sin efecto";
-  if (result.isSuperEffective) return `¡Super eficaz! ×${result.multiplier}`;
-  if (result.isNotVeryEffective) return `Poco eficaz ×${result.multiplier}`;
-  return `×${result.multiplier}`;
+  const combined = result.multiplier * (result.hasSTAB ? result.stabMultiplier : 1);
+  if (result.isSuperEffective) return `¡Super eficaz! ×${combined}`;
+  if (result.isNotVeryEffective) return `Poco eficaz ×${combined}`;
+  return `×${combined}`;
 }
 
 function stabBadge(result: core.DamageResult): string {
