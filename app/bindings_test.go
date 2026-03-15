@@ -164,6 +164,40 @@ func (m *mockTeamStorage) DeleteTeam(name string) error {
 	return nil
 }
 
+func TestCreateTeam(t *testing.T) {
+	ts := newMockTeamStorage()
+	a := NewApp(&mockFetcher{}, &mockScraper{}, ts, &mockSpriteDownloader{})
+
+	if err := a.CreateTeam("My Team"); err != nil {
+		t.Fatalf("CreateTeam error: %v", err)
+	}
+	team, err := ts.GetTeam("My Team")
+	if err != nil {
+		t.Fatalf("GetTeam error: %v", err)
+	}
+	if team.Name != "My Team" || len(team.Members) != 0 {
+		t.Errorf("got %+v, want empty team named 'My Team'", team)
+	}
+}
+
+func TestCreateTeamEmptyName(t *testing.T) {
+	a := NewApp(&mockFetcher{}, &mockScraper{}, newMockTeamStorage(), &mockSpriteDownloader{})
+	if err := a.CreateTeam(""); err == nil {
+		t.Fatal("expected error for empty name, got nil")
+	}
+}
+
+func TestCreateTeamDuplicate(t *testing.T) {
+	ts := newMockTeamStorage()
+	a := NewApp(&mockFetcher{}, &mockScraper{}, ts, &mockSpriteDownloader{})
+	if err := a.CreateTeam("Dup"); err != nil {
+		t.Fatalf("first CreateTeam error: %v", err)
+	}
+	if err := a.CreateTeam("Dup"); err == nil {
+		t.Fatal("expected error for duplicate name, got nil")
+	}
+}
+
 func TestGetPokemon(t *testing.T) {
 	expected := core.Pokemon{ID: 25, Name: "pikachu"}
 	a := NewApp(&mockFetcher{pokemon: expected}, &mockScraper{}, newMockTeamStorage(), &mockSpriteDownloader{})

@@ -10,6 +10,10 @@ export function CalculateStats(arg1) {
   return window['go']['app']['App']['CalculateStats'](arg1);
 }
 
+export function CreateTeam(arg1) {
+  return window['go']['app']['App']['CreateTeam'](arg1);
+}
+
 export function DeleteTeam(arg1) {
   return window['go']['app']['App']['DeleteTeam'](arg1);
 }

@@ -14,6 +14,7 @@ import {
   ListTeams,
   DeleteTeam,
   DeleteTeamMember,
+  CreateTeam,
 } from "../../wailsjs/go/app/App";
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
@@ -88,6 +89,7 @@ let pokemonNames: string[] = [];
 let container: HTMLElement;
 let cachedTeams: core.Team[] = [];
 let teamsDetailsOpen = false;
+let creatingTeam = false;
 let saveModalPrefix: "atk" | "def" | null = null;
 let addMemberTeamName: string | null = null;
 
@@ -935,7 +937,13 @@ async function handleDeleteTeamMember(teamName: string, index: number): Promise<
 }
 
 function renderTeamsSection(): string {
-  if (cachedTeams.length === 0) return "";
+  const createTeamHTML = creatingTeam
+    ? `<div class="team-create-form">
+        <input class="team-create-input build-search-input" type="text" placeholder="Nombre del equipo..." />
+        <button class="team-create-confirm-btn">Crear</button>
+        <button class="team-create-cancel-btn">Cancelar</button>
+      </div>`
+    : `<button class="team-create-btn">+ Crear equipo</button>`;
 
   const teamsHTML = cachedTeams.map((team) => {
     const membersHTML = team.members
@@ -982,6 +990,7 @@ function renderTeamsSection(): string {
     <div class="teams-section">
       <details class="teams-details" ${teamsDetailsOpen ? "open" : ""}>
         <summary class="build-section-title teams-summary">Mis equipos (${cachedTeams.length})</summary>
+        ${createTeamHTML}
         <div class="teams-list">${teamsHTML}</div>
       </details>
     </div>`;
@@ -1049,6 +1058,46 @@ function bindTeamEvents(): void {
       createAutocomplete(input, pokemonNames, (name) => {
         addMemberFromSearch(teamName, name);
       });
+    }
+  });
+
+  // Create team button
+  container.querySelector<HTMLButtonElement>(".team-create-btn")?.addEventListener("click", () => {
+    creatingTeam = true;
+    teamsDetailsOpen = true;
+    buildLayout();
+    container.querySelector<HTMLInputElement>(".team-create-input")?.focus();
+  });
+
+  container.querySelector<HTMLButtonElement>(".team-create-cancel-btn")?.addEventListener("click", () => {
+    creatingTeam = false;
+    teamsDetailsOpen = true;
+    buildLayout();
+  });
+
+  container.querySelector<HTMLButtonElement>(".team-create-confirm-btn")?.addEventListener("click", async () => {
+    const input = container.querySelector<HTMLInputElement>(".team-create-input");
+    const name = input?.value.trim() ?? "";
+    if (!name) return;
+    try {
+      await CreateTeam(name);
+      cachedTeams = await ListTeams();
+      creatingTeam = false;
+      teamsDetailsOpen = true;
+      buildLayout();
+    } catch (e: unknown) {
+      alert(`Error al crear equipo: ${e}`);
+    }
+  });
+
+  container.querySelector<HTMLInputElement>(".team-create-input")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      container.querySelector<HTMLButtonElement>(".team-create-confirm-btn")?.click();
+    }
+    if (e.key === "Escape") {
+      creatingTeam = false;
+      teamsDetailsOpen = true;
+      buildLayout();
     }
   });
 
