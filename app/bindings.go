@@ -207,6 +207,84 @@ func (a *App) ExecuteTurn(input core.TurnInput) core.TurnResult {
 	})
 }
 
+// SimulateTeamBattle runs a full team-vs-team battle simulation.
+func (a *App) SimulateTeamBattle(team1Name, team2Name string) (core.TeamBattleState, error) {
+	members1, err := a.resolveTeamBattleMembers(team1Name)
+	if err != nil {
+		return core.TeamBattleState{}, fmt.Errorf("team1: %w", err)
+	}
+	members2, err := a.resolveTeamBattleMembers(team2Name)
+	if err != nil {
+		return core.TeamBattleState{}, fmt.Errorf("team2: %w", err)
+	}
+	input := core.TeamBattleInput{
+		Team1Name: team1Name, Team1Members: members1,
+		Team2Name: team2Name, Team2Members: members2,
+	}
+	return core.SimulateTeamBattle(input, func(n int) int { return rand.Intn(n) }), nil
+}
+
+// SimulateMultipleTeamBattles runs N team battle simulations and returns aggregated statistics.
+func (a *App) SimulateMultipleTeamBattles(team1Name, team2Name string, n int) (core.TeamBattleReport, error) {
+	if n < 1 || n > 10000 {
+		return core.TeamBattleReport{}, fmt.Errorf("n must be between 1 and 10000, got %d", n)
+	}
+	members1, err := a.resolveTeamBattleMembers(team1Name)
+	if err != nil {
+		return core.TeamBattleReport{}, fmt.Errorf("team1: %w", err)
+	}
+	members2, err := a.resolveTeamBattleMembers(team2Name)
+	if err != nil {
+		return core.TeamBattleReport{}, fmt.Errorf("team2: %w", err)
+	}
+	input := core.TeamBattleInput{
+		Team1Name: team1Name, Team1Members: members1,
+		Team2Name: team2Name, Team2Members: members2,
+	}
+	return core.SimulateMultipleTeamBattles(input, n, func(v int) int { return rand.Intn(v) }), nil
+}
+
+// resolveTeamBattleMembers loads a team and resolves each member's stats, types, and moves.
+func (a *App) resolveTeamBattleMembers(teamName string) ([]core.TeamBattleMember, error) {
+	team, err := a.teams.GetTeam(teamName)
+	if err != nil {
+		return nil, err
+	}
+	members := make([]core.TeamBattleMember, 0, len(team.Members))
+	for _, m := range team.Members {
+		pokemon, err := a.fetcher.FetchPokemon(core.NormalizeName(m.PokemonName))
+		if err != nil {
+			return nil, fmt.Errorf("fetch %s: %w", m.PokemonName, err)
+		}
+		baseStats := core.PokemonToBaseStats(pokemon)
+		nature, ok := core.Natures[m.Nature]
+		if !ok {
+			nature = core.Natures["Hardy"]
+		}
+		stats := core.CalculateAllStats(baseStats, m.IVs, m.EVs, m.Level, nature)
+
+		var moves []core.Move
+		for _, moveName := range m.Moves {
+			move, err := a.fetcher.FetchMove(core.NormalizeName(moveName))
+			if err == nil {
+				moves = append(moves, move)
+			}
+		}
+		if len(moves) == 0 {
+			moves = []core.Move{{Name: "struggle", Type: "normal", Power: 50, Category: "physical", Accuracy: 100}}
+		}
+
+		members = append(members, core.TeamBattleMember{
+			PokemonName: m.PokemonName,
+			Stats:       stats,
+			Types:       pokemon.Types,
+			Moves:       moves,
+			Level:       m.Level,
+		})
+	}
+	return members, nil
+}
+
 // SimulateFullBattle runs a complete automatic battle and returns the final state.
 func (a *App) SimulateFullBattle(input core.FullBattleInput) core.BattleState {
 	return core.SimulateFullBattle(input, func(n int) int {

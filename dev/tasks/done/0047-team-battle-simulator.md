@@ -1,7 +1,7 @@
 # Simulador de combates completos entre equipos
 
 **ID**: 0047-team-battle-simulator
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-15
 **Depende de**: 0045-create-team-from-panel, 0046-random-team-fill
 
@@ -107,14 +107,14 @@ type TeamBattleReport struct {
 
 ## Criterios de aceptacion
 
-- [ ] Se pueden seleccionar dos equipos para enfrentarse
-- [ ] La simulación resuelve combates 1v1 secuenciales hasta que un equipo se queda sin Pokémon
-- [ ] El HP del ganador de cada 1v1 se conserva para el siguiente combate
-- [ ] Se muestra visualmente qué Pokémon quedan vivos y cuáles cayeron
-- [ ] El log muestra el desarrollo de cada ronda
-- [ ] La simulación batch funciona y muestra estadísticas (win%, turnos promedio, Pokémon restantes promedio)
-- [ ] Funciona con equipos de cualquier tamaño (1-6 miembros)
-- [ ] No hay regresiones en el simulador de batallas 1v1 existente
+- [x] Se pueden seleccionar dos equipos para enfrentarse
+- [x] La simulación resuelve combates 1v1 secuenciales hasta que un equipo se queda sin Pokémon
+- [x] El HP del ganador de cada 1v1 se conserva para el siguiente combate
+- [x] Se muestra visualmente qué Pokémon quedan vivos y cuáles cayeron
+- [x] El log muestra el desarrollo de cada ronda
+- [x] La simulación batch funciona y muestra estadísticas (win%, turnos promedio, Pokémon restantes promedio)
+- [x] Funciona con equipos de cualquier tamaño (1-6 miembros)
+- [x] No hay regresiones en el simulador de batallas 1v1 existente
 
 ## Notas
 
