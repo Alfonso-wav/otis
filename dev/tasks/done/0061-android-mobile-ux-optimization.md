@@ -1,7 +1,7 @@
 # Optimizar UI/UX del frontend para móvil
 
 **ID**: 0061-android-mobile-ux-optimization
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-15
 
 ---
@@ -46,12 +46,12 @@ Adaptar los estilos y la interacción del frontend para que funcione correctamen
 
 ## Criterios de aceptacion
 
-- [ ] Todas las páginas son usables en pantalla móvil (360px ancho mínimo)
-- [ ] No hay scroll horizontal no deseado
-- [ ] Touch targets >= 48px
-- [ ] Navegación clara y accesible en mobile
-- [ ] Rendimiento fluido (>30fps en scroll y animaciones)
-- [ ] La versión desktop no se ve afectada (responsive, no destructivo)
+- [x] Todas las páginas son usables en pantalla móvil (360px ancho mínimo)
+- [x] No hay scroll horizontal no deseado
+- [x] Touch targets >= 48px
+- [x] Navegación clara y accesible en mobile
+- [x] Rendimiento fluido (>30fps en scroll y animaciones)
+- [x] La versión desktop no se ve afectada (responsive, no destructivo)
 
 ## Notas
 
