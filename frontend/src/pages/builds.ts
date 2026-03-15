@@ -97,6 +97,11 @@ function spriteFallback(name: string): string {
   return `https://img.pokemondb.net/sprites/home/normal/${safeName}.png`;
 }
 
+function battleSpriteURL(name: string, type: "battle-back" | "battle-front"): string {
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  return `/assets/sprites/${type}/${safeName}.png`;
+}
+
 function typeBadge(type: string): string {
   return `<span class="type-badge type-${type}">${type}</span>`;
 }
@@ -337,17 +342,33 @@ function hpBarColor(pct: number): string {
   return "#e53e3e";
 }
 
-function renderHPBar(name: string, current: number, max: number): string {
+function renderHPBar(name: string, level: number, current: number, max: number, showNumeric: boolean): string {
   const pct = max > 0 ? Math.max(0, current / max) : 0;
   const color = hpBarColor(pct);
   return `
-    <div class="battle-pokemon-hp">
-      <div class="battle-pokemon-name">${name}</div>
-      <div class="hp-bar-track">
-        <div class="hp-bar-fill" style="width:${(pct * 100).toFixed(1)}%;background:${color}"></div>
+    <div class="battle-info-box">
+      <div class="battle-info-header">
+        <span class="battle-info-name">${name}</span>
+        <span class="battle-info-level">:L${level}</span>
       </div>
-      <div class="hp-bar-label">${current} / ${max}</div>
+      <div class="battle-info-hp-row">
+        <span class="battle-info-hp-label">HP:</span>
+        <div class="hp-bar-track">
+          <div class="hp-bar-fill" style="width:${(pct * 100).toFixed(1)}%;background:${color}"></div>
+        </div>
+      </div>
+      ${showNumeric ? `<div class="battle-info-hp-numeric">${current}<span class="battle-info-hp-slash">/</span>${max}</div>` : ""}
     </div>`;
+}
+
+function battleSpriteImg(name: string, type: "battle-back" | "battle-front"): string {
+  const localSrc = battleSpriteURL(name, type);
+  const fallbackSrc = spriteURL(name);
+  const fallbackCDN = spriteFallback(name);
+  return `<img class="battle-sprite battle-sprite--${type === "battle-back" ? "back" : "front"}"
+    src="${localSrc}"
+    onerror="if(this.src!=='${fallbackSrc}'){this.src='${fallbackSrc}'}else{this.onerror=null;this.src='${fallbackCDN}'}"
+    alt="${name}" />`;
 }
 
 function renderBattleSection(): string {
@@ -364,6 +385,16 @@ function renderBattleSection(): string {
     return `
       <div class="battle-section" id="battle-section">
         <h3 class="build-section-title">Simulación de batalla</h3>
+        <div class="battle-arena">
+          <div class="battle-arena-top">
+            ${renderHPBar(state.defender.Name, state.defenderLevel, 0, 0, false)}
+            ${battleSpriteImg(state.defender.Name, "battle-front")}
+          </div>
+          <div class="battle-arena-bottom">
+            ${battleSpriteImg(state.attacker.Name, "battle-back")}
+            ${renderHPBar(state.attacker.Name, state.attackerLevel, 0, 0, true)}
+          </div>
+        </div>
         <div class="battle-idle-btns">
           <button class="battle-start-btn" id="battle-start-btn">Iniciar batalla turno a turno</button>
           ${canAutoSimulate ? `<button class="battle-auto-btn" id="battle-auto-btn">Simular batalla completa</button>` : ""}
@@ -402,10 +433,15 @@ function renderBattleSection(): string {
     <div class="battle-section" id="battle-section">
       <h3 class="build-section-title">Simulación de batalla — Turno ${bs.turnCount}</h3>
       ${winnerBanner}
-      <div class="battle-hp-bars">
-        ${renderHPBar(atkName, bs.attackerHP, bs.attackerMaxHP)}
-        <div class="battle-vs">VS</div>
-        ${renderHPBar(defName, bs.defenderHP, bs.defenderMaxHP)}
+      <div class="battle-arena">
+        <div class="battle-arena-top">
+          ${renderHPBar(defName, state.defenderLevel, bs.defenderHP, bs.defenderMaxHP, false)}
+          ${battleSpriteImg(defName, "battle-front")}
+        </div>
+        <div class="battle-arena-bottom">
+          ${battleSpriteImg(atkName, "battle-back")}
+          ${renderHPBar(atkName, state.attackerLevel, bs.attackerHP, bs.attackerMaxHP, true)}
+        </div>
       </div>
       ${turnLabel}
       ${!bs.isOver ? `<div class="battle-move-btns" id="battle-move-btns">${moveBtns}</div>` : ""}

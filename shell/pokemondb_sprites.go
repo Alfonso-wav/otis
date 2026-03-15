@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/alfon/pokemon-app/core"
 )
 
@@ -35,6 +36,189 @@ func spriteRemotePath(category core.SpriteCategory, name string) string {
 	}
 }
 
+// BattleSpriteURLs holds the scraped Gen 1 sprite URLs for a Pokémon.
+type BattleSpriteURLs struct {
+	Front string
+	Back  string
+}
+
+// ScrapeBattleSpriteURLs visits /sprites/{name} and extracts the oldest generation
+// Normal (front) and Back sprite image URLs.
+func ScrapeBattleSpriteURLs(doc *goquery.Document) BattleSpriteURLs {
+	var result BattleSpriteURLs
+
+	// Find all generation headings (h2 elements containing "Generation")
+	var genSections []*goquery.Selection
+	doc.Find("h2").Each(func(_ int, h2 *goquery.Selection) {
+		text := strings.TrimSpace(h2.Text())
+		if strings.HasPrefix(text, "Generation") {
+			genSections = append(genSections, h2)
+		}
+	})
+
+	if len(genSections) == 0 {
+		return result
+	}
+
+	// Try each generation section starting from the oldest (first on page)
+	for _, h2 := range genSections {
+		// The table follows the h2 heading — find next sibling elements until we hit a table
+		var table *goquery.Selection
+		for sib := h2.Next(); sib.Length() > 0; sib = sib.Next() {
+			if goquery.NodeName(sib) == "table" {
+				table = sib
+				break
+			}
+			// Stop if we hit the next h2 (next generation)
+			if goquery.NodeName(sib) == "h2" {
+				break
+			}
+		}
+		if table == nil {
+			continue
+		}
+
+		// Parse column headers to find "Normal" and "Back" indices
+		var colHeaders []string
+		table.Find("thead th").Each(func(_ int, th *goquery.Selection) {
+			colHeaders = append(colHeaders, strings.TrimSpace(th.Text()))
+		})
+
+		normalIdx := -1
+		backIdx := -1
+		for i, h := range colHeaders {
+			lower := strings.ToLower(h)
+			if lower == "normal" && normalIdx == -1 {
+				normalIdx = i
+			}
+			if lower == "back" && backIdx == -1 {
+				backIdx = i
+			}
+		}
+
+		// Look through table rows for the first row with sprites
+		table.Find("tbody tr").Each(func(_ int, tr *goquery.Selection) {
+			if result.Front != "" && result.Back != "" {
+				return
+			}
+			cells := tr.Find("td")
+
+			if normalIdx >= 0 && result.Front == "" {
+				img := cells.Eq(normalIdx).Find("img").First()
+				if src, exists := img.Attr("src"); exists && src != "" {
+					result.Front = src
+				}
+			}
+
+			if backIdx >= 0 && result.Back == "" {
+				img := cells.Eq(backIdx).Find("img").First()
+				if src, exists := img.Attr("src"); exists && src != "" {
+					result.Back = src
+				}
+			}
+		})
+
+		// If we found at least one sprite in this generation, use it
+		if result.Front != "" || result.Back != "" {
+			return result
+		}
+	}
+
+	return result
+}
+
+func (c *PokemonDBClient) downloadBattleSprites(destDir string, entries []core.PokedexDBEntry, result *core.SpriteDownloadResult) {
+	backDir := filepath.Join(destDir, string(core.SpriteCategoryBattleBack))
+	frontDir := filepath.Join(destDir, string(core.SpriteCategoryBattleFront))
+
+	if err := os.MkdirAll(backDir, 0755); err != nil {
+		result.Failed++
+		result.Errors = append(result.Errors, fmt.Sprintf("creating battle-back dir: %s", err))
+		return
+	}
+	if err := os.MkdirAll(frontDir, 0755); err != nil {
+		result.Failed++
+		result.Errors = append(result.Errors, fmt.Sprintf("creating battle-front dir: %s", err))
+		return
+	}
+
+	for i, entry := range entries {
+		name := strings.ToLower(entry.Name)
+
+		backDest := filepath.Join(backDir, name+".png")
+		frontDest := filepath.Join(frontDir, name+".png")
+
+		_, backExists := os.Stat(backDest)
+		_, frontExists := os.Stat(frontDest)
+
+		// Count both sprites
+		result.Total += 2
+
+		if backExists == nil && frontExists == nil {
+			result.Skipped += 2
+			continue
+		}
+
+		// Need to scrape the page to get URLs
+		doc, err := c.fetchPage(fmt.Sprintf("/sprites/%s", name))
+		if err != nil {
+			if backExists != nil {
+				result.Failed++
+				result.Errors = append(result.Errors, fmt.Sprintf("battle-back/%s: %s", name, err))
+			} else {
+				result.Skipped++
+			}
+			if frontExists != nil {
+				result.Failed++
+				result.Errors = append(result.Errors, fmt.Sprintf("battle-front/%s: %s", name, err))
+			} else {
+				result.Skipped++
+			}
+			continue
+		}
+
+		urls := ScrapeBattleSpriteURLs(doc)
+
+		// Download back sprite
+		if backExists != nil {
+			if urls.Back != "" {
+				if dlErr := c.downloadFile(urls.Back, backDest); dlErr != nil {
+					result.Failed++
+					result.Errors = append(result.Errors, fmt.Sprintf("battle-back/%s: %s", name, dlErr))
+				} else {
+					result.Downloaded++
+				}
+			} else {
+				result.Failed++
+				result.Errors = append(result.Errors, fmt.Sprintf("battle-back/%s: no back sprite found", name))
+			}
+		} else {
+			result.Skipped++
+		}
+
+		// Download front sprite
+		if frontExists != nil {
+			if urls.Front != "" {
+				if dlErr := c.downloadFile(urls.Front, frontDest); dlErr != nil {
+					result.Failed++
+					result.Errors = append(result.Errors, fmt.Sprintf("battle-front/%s: %s", name, dlErr))
+				} else {
+					result.Downloaded++
+				}
+			} else {
+				result.Failed++
+				result.Errors = append(result.Errors, fmt.Sprintf("battle-front/%s: no front sprite found", name))
+			}
+		} else {
+			result.Skipped++
+		}
+
+		if (i+1)%50 == 0 {
+			log.Printf("Battle sprites: %d/%d processed", i+1, len(entries))
+		}
+	}
+}
+
 func (c *PokemonDBClient) DownloadAllSprites(destDir string, categories []core.SpriteCategory) (core.SpriteDownloadResult, error) {
 	result := core.SpriteDownloadResult{}
 
@@ -43,7 +227,25 @@ func (c *PokemonDBClient) DownloadAllSprites(destDir string, categories []core.S
 		return result, fmt.Errorf("fetching pokedex for sprite names: %w", err)
 	}
 
+	// Check if battle sprite categories are requested
+	hasBattle := false
 	for _, cat := range categories {
+		if cat == core.SpriteCategoryBattleBack || cat == core.SpriteCategoryBattleFront {
+			hasBattle = true
+			break
+		}
+	}
+
+	if hasBattle {
+		c.downloadBattleSprites(destDir, entries, &result)
+	}
+
+	for _, cat := range categories {
+		// Battle sprites are handled together above
+		if cat == core.SpriteCategoryBattleBack || cat == core.SpriteCategoryBattleFront {
+			continue
+		}
+
 		if cat == core.SpriteCategoryIcons {
 			catDir := filepath.Join(destDir, string(cat))
 			if err := os.MkdirAll(catDir, 0755); err != nil {

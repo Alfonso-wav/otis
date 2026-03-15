@@ -1,0 +1,27 @@
+{
+  "name": "team a",
+  "members": [
+    {
+      "pokemonName": "eevee",
+      "moves": [],
+      "level": 50,
+      "nature": "Hardy",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 0,
+        "attack": 0,
+        "defense": 0,
+        "spAttack": 0,
+        "spDefense": 0,
+        "speed": 0
+      }
+    }
+  ]
+}

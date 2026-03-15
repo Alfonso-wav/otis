@@ -350,9 +350,11 @@ type Team struct {
 type SpriteCategory string
 
 const (
-	SpriteCategoryHomeNormal SpriteCategory = "home-normal"
-	SpriteCategoryHomeShiny  SpriteCategory = "home-shiny"
-	SpriteCategoryIcons      SpriteCategory = "icons"
+	SpriteCategoryHomeNormal  SpriteCategory = "home-normal"
+	SpriteCategoryHomeShiny   SpriteCategory = "home-shiny"
+	SpriteCategoryIcons       SpriteCategory = "icons"
+	SpriteCategoryBattleBack  SpriteCategory = "battle-back"
+	SpriteCategoryBattleFront SpriteCategory = "battle-front"
 )
 
 type SpriteDownloadResult struct {
