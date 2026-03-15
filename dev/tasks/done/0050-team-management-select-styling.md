@@ -1,7 +1,7 @@
 # Corregir estilos de selects en gestión de equipos
 
 **ID**: 0050-team-management-select-styling
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-15
 
 ---
@@ -43,10 +43,10 @@ Los selects afectados:
 
 ## Criterios de aceptacion
 
-- [ ] `.team-battle-select` tiene estilos definidos que coinciden con el resto de la app
-- [ ] Todos los selects en la sección de builds tienen apariencia visual consistente
-- [ ] Los selects tienen estados `:focus` y `:hover` coherentes
-- [ ] Se ve bien en pantallas pequeñas (responsive)
+- [x] `.team-battle-select` tiene estilos definidos que coinciden con el resto de la app
+- [x] Todos los selects en la sección de builds tienen apariencia visual consistente
+- [x] Los selects tienen estados `:focus` y `:hover` coherentes
+- [x] Se ve bien en pantallas pequeñas (responsive)
 
 ## Notas
 
