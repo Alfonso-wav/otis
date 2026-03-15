@@ -362,6 +362,18 @@ func (a *App) DownloadSprites(categories []core.SpriteCategory) (core.SpriteDown
 
 // --- Teams ---
 
+// CreateTeam creates a new empty team with the given name.
+func (a *App) CreateTeam(name string) error {
+	team := core.Team{Name: name, Members: []core.TeamMember{}}
+	if err := core.ValidateTeam(team); err != nil {
+		return err
+	}
+	if _, err := a.teams.GetTeam(name); err == nil {
+		return fmt.Errorf("team %q already exists", name)
+	}
+	return a.teams.SaveTeam(team)
+}
+
 // SaveToTeam agrega un miembro a un equipo existente o crea uno nuevo.
 func (a *App) SaveToTeam(teamName string, member core.TeamMember) error {
 	team, err := a.teams.GetTeam(teamName)
