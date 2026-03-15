@@ -992,7 +992,7 @@
 }
 
 .teams-section {
-  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .teams-details {
@@ -1121,4 +1121,176 @@
   transition: color 0.15s;
 
   &:hover { color: #e53e3e; }
+}
+
+// ─── Save Modal ────────────────────────────────────────────────────────────
+
+.save-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.save-modal {
+  background: white;
+  border-radius: $border-radius-lg;
+  padding: 1.25rem;
+  min-width: 320px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.save-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-family: $font-display;
+  font-size: 1.1rem;
+  color: #2d3748;
+}
+
+.save-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 0.2rem;
+
+  &:hover { color: #e53e3e; }
+}
+
+.save-modal-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.save-modal-team-btn {
+  width: 100%;
+  padding: 0.55rem 0.9rem;
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #2d3748;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: #38a169;
+    background: #f0fff4;
+  }
+}
+
+.save-modal-new {
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid #edf2f7;
+  padding-top: 0.75rem;
+}
+
+.save-modal-input {
+  flex: 1;
+  padding: 0.45rem 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.85rem;
+  outline: none;
+
+  &:focus { border-color: #38a169; }
+}
+
+.save-modal-create-btn {
+  padding: 0.45rem 1rem;
+  background: #38a169;
+  color: white;
+  border: none;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover { background: darken(#38a169, 8%); }
+}
+
+// ─── Add Member Panel ──────────────────────────────────────────────────────
+
+.team-add-member-btn {
+  display: block;
+  width: calc(100% - 1.8rem);
+  margin: 0.5rem 0.9rem;
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  color: #38a169;
+  border: 2px dashed #38a169;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: #f0fff4; }
+}
+
+.team-add-member-panel {
+  padding: 0.75rem 0.9rem;
+  border-top: 1px solid #edf2f7;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.team-add-search-row {
+  position: relative;
+}
+
+.team-add-search-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.team-add-from-build-btn {
+  padding: 0.4rem 0.75rem;
+  background: #3182ce;
+  color: white;
+  border: none;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: darken(#3182ce, 8%); }
+}
+
+.team-add-cancel-btn {
+  padding: 0.35rem 0.75rem;
+  background: transparent;
+  color: #718096;
+  border: 1px solid #e2e8f0;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.78rem;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.15s;
+
+  &:hover { background: #f7fafc; }
 }
