@@ -113,3 +113,5 @@ export function SimulateMultipleBattles(arg1:core.FullBattleInput,arg2:number):P
 export function SimulateMultipleTeamBattles(arg1:string,arg2:string,arg3:number):Promise<core.TeamBattleReport>;
 
 export function SimulateTeamBattle(arg1:string,arg2:string):Promise<core.TeamBattleState>;
+
+export function UpdateTeamMember(arg1:string,arg2:number,arg3:core.TeamMember):Promise<void>;

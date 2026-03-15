@@ -18,6 +18,7 @@ import {
   FillTeamRandom,
   SimulateTeamBattle,
   SimulateMultipleTeamBattles,
+  UpdateTeamMember,
 } from "../../wailsjs/go/app/App";
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
@@ -102,6 +103,8 @@ let teamsDetailsOpen = false;
 let creatingTeam = false;
 let saveModalPrefix: "atk" | "def" | null = null;
 let addMemberTeamName: string | null = null;
+let editingMemberKey: string | null = null; // "teamName:idx" of member being edited
+let editingMemberMoves: string[] = []; // cached available move names for editing member
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -1104,16 +1107,37 @@ function renderTeamsSection(): string {
 
   const teamsHTML = cachedTeams.map((team) => {
     const membersHTML = team.members
-      .map((m, i) => `
-        <div class="team-member-row">
+      .map((m, i) => {
+        const memberKey = `${team.name}:${i}`;
+        const isEditing = editingMemberKey === memberKey;
+        const movesDisplay = m.moves.length > 0 ? m.moves.join(", ") : "Sin movimientos";
+        const moveSelectors = isEditing
+          ? `<div class="team-member-edit-moves">
+              ${[0, 1, 2, 3].map((slotIdx) => {
+                const current = m.moves[slotIdx] ?? "";
+                const options = editingMemberMoves.map((mv) =>
+                  `<option value="${mv}" ${mv === current ? "selected" : ""}>${mv}</option>`
+                ).join("");
+                return `<select class="team-member-move-select team-battle-select" data-team="${team.name}" data-idx="${i}" data-slot="${slotIdx}">
+                  <option value="">— Vacío —</option>
+                  ${options}
+                </select>`;
+              }).join("")}
+            </div>`
+          : "";
+        return `
+        <div class="team-member-row${isEditing ? " team-member-row--editing" : ""}">
           <img class="team-member-sprite" src="${spriteURL(m.pokemonName)}" onerror="this.onerror=null;this.src='${spriteFallback(m.pokemonName)}'" alt="${m.pokemonName}" />
           <span class="team-member-name">${m.pokemonName}</span>
           <span class="team-member-detail">Lv.${m.level} ${m.nature}</span>
-          <span class="team-member-moves">${m.moves.join(", ")}</span>
+          <span class="team-member-moves">${movesDisplay}</span>
+          <button class="team-member-edit-btn" data-team="${team.name}" data-idx="${i}" title="Editar movimientos">${isEditing ? "✓" : "✎"}</button>
           <button class="team-import-btn" data-team="${team.name}" data-idx="${i}" data-prefix="atk" title="Importar como atacante">Atk</button>
           <button class="team-import-btn" data-team="${team.name}" data-idx="${i}" data-prefix="def" title="Importar como defensor">Def</button>
           <button class="team-member-delete-btn" data-team="${team.name}" data-idx="${i}" title="Eliminar miembro">✕</button>
-        </div>`)
+        </div>
+        ${moveSelectors}`;
+      })
       .join("");
 
     const canAdd = team.members.length < 6;
@@ -1195,6 +1219,61 @@ function bindTeamEvents(): void {
   container.querySelectorAll<HTMLButtonElement>(".team-member-delete-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       handleDeleteTeamMember(btn.dataset.team!, parseInt(btn.dataset.idx!));
+    });
+  });
+
+  // Edit member moves buttons
+  container.querySelectorAll<HTMLButtonElement>(".team-member-edit-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const teamName = btn.dataset.team!;
+      const idx = parseInt(btn.dataset.idx!);
+      const memberKey = `${teamName}:${idx}`;
+      if (editingMemberKey === memberKey) {
+        // Close editing
+        editingMemberKey = null;
+        editingMemberMoves = [];
+      } else {
+        // Open editing — fetch pokemon moves
+        const team = cachedTeams.find((t) => t.name === teamName);
+        if (team && team.members[idx]) {
+          try {
+            const pokemon = await GetPokemon(team.members[idx].pokemonName);
+            editingMemberMoves = (pokemon.Moves ?? []).map((mv: core.Move) => mv.Name);
+            editingMemberKey = memberKey;
+          } catch {
+            editingMemberMoves = [];
+            editingMemberKey = memberKey;
+          }
+        }
+      }
+      teamsDetailsOpen = true;
+      buildLayout();
+    });
+  });
+
+  // Move select change handlers for editing members
+  container.querySelectorAll<HTMLSelectElement>(".team-member-move-select").forEach((sel) => {
+    sel.addEventListener("change", async () => {
+      const teamName = sel.dataset.team!;
+      const idx = parseInt(sel.dataset.idx!);
+      const team = cachedTeams.find((t) => t.name === teamName);
+      if (!team || !team.members[idx]) return;
+      const member = { ...team.members[idx] };
+      // Gather all 4 selects for this member
+      const selects = container.querySelectorAll<HTMLSelectElement>(
+        `.team-member-move-select[data-team="${teamName}"][data-idx="${idx}"]`
+      );
+      const newMoves: string[] = [];
+      selects.forEach((s) => { if (s.value) newMoves.push(s.value); });
+      member.moves = newMoves;
+      try {
+        await UpdateTeamMember(teamName, idx, member as core.TeamMember);
+        cachedTeams = await ListTeams();
+        teamsDetailsOpen = true;
+        buildLayout();
+      } catch (err: unknown) {
+        alert(`Error al actualizar movimientos: ${String(err)}`);
+      }
     });
   });
 

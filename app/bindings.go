@@ -516,6 +516,19 @@ func (a *App) DeleteTeam(name string) error {
 	return a.teams.DeleteTeam(name)
 }
 
+// UpdateTeamMember updates a member of a team at the given index.
+func (a *App) UpdateTeamMember(teamName string, memberIndex int, member core.TeamMember) error {
+	team, err := a.teams.GetTeam(teamName)
+	if err != nil {
+		return err
+	}
+	team, err = core.UpdateTeamMember(team, memberIndex, member)
+	if err != nil {
+		return err
+	}
+	return a.teams.SaveTeam(team)
+}
+
 // DeleteTeamMember elimina un miembro de un equipo por indice.
 func (a *App) DeleteTeamMember(teamName string, memberIndex int) error {
 	team, err := a.teams.GetTeam(teamName)

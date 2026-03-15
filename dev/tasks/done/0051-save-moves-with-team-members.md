@@ -1,7 +1,7 @@
 # Guardar y editar movimientos de Pokémon en equipos
 
 **ID**: 0051-save-moves-with-team-members
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-15
 
 ---
@@ -43,11 +43,11 @@ Se necesita:
 
 ## Criterios de aceptacion
 
-- [ ] Al añadir un Pokémon a un equipo, sus movimientos seleccionados se guardan en el JSON
-- [ ] Al cargar un equipo, los movimientos de cada miembro se muestran correctamente
-- [ ] Los movimientos son editables desde la vista del equipo (selectores de movimiento funcionales)
-- [ ] Al cambiar un movimiento y guardar, el cambio persiste
-- [ ] En batalla, los Pokémon usan sus movimientos guardados (no "struggle")
+- [x] Al añadir un Pokémon a un equipo, sus movimientos seleccionados se guardan en el JSON
+- [x] Al cargar un equipo, los movimientos de cada miembro se muestran correctamente
+- [x] Los movimientos son editables desde la vista del equipo (selectores de movimiento funcionales)
+- [x] Al cambiar un movimiento y guardar, el cambio persiste
+- [x] En batalla, los Pokémon usan sus movimientos guardados (no "struggle")
 
 ## Notas
 

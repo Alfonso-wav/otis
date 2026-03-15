@@ -73,6 +73,20 @@ func AddMemberToTeam(team Team, member TeamMember) (Team, error) {
 	return Team{Name: team.Name, Members: newMembers}, nil
 }
 
+// UpdateTeamMember returns a new Team with the member at the given index replaced.
+func UpdateTeamMember(team Team, index int, member TeamMember) (Team, error) {
+	if index < 0 || index >= len(team.Members) {
+		return team, ErrIndexOutOfRange
+	}
+	if err := ValidateTeamMember(member); err != nil {
+		return team, err
+	}
+	newMembers := make([]TeamMember, len(team.Members))
+	copy(newMembers, team.Members)
+	newMembers[index] = member
+	return Team{Name: team.Name, Members: newMembers}, nil
+}
+
 // RemoveMemberFromTeam returns a new Team without the member at the given index.
 func RemoveMemberFromTeam(team Team, index int) (Team, error) {
 	if index < 0 || index >= len(team.Members) {
