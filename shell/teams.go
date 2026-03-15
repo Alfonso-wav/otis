@@ -2,6 +2,7 @@ package shell
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -97,6 +98,11 @@ func (fs *FileTeamStorage) GetTeam(name string) (core.Team, error) {
 }
 
 // DeleteTeam removes a team file from disk.
+// It is idempotent: deleting a team that does not exist is not an error.
 func (fs *FileTeamStorage) DeleteTeam(name string) error {
-	return os.Remove(fs.filePath(name))
+	err := os.Remove(fs.filePath(name))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
 }

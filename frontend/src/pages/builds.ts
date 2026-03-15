@@ -939,11 +939,12 @@ async function handleDeleteTeam(name: string): Promise<void> {
   if (!confirm(`Eliminar equipo "${name}"?`)) return;
   try {
     await DeleteTeam(name);
+  } catch (err: unknown) {
+    console.warn(`DeleteTeam error (ignored): ${String(err)}`);
+  } finally {
     teamsDetailsOpen = true;
     cachedTeams = await ListTeams();
     buildLayout();
-  } catch (err: unknown) {
-    alert(`Error: ${String(err)}`);
   }
 }
 
