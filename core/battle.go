@@ -366,6 +366,12 @@ func SimulateTeamBattle(input TeamBattleInput, randSource func(int) int) TeamBat
 		totalTurns += result.TurnCount
 
 		roundNum := len(rounds)
+
+		// Add round header and detailed turn-by-turn log
+		log = append(log, fmt.Sprintf("--- Ronda %d: %s vs %s ---",
+			roundNum, m1.PokemonName, m2.PokemonName))
+		log = append(log, result.Log...)
+
 		if result.Winner == "attacker" {
 			log = append(log, fmt.Sprintf("[Ronda %d] %s venció a %s (HP restante: %d)",
 				roundNum, m1.PokemonName, m2.PokemonName, result.AttackerHP))

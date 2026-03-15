@@ -991,7 +991,13 @@ function renderTeamBattleSection(): string {
   if (teamBattleResult && teamBattleResult.isOver) {
     const winnerName = teamBattleResult.winner === "team1" ? teamBattleTeam1 : teamBattleTeam2;
     const logEntries = (teamBattleResult.log ?? [])
-      .map((entry) => `<div class="battle-log-entry">${entry}</div>`).join("");
+      .map((entry) => {
+        let cls = "battle-log-entry";
+        if (entry.startsWith("---")) cls += " battle-log-round-header";
+        else if (entry.startsWith("[Ronda")) cls += " battle-log-round-summary";
+        else cls += " battle-log-move";
+        return `<div class="${cls}">${entry}</div>`;
+      }).join("");
     resultHTML = `
       <div class="tb-result">
         <div class="battle-winner-banner">${winnerName} gana la batalla de equipos!</div>
