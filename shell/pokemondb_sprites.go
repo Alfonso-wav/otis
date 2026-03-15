@@ -104,14 +104,14 @@ func ScrapeBattleSpriteURLs(doc *goquery.Document) BattleSpriteURLs {
 			cells := tr.Find("td")
 
 			if normalIdx >= 0 && result.Front == "" {
-				img := cells.Eq(normalIdx).Find("img").First()
+				img := cells.Eq(normalIdx).Find("span:nth-child(2) a img").First()
 				if src, exists := img.Attr("src"); exists && src != "" {
 					result.Front = src
 				}
 			}
 
 			if backIdx >= 0 && result.Back == "" {
-				img := cells.Eq(backIdx).Find("img").First()
+				img := cells.Eq(backIdx).Find("span:nth-child(2) a img").First()
 				if src, exists := img.Attr("src"); exists && src != "" {
 					result.Back = src
 				}

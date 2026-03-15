@@ -196,6 +196,8 @@ func TestDownloadIcons(t *testing.T) {
 }
 
 func TestScrapeBattleSpriteURLs_Gen1(t *testing.T) {
+	// Each cell has two spans: span[1] = B&W sprite, span[2] = color sprite.
+	// The scraper must pick the color sprite (second span).
 	html := `<html><body><main>
 		<h2>Generation 1</h2>
 		<table>
@@ -203,13 +205,25 @@ func TestScrapeBattleSpriteURLs_Gen1(t *testing.T) {
 			<tbody>
 				<tr>
 					<td>Red &amp; Blue</td>
-					<td><a><img src="https://img.pokemondb.net/sprites/red-blue/normal/charmander.png"></a></td>
-					<td><a><img src="https://img.pokemondb.net/sprites/red-blue/back-normal/charmander.png"></a></td>
+					<td>
+						<span><a><img src="https://img.pokemondb.net/sprites/red-blue/normal-bw/charmander.png"></a></span>
+						<span><a><img src="https://img.pokemondb.net/sprites/red-blue/normal/charmander.png"></a></span>
+					</td>
+					<td>
+						<span><a><img src="https://img.pokemondb.net/sprites/red-blue/back-normal-bw/charmander.png"></a></span>
+						<span><a><img src="https://img.pokemondb.net/sprites/red-blue/back-normal/charmander.png"></a></span>
+					</td>
 				</tr>
 				<tr>
 					<td>Yellow</td>
-					<td><a><img src="https://img.pokemondb.net/sprites/yellow/normal/charmander.png"></a></td>
-					<td><a><img src="https://img.pokemondb.net/sprites/yellow/back-normal/charmander.png"></a></td>
+					<td>
+						<span><a><img src="https://img.pokemondb.net/sprites/yellow/normal-bw/charmander.png"></a></span>
+						<span><a><img src="https://img.pokemondb.net/sprites/yellow/normal/charmander.png"></a></span>
+					</td>
+					<td>
+						<span><a><img src="https://img.pokemondb.net/sprites/yellow/back-normal-bw/charmander.png"></a></span>
+						<span><a><img src="https://img.pokemondb.net/sprites/yellow/back-normal/charmander.png"></a></span>
+					</td>
 				</tr>
 			</tbody>
 		</table>
@@ -219,10 +233,22 @@ func TestScrapeBattleSpriteURLs_Gen1(t *testing.T) {
 			<tbody>
 				<tr>
 					<td>Gold</td>
-					<td><a><img src="https://img.pokemondb.net/sprites/gold/normal/charmander.png"></a></td>
-					<td><a><img src="https://img.pokemondb.net/sprites/gold/shiny/charmander.png"></a></td>
-					<td><a><img src="https://img.pokemondb.net/sprites/gold/back-normal/charmander.png"></a></td>
-					<td><a><img src="https://img.pokemondb.net/sprites/gold/back-shiny/charmander.png"></a></td>
+					<td>
+						<span><a><img src="https://img.pokemondb.net/sprites/gold/normal-bw/charmander.png"></a></span>
+						<span><a><img src="https://img.pokemondb.net/sprites/gold/normal/charmander.png"></a></span>
+					</td>
+					<td>
+						<span><a><img src="https://img.pokemondb.net/sprites/gold/shiny-bw/charmander.png"></a></span>
+						<span><a><img src="https://img.pokemondb.net/sprites/gold/shiny/charmander.png"></a></span>
+					</td>
+					<td>
+						<span><a><img src="https://img.pokemondb.net/sprites/gold/back-normal-bw/charmander.png"></a></span>
+						<span><a><img src="https://img.pokemondb.net/sprites/gold/back-normal/charmander.png"></a></span>
+					</td>
+					<td>
+						<span><a><img src="https://img.pokemondb.net/sprites/gold/back-shiny-bw/charmander.png"></a></span>
+						<span><a><img src="https://img.pokemondb.net/sprites/gold/back-shiny/charmander.png"></a></span>
+					</td>
 				</tr>
 			</tbody>
 		</table>
@@ -236,10 +262,10 @@ func TestScrapeBattleSpriteURLs_Gen1(t *testing.T) {
 	urls := ScrapeBattleSpriteURLs(doc)
 
 	if urls.Front != "https://img.pokemondb.net/sprites/red-blue/normal/charmander.png" {
-		t.Errorf("expected Red/Blue front sprite, got: %s", urls.Front)
+		t.Errorf("expected Red/Blue color front sprite, got: %s", urls.Front)
 	}
 	if urls.Back != "https://img.pokemondb.net/sprites/red-blue/back-normal/charmander.png" {
-		t.Errorf("expected Red/Blue back sprite, got: %s", urls.Back)
+		t.Errorf("expected Red/Blue color back sprite, got: %s", urls.Back)
 	}
 }
 
@@ -251,8 +277,14 @@ func TestScrapeBattleSpriteURLs_NoGen1_FallbackToOldest(t *testing.T) {
 			<tbody>
 				<tr>
 					<td>Ruby &amp; Sapphire</td>
-					<td><a><img src="https://img.pokemondb.net/sprites/ruby-sapphire/normal/torchic.png"></a></td>
-					<td><a><img src="https://img.pokemondb.net/sprites/ruby-sapphire/back-normal/torchic.png"></a></td>
+					<td>
+						<span><a><img src="https://img.pokemondb.net/sprites/ruby-sapphire/normal-bw/torchic.png"></a></span>
+						<span><a><img src="https://img.pokemondb.net/sprites/ruby-sapphire/normal/torchic.png"></a></span>
+					</td>
+					<td>
+						<span><a><img src="https://img.pokemondb.net/sprites/ruby-sapphire/back-normal-bw/torchic.png"></a></span>
+						<span><a><img src="https://img.pokemondb.net/sprites/ruby-sapphire/back-normal/torchic.png"></a></span>
+					</td>
 				</tr>
 			</tbody>
 		</table>
@@ -266,10 +298,10 @@ func TestScrapeBattleSpriteURLs_NoGen1_FallbackToOldest(t *testing.T) {
 	urls := ScrapeBattleSpriteURLs(doc)
 
 	if urls.Front != "https://img.pokemondb.net/sprites/ruby-sapphire/normal/torchic.png" {
-		t.Errorf("expected fallback front sprite, got: %s", urls.Front)
+		t.Errorf("expected fallback color front sprite, got: %s", urls.Front)
 	}
 	if urls.Back != "https://img.pokemondb.net/sprites/ruby-sapphire/back-normal/torchic.png" {
-		t.Errorf("expected fallback back sprite, got: %s", urls.Back)
+		t.Errorf("expected fallback color back sprite, got: %s", urls.Back)
 	}
 }
 
