@@ -363,11 +363,11 @@ function renderHPBar(name: string, level: number, current: number, max: number, 
 
 function battleSpriteImg(name: string, type: "battle-back" | "battle-front"): string {
   const localSrc = battleSpriteURL(name, type);
-  const fallbackSrc = spriteURL(name);
+  const fallbackLocal = spriteURL(name);
   const fallbackCDN = spriteFallback(name);
   return `<img class="battle-sprite battle-sprite--${type === "battle-back" ? "back" : "front"}"
-    src="${localSrc}"
-    onerror="if(this.src!=='${fallbackSrc}'){this.src='${fallbackSrc}'}else{this.onerror=null;this.src='${fallbackCDN}'}"
+    src="${localSrc}" data-fallback="0"
+    onerror="var f=parseInt(this.dataset.fallback||'0');if(f===0){this.dataset.fallback='1';this.src='${fallbackLocal}'}else if(f===1){this.dataset.fallback='2';this.src='${fallbackCDN}'}else{this.onerror=null;this.style.visibility='hidden'}"
     alt="${name}" />`;
 }
 
