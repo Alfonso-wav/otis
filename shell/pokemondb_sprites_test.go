@@ -5,8 +5,10 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/alfon/pokemon-app/core"
 )
 
@@ -190,6 +192,99 @@ func TestDownloadIcons(t *testing.T) {
 		if _, err := os.Stat(dest); err != nil {
 			t.Errorf("icon file not found: %s", dest)
 		}
+	}
+}
+
+func TestScrapeBattleSpriteURLs_Gen1(t *testing.T) {
+	html := `<html><body><main>
+		<h2>Generation 1</h2>
+		<table>
+			<thead><tr><th>Game</th><th>Normal</th><th>Back</th></tr></thead>
+			<tbody>
+				<tr>
+					<td>Red &amp; Blue</td>
+					<td><a><img src="https://img.pokemondb.net/sprites/red-blue/normal/charmander.png"></a></td>
+					<td><a><img src="https://img.pokemondb.net/sprites/red-blue/back-normal/charmander.png"></a></td>
+				</tr>
+				<tr>
+					<td>Yellow</td>
+					<td><a><img src="https://img.pokemondb.net/sprites/yellow/normal/charmander.png"></a></td>
+					<td><a><img src="https://img.pokemondb.net/sprites/yellow/back-normal/charmander.png"></a></td>
+				</tr>
+			</tbody>
+		</table>
+		<h2>Generation 2</h2>
+		<table>
+			<thead><tr><th>Game</th><th>Normal</th><th>Shiny</th><th>Back</th><th>Back, Shiny</th></tr></thead>
+			<tbody>
+				<tr>
+					<td>Gold</td>
+					<td><a><img src="https://img.pokemondb.net/sprites/gold/normal/charmander.png"></a></td>
+					<td><a><img src="https://img.pokemondb.net/sprites/gold/shiny/charmander.png"></a></td>
+					<td><a><img src="https://img.pokemondb.net/sprites/gold/back-normal/charmander.png"></a></td>
+					<td><a><img src="https://img.pokemondb.net/sprites/gold/back-shiny/charmander.png"></a></td>
+				</tr>
+			</tbody>
+		</table>
+	</main></body></html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	urls := ScrapeBattleSpriteURLs(doc)
+
+	if urls.Front != "https://img.pokemondb.net/sprites/red-blue/normal/charmander.png" {
+		t.Errorf("expected Red/Blue front sprite, got: %s", urls.Front)
+	}
+	if urls.Back != "https://img.pokemondb.net/sprites/red-blue/back-normal/charmander.png" {
+		t.Errorf("expected Red/Blue back sprite, got: %s", urls.Back)
+	}
+}
+
+func TestScrapeBattleSpriteURLs_NoGen1_FallbackToOldest(t *testing.T) {
+	html := `<html><body><main>
+		<h2>Generation 3</h2>
+		<table>
+			<thead><tr><th>Game</th><th>Normal</th><th>Back</th></tr></thead>
+			<tbody>
+				<tr>
+					<td>Ruby &amp; Sapphire</td>
+					<td><a><img src="https://img.pokemondb.net/sprites/ruby-sapphire/normal/torchic.png"></a></td>
+					<td><a><img src="https://img.pokemondb.net/sprites/ruby-sapphire/back-normal/torchic.png"></a></td>
+				</tr>
+			</tbody>
+		</table>
+	</main></body></html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	urls := ScrapeBattleSpriteURLs(doc)
+
+	if urls.Front != "https://img.pokemondb.net/sprites/ruby-sapphire/normal/torchic.png" {
+		t.Errorf("expected fallback front sprite, got: %s", urls.Front)
+	}
+	if urls.Back != "https://img.pokemondb.net/sprites/ruby-sapphire/back-normal/torchic.png" {
+		t.Errorf("expected fallback back sprite, got: %s", urls.Back)
+	}
+}
+
+func TestScrapeBattleSpriteURLs_NoSprites(t *testing.T) {
+	html := `<html><body><main><h2>No data</h2></main></body></html>`
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	urls := ScrapeBattleSpriteURLs(doc)
+
+	if urls.Front != "" || urls.Back != "" {
+		t.Errorf("expected empty URLs, got front=%q back=%q", urls.Front, urls.Back)
 	}
 }
 

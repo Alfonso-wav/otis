@@ -509,6 +509,125 @@
   border-top: 3px solid $pokedex-red;
 }
 
+// ─── Arena de batalla estilo Game Boy ────────────────────────────────────────
+
+.battle-arena {
+  background: linear-gradient(180deg, #f8e8e0 0%, #f0d0c0 50%, #e8c8b8 100%);
+  border-radius: $border-radius-lg;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 3px solid #c0a090;
+}
+
+.battle-arena-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.battle-arena-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+// Sprites de batalla
+.battle-sprite {
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 4px 0px rgba(0, 0, 0, 0.15));
+
+  &--front {
+    width: 96px;
+    height: 96px;
+  }
+
+  &--back {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+// Caja de info estilo Game Boy
+.battle-info-box {
+  background: #f8f0e8;
+  border: 3px solid #504038;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  min-width: 180px;
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+.battle-info-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.battle-info-name {
+  font-family: $font-display;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1a1008;
+}
+
+.battle-info-level {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1a1008;
+}
+
+.battle-info-hp-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.battle-info-hp-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #504038;
+  white-space: nowrap;
+}
+
+.hp-bar-track {
+  flex: 1;
+  height: 10px;
+  background: #504038;
+  border-radius: 2px;
+  overflow: hidden;
+  padding: 2px;
+}
+
+.hp-bar-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.4s ease, background 0.4s ease;
+}
+
+.battle-info-hp-numeric {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1008;
+  text-align: right;
+  margin-top: 0.15rem;
+}
+
+.battle-info-hp-slash {
+  margin: 0 0.15rem;
+  color: #504038;
+}
+
 .battle-start-btn,
 .battle-reset-btn {
   display: inline-block;
@@ -545,56 +664,6 @@
   letter-spacing: 0.06em;
   margin-bottom: 1rem;
   box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
-}
-
-.battle-hp-bars {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.battle-pokemon-hp {
-  flex: 1;
-  min-width: 140px;
-}
-
-.battle-pokemon-name {
-  font-family: $font-display;
-  font-size: 1.1rem;
-  letter-spacing: 0.04em;
-  text-transform: capitalize;
-  color: #2d3748;
-  margin-bottom: 0.25rem;
-}
-
-.hp-bar-track {
-  height: 14px;
-  background: #edf2f7;
-  border-radius: $border-radius-pill;
-  overflow: hidden;
-  margin-bottom: 0.2rem;
-}
-
-.hp-bar-fill {
-  height: 100%;
-  border-radius: $border-radius-pill;
-  transition: width 0.4s ease, background 0.4s ease;
-}
-
-.hp-bar-label {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #718096;
-  text-align: right;
-}
-
-.battle-vs {
-  font-family: $font-display;
-  font-size: 1.8rem;
-  color: #a0aec0;
-  letter-spacing: 0.05em;
 }
 
 .battle-turn-label {
@@ -809,13 +878,15 @@
     padding: 1rem;
   }
 
-  .battle-hp-bars {
-    gap: 0.75rem;
+  .battle-arena {
+    padding: 1rem;
+    min-height: 240px;
   }
 
-  .battle-vs {
-    font-size: 1.4rem;
-  }
+  .battle-sprite--front { width: 80px; height: 80px; }
+  .battle-sprite--back { width: 100px; height: 100px; }
+
+  .battle-info-box { min-width: 150px; }
 
   .battle-move-btns {
     gap: 0.5rem;
@@ -833,30 +904,25 @@
     margin-top: 1rem;
   }
 
+  .battle-arena {
+    padding: 0.75rem;
+    min-height: 200px;
+  }
+
+  .battle-sprite--front { width: 64px; height: 64px; }
+  .battle-sprite--back { width: 80px; height: 80px; }
+
+  .battle-info-box {
+    min-width: 120px;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .battle-info-name { font-size: 0.82rem; }
+  .battle-info-level { font-size: 0.75rem; }
+
   .battle-winner-banner {
     font-size: 1.2rem;
     padding: 0.6rem 0.75rem;
-  }
-
-  .battle-hp-bars {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .battle-pokemon-hp {
-    min-width: 100%;
-  }
-
-  .battle-vs {
-    display: none;
-  }
-
-  .battle-pokemon-name {
-    font-size: 1rem;
-  }
-
-  .hp-bar-track {
-    height: 12px;
   }
 
   // Move buttons: grid layout for touch targets
@@ -870,7 +936,7 @@
     padding: 0.55rem 0.75rem;
     font-size: 0.82rem;
     justify-content: center;
-    min-height: 44px; // touch target size
+    min-height: 44px;
   }
 
   // Battle log compact
