@@ -714,7 +714,11 @@ function renderBattleInPlace(): void {
 
 function bindBattleEvents(): void {
   container.querySelector<HTMLButtonElement>("#battle-start-btn")?.addEventListener("click", () => startBattle());
-  container.querySelector<HTMLButtonElement>("#battle-reset-btn")?.addEventListener("click", () => startBattle());
+  container.querySelector<HTMLButtonElement>("#battle-reset-btn")?.addEventListener("click", () => {
+    battleUI = { battleState: null, phase: "idle" };
+    batchReport = null;
+    renderBattleInPlace();
+  });
   container.querySelector<HTMLButtonElement>("#battle-auto-btn")?.addEventListener("click", () => simulateFullBattle());
   container.querySelector<HTMLButtonElement>("#batch-btn")?.addEventListener("click", () => simulateBatchBattles());
   container.querySelectorAll<HTMLButtonElement>(".move-btn").forEach((btn) => {
