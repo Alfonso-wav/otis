@@ -78,6 +78,7 @@ func (m *mockFetcher) FetchGrowthRate(name string) (core.GrowthRate, error) {
 }
 
 // --- Grupo C ---
+func (m *mockFetcher) FetchAllMoves() ([]core.Move, error) { return nil, nil }
 func (m *mockFetcher) FetchMoveList(offset int, limit int) (core.MoveListResponse, error) {
 	return core.MoveListResponse{}, nil
 }

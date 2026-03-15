@@ -1,36 +1,29 @@
 import gsap from "gsap";
-import { GetMove } from "../../../wailsjs/go/app/App";
+import { GetAllMoves } from "../../../wailsjs/go/app/App";
 import type { core } from "../../../wailsjs/go/models";
 
-// Lista de movimientos representativos para búsqueda/demo
-// (PokeAPI tiene +900 movimientos; usamos lazy fetch individual)
-const KNOWN_MOVES = [
-  "pound", "tackle", "scratch", "growl", "tail-whip", "ember", "water-gun",
-  "vine-whip", "thunderbolt", "flamethrower", "surf", "fly", "earthquake",
-  "psychic", "ice-beam", "blizzard", "thunder", "solar-beam", "dragon-claw",
-  "shadow-ball", "brick-break", "rock-slide", "iron-tail", "aerial-ace",
-  "hyper-beam", "giga-impact", "close-combat", "flare-blitz", "waterfall",
-  "leaf-blade", "night-slash", "swords-dance", "nasty-plot", "calm-mind",
-  "dragon-dance", "will-o-wisp", "toxic", "stealth-rock", "spore",
-  "stone-edge", "crunch", "dark-pulse", "flash-cannon", "focus-blast",
-  "energy-ball", "aura-sphere", "draco-meteor", "outrage", "moonblast",
-];
-
 type Category = "all" | "physical" | "special" | "status";
-type FilterType = "all" | string;
+type SortColumn = "name" | "type" | "category" | "power" | "accuracy" | "pp" | "priority" | null;
+type SortDirection = "asc" | "desc" | null;
 
 interface MoveState {
-  loaded: Map<string, core.Move>;
+  allMoves: core.Move[];
   selectedCategory: Category;
-  selectedType: FilterType;
+  selectedType: string;
   searchQuery: string;
+  sortColumn: SortColumn;
+  sortDirection: SortDirection;
+  loading: boolean;
 }
 
 const state: MoveState = {
-  loaded: new Map(),
+  allMoves: [],
   selectedCategory: "all",
   selectedType: "all",
   searchQuery: "",
+  sortColumn: null,
+  sortDirection: null,
+  loading: false,
 };
 
 const TYPE_COLORS: Record<string, string> = {
@@ -41,8 +34,8 @@ const TYPE_COLORS: Record<string, string> = {
   steel: "#718096", fairy: "#fbb6ce",
 };
 
-function typeColor(type: string): string {
-  return TYPE_COLORS[type] ?? "#718096";
+function typeColor(t: string): string {
+  return TYPE_COLORS[t] ?? "#718096";
 }
 
 function categoryIcon(cat: string): string {
@@ -55,129 +48,179 @@ function categoryIcon(cat: string): string {
   return map[cat] ?? `<span class="move-cat-unknown">?</span>`;
 }
 
-function filteredMoves(): string[] {
-  return KNOWN_MOVES.filter((name) => {
-    const move = state.loaded.get(name);
-    if (!move) return state.searchQuery === "" || name.includes(state.searchQuery);
+function filteredMoves(): core.Move[] {
+  let moves = state.allMoves;
 
-    const matchSearch =
-      state.searchQuery === "" ||
-      move.Name.includes(state.searchQuery.toLowerCase());
-    const matchCat =
-      state.selectedCategory === "all" ||
-      move.Category === state.selectedCategory;
-    const matchType =
-      state.selectedType === "all" || move.Type === state.selectedType;
-
-    return matchSearch && matchCat && matchType;
-  });
-}
-
-function renderMoveCard(name: string): string {
-  const move = state.loaded.get(name);
-  if (!move) {
-    return `<div class="move-card move-card--loading" data-move="${name}">
-      <span class="move-card__name">${name.replace(/-/g, " ")}</span>
-    </div>`;
+  if (state.searchQuery !== "") {
+    moves = moves.filter((m) => m.Name.includes(state.searchQuery));
   }
-  return `<div class="move-card" data-move="${name}">
-    <div class="move-card__header">
-      <span class="move-card__name">${move.Name.replace(/-/g, " ")}</span>
-      <span class="move-card__type" style="background:${typeColor(move.Type)}">${move.Type}</span>
-      <span class="move-card__cat" title="${move.Category}">${categoryIcon(move.Category)}</span>
-    </div>
-    <div class="move-card__stats">
-      <span class="move-stat"><b>PWR</b> ${move.Power || "—"}</span>
-      <span class="move-stat"><b>ACC</b> ${move.Accuracy || "—"}%</span>
-      <span class="move-stat"><b>PP</b> ${move.PP}</span>
-    </div>
-    ${move.Description ? `<p class="move-card__desc">${move.Description.replace(/\n/g, " ")}</p>` : ""}
-  </div>`;
+  if (state.selectedCategory !== "all") {
+    moves = moves.filter((m) => m.Category === state.selectedCategory);
+  }
+  if (state.selectedType !== "all") {
+    moves = moves.filter((m) => m.Type === state.selectedType);
+  }
+
+  if (state.sortColumn && state.sortDirection) {
+    const mult = state.sortDirection === "asc" ? 1 : -1;
+    moves = [...moves].sort((a, b) => {
+      switch (state.sortColumn) {
+        case "name": return mult * a.Name.localeCompare(b.Name);
+        case "type": return mult * a.Type.localeCompare(b.Type);
+        case "category": return mult * a.Category.localeCompare(b.Category);
+        case "power": return mult * (a.Power - b.Power);
+        case "accuracy": return mult * (a.Accuracy - b.Accuracy);
+        case "pp": return mult * (a.PP - b.PP);
+        case "priority": return mult * (a.Priority - b.Priority);
+        default: return 0;
+      }
+    });
+  }
+
+  return moves;
 }
 
-function renderGrid(container: HTMLElement): void {
-  const grid = container.querySelector<HTMLElement>("#moves-grid");
-  if (!grid) return;
+function renderTable(container: HTMLElement): void {
+  const tbody = container.querySelector<HTMLElement>("#moves-tbody");
+  if (!tbody) return;
 
-  const names = filteredMoves();
-  if (names.length === 0) {
-    grid.innerHTML = '<p class="loading">No se encontraron movimientos.</p>';
+  const moves = filteredMoves();
+  const countEl = container.querySelector<HTMLElement>("#moves-count");
+  if (countEl) countEl.textContent = `${moves.length} movimientos`;
+
+  if (moves.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="loading">No se encontraron movimientos.</td></tr>';
     return;
   }
 
-  grid.innerHTML = names.map(renderMoveCard).join("");
+  tbody.innerHTML = moves.map((m) => `<tr>
+    <td class="move-name-cell">${m.Name.replace(/-/g, " ")}</td>
+    <td><span class="type-badge" style="background:${typeColor(m.Type)}">${m.Type}</span></td>
+    <td class="move-cat-cell">${categoryIcon(m.Category)}</td>
+    <td class="num-cell">${m.Power || "—"}</td>
+    <td class="num-cell">${m.Accuracy ? m.Accuracy + "%" : "—"}</td>
+    <td class="num-cell">${m.PP}</td>
+    <td class="num-cell">${m.Priority}</td>
+  </tr>`).join("");
 
-  const cards = grid.querySelectorAll<HTMLElement>(".move-card:not(.move-card--loading)");
-  gsap.fromTo(
-    cards,
-    { opacity: 0, y: 10 },
-    { opacity: 1, y: 0, duration: 0.2, stagger: 0.02, ease: "power2.out" },
-  );
-
-  // Lazy-load unloaded moves
-  const unloaded = names.filter((n) => !state.loaded.has(n));
-  loadMovesLazy(unloaded, container);
+  gsap.fromTo(tbody, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" });
 }
 
-async function loadMovesLazy(
-  names: string[],
-  container: HTMLElement,
-): Promise<void> {
-  for (const name of names) {
-    try {
-      const move = await GetMove(name);
-      state.loaded.set(name, move);
-      const card = container.querySelector<HTMLElement>(
-        `[data-move="${name}"]`,
-      );
-      if (card) {
-        const tmp = document.createElement("div");
-        tmp.innerHTML = renderMoveCard(name);
-        const newCard = tmp.firstElementChild as HTMLElement;
-        gsap.fromTo(newCard, { opacity: 0 }, { opacity: 1, duration: 0.3 });
-        card.replaceWith(newCard);
-      }
-    } catch {
-      // silently skip unavailable moves
+function updateSortIndicators(container: HTMLElement): void {
+  container.querySelectorAll<HTMLElement>("th.sortable").forEach((th) => {
+    const col = th.dataset.col as SortColumn;
+    const indicator = th.querySelector<HTMLElement>(".sort-indicator");
+    if (!indicator) return;
+
+    th.classList.toggle("active", col === state.sortColumn);
+    indicator.className = "sort-indicator";
+    if (col === state.sortColumn && state.sortDirection) {
+      indicator.classList.add(state.sortDirection);
     }
-  }
+  });
 }
 
-export function initMoves(container: HTMLElement): void {
+function buildTypeFilterOptions(): string {
+  const types = [...new Set(state.allMoves.map((m) => m.Type))].sort();
+  return `<option value="all">Todos los tipos</option>` +
+    types.map((t) => `<option value="${t}">${t}</option>`).join("");
+}
+
+export async function initMoves(container: HTMLElement): Promise<void> {
   container.innerHTML = `
     <div class="section-header"><h2>Movimientos</h2></div>
     <div class="moves-controls">
-      <input
-        type="text"
-        id="moves-search"
-        class="explore-input"
-        placeholder="Buscar movimiento..."
-      />
+      <input type="text" id="moves-search" class="explore-input" placeholder="Buscar movimiento..." />
       <div class="moves-filters">
         <button class="filter-btn active" data-cat="all">Todos</button>
-        <button class="filter-btn" data-cat="physical"><img src="https://img.pokemondb.net/images/icons/move-physical.png" class="move-cat-icon" alt="Physical"> Físico</button>
+        <button class="filter-btn" data-cat="physical"><img src="https://img.pokemondb.net/images/icons/move-physical.png" class="move-cat-icon" alt="Physical"> Fisico</button>
         <button class="filter-btn" data-cat="special"><img src="https://img.pokemondb.net/images/icons/move-special.png" class="move-cat-icon" alt="Special"> Especial</button>
         <button class="filter-btn" data-cat="status"><img src="https://img.pokemondb.net/images/icons/move-status.png" class="move-cat-icon" alt="Status"> Estado</button>
+        <select id="moves-type-filter" class="explore-input moves-type-select">
+          <option value="all">Todos los tipos</option>
+        </select>
       </div>
     </div>
-    <div id="moves-grid" class="moves-grid"></div>`;
+    <span id="moves-count" class="moves-count"></span>
+    <div class="moves-table-wrap">
+      <table class="poke-table moves-table">
+        <thead>
+          <tr>
+            <th class="sortable" data-col="name">Nombre <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="type">Tipo <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="category">Cat. <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="power">Poder <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="accuracy">Prec. <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="pp">PP <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="priority">Prio. <span class="sort-indicator"></span></th>
+          </tr>
+        </thead>
+        <tbody id="moves-tbody">
+          <tr><td colspan="7" class="loading">Cargando movimientos...</td></tr>
+        </tbody>
+      </table>
+    </div>`;
 
+  // Search
   const searchInput = container.querySelector<HTMLInputElement>("#moves-search")!;
   searchInput.addEventListener("input", () => {
     state.searchQuery = searchInput.value.trim().toLowerCase().replace(/\s+/g, "-");
-    renderGrid(container);
+    renderTable(container);
   });
 
+  // Category filter buttons
   container.querySelectorAll<HTMLButtonElement>(".filter-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      container
-        .querySelectorAll(".filter-btn")
-        .forEach((b) => b.classList.remove("active"));
+      container.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
       state.selectedCategory = (btn.dataset.cat ?? "all") as Category;
-      renderGrid(container);
+      renderTable(container);
     });
   });
 
-  renderGrid(container);
+  // Type filter select
+  const typeSelect = container.querySelector<HTMLSelectElement>("#moves-type-filter")!;
+  typeSelect.addEventListener("change", () => {
+    state.selectedType = typeSelect.value;
+    renderTable(container);
+  });
+
+  // Sortable headers
+  container.querySelectorAll<HTMLElement>("th.sortable").forEach((th) => {
+    th.addEventListener("click", () => {
+      const col = th.dataset.col as SortColumn;
+      if (state.sortColumn === col) {
+        if (state.sortDirection === "asc") {
+          state.sortDirection = "desc";
+        } else if (state.sortDirection === "desc") {
+          state.sortColumn = null;
+          state.sortDirection = null;
+        }
+      } else {
+        state.sortColumn = col;
+        state.sortDirection = "asc";
+      }
+      updateSortIndicators(container);
+      renderTable(container);
+    });
+  });
+
+  // Load all moves
+  if (state.allMoves.length === 0) {
+    state.loading = true;
+    try {
+      state.allMoves = await GetAllMoves();
+    } catch (err) {
+      const tbody = container.querySelector<HTMLElement>("#moves-tbody");
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="loading">Error al cargar movimientos.</td></tr>';
+      return;
+    } finally {
+      state.loading = false;
+    }
+  }
+
+  // Populate type filter
+  typeSelect.innerHTML = buildTypeFilterOptions();
+
+  renderTable(container);
 }

@@ -34,6 +34,10 @@ export function GetAbility(arg1) {
   return window['go']['app']['App']['GetAbility'](arg1);
 }
 
+export function GetAllMoves() {
+  return window['go']['app']['App']['GetAllMoves']();
+}
+
 export function GetEggGroup(arg1) {
   return window['go']['app']['App']['GetEggGroup'](arg1);
 }

@@ -48,6 +48,7 @@ type PokemonFetcher interface {
 	// --- Grupo C: Movimientos ---
 	FetchMoveList(offset int, limit int) (MoveListResponse, error)
 	FetchMove(name string) (Move, error)
+	FetchAllMoves() ([]Move, error)
 	FetchMoveDamageClass(name string) (MoveDamageClass, error)
 	FetchMoveAilment(name string) (MoveAilment, error)
 	FetchMoveTarget(name string) (MoveTarget, error)
