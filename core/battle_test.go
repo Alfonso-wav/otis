@@ -508,8 +508,18 @@ func TestSimulateTeamBattle_1v1(t *testing.T) {
 	if len(result.Rounds) != 1 {
 		t.Errorf("expected 1 round, got %d", len(result.Rounds))
 	}
-	if len(result.Log) != 1 {
-		t.Errorf("expected 1 log entry, got %d", len(result.Log))
+	// Log should contain: round header + detailed turn logs + round summary
+	if len(result.Log) < 3 {
+		t.Errorf("expected at least 3 log entries (header + moves + summary), got %d", len(result.Log))
+	}
+	// First entry should be the round header
+	if !strings.Contains(result.Log[0], "--- Ronda 1:") {
+		t.Errorf("first log entry should be round header, got: %s", result.Log[0])
+	}
+	// Last entry should be the round summary
+	lastEntry := result.Log[len(result.Log)-1]
+	if !strings.Contains(lastEntry, "[Ronda 1]") || !strings.Contains(lastEntry, "venció") {
+		t.Errorf("last log entry should be round summary, got: %s", lastEntry)
 	}
 }
 
@@ -604,6 +614,48 @@ func TestSimulateMultipleTeamBattles(t *testing.T) {
 	}
 	if report.AvgTotalTurns <= 0 {
 		t.Error("avgTotalTurns should be > 0")
+	}
+}
+
+func TestSimulateTeamBattle_DetailedLog(t *testing.T) {
+	input := TeamBattleInput{
+		Team1Name: "Alpha",
+		Team1Members: []TeamBattleMember{
+			makeTeamBattleMember("pikachu", 200, 120, 80, 100),
+			makeTeamBattleMember("bulbasaur", 220, 100, 90, 70),
+		},
+		Team2Name: "Beta",
+		Team2Members: []TeamBattleMember{
+			makeTeamBattleMember("charmander", 200, 110, 80, 90),
+		},
+	}
+	counter := 0
+	rng := func(n int) int { counter++; return counter % n }
+	result := SimulateTeamBattle(input, rng)
+
+	// Log must contain individual move entries (turn-by-turn), not just summaries
+	hasRoundHeader := false
+	hasMoveEntry := false
+	hasRoundSummary := false
+	for _, entry := range result.Log {
+		if strings.Contains(entry, "--- Ronda") {
+			hasRoundHeader = true
+		}
+		if strings.Contains(entry, "[T") && strings.Contains(entry, "usó") {
+			hasMoveEntry = true
+		}
+		if strings.Contains(entry, "[Ronda") && strings.Contains(entry, "venció") {
+			hasRoundSummary = true
+		}
+	}
+	if !hasRoundHeader {
+		t.Error("log should contain round headers")
+	}
+	if !hasMoveEntry {
+		t.Error("log should contain individual move entries (turn-by-turn detail)")
+	}
+	if !hasRoundSummary {
+		t.Error("log should contain round summaries")
 	}
 }
 
