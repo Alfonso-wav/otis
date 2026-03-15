@@ -386,6 +386,18 @@
   }
 }
 
+.ability-pokemon-count {
+  cursor: pointer;
+  color: $pokedex-red;
+  text-decoration: underline;
+  font-weight: 600;
+  transition: color 0.15s;
+
+  &:hover {
+    color: darken($pokedex-red, 12%);
+  }
+}
+
 // ─── Responsive ─────────────────────────────────────────────────────────────
 
 // Tablet breakpoint

@@ -1,14 +1,14 @@
-const SPRITE_BASE = "/assets/sprites";
-const CDN_FALLBACK = "https://img.pokemondb.net/sprites/home/normal";
-
 let overlayEl: HTMLDivElement | null = null;
 
 function spriteUrl(name: string): string {
-  return `${SPRITE_BASE}/${name}.png`;
+  return `https://img.pokemondb.net/sprites/black-white/normal/${name}.png`;
 }
 
-function cdnUrl(name: string): string {
-  return `${CDN_FALLBACK}/${name}.png`;
+function spriteOnerror(name: string): string {
+  const fb1 = `https://img.pokemondb.net/sprites/x-y/normal/${name}.png`;
+  const fb2 = `https://img.pokemondb.net/sprites/home/normal/1x/${name}.png`;
+  const fb3 = `/assets/sprites/home-normal/${name}.png`;
+  return `var f=parseInt(this.dataset.fallback||'0');if(f===0){this.dataset.fallback='1';this.src='${fb1}'}else if(f===1){this.dataset.fallback='2';this.src='${fb2}'}else if(f===2){this.dataset.fallback='3';this.src='${fb3}'}else{this.onerror=null;this.style.visibility='hidden'}`;
 }
 
 function handleKeydown(e: KeyboardEvent): void {
@@ -36,7 +36,8 @@ export function openTypeModal(
           src="${spriteUrl(name)}"
           alt="${name}"
           loading="lazy"
-          onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='${cdnUrl(name)}'}"
+          data-fallback="0"
+          onerror="${spriteOnerror(name)}"
         />
         <span class="type-modal-pokemon-name">${name.replace(/-/g, " ")}</span>
       </div>`,

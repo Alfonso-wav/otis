@@ -110,12 +110,21 @@ let editingMemberMoves: string[] = []; // cached available move names for editin
 
 function spriteURL(name: string): string {
   const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
-  return `/assets/sprites/home-normal/${safeName}.png`;
+  return `https://img.pokemondb.net/sprites/black-white/normal/${safeName}.png`;
 }
 
-function spriteFallback(name: string): string {
+function spriteFallbacks(name: string): [string, string, string] {
   const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
-  return `https://img.pokemondb.net/sprites/home/normal/${safeName}.png`;
+  return [
+    `https://img.pokemondb.net/sprites/x-y/normal/${safeName}.png`,
+    `https://img.pokemondb.net/sprites/home/normal/1x/${safeName}.png`,
+    `/assets/sprites/home-normal/${safeName}.png`,
+  ];
+}
+
+function spriteOnerror(name: string): string {
+  const [fb1, fb2, fb3] = spriteFallbacks(name);
+  return `var f=parseInt(this.dataset.fallback||'0');if(f===0){this.dataset.fallback='1';this.src='${fb1}'}else if(f===1){this.dataset.fallback='2';this.src='${fb2}'}else if(f===2){this.dataset.fallback='3';this.src='${fb3}'}else{this.onerror=null;this.style.visibility='hidden'}`;
 }
 
 function battleSpriteURL(name: string, type: "battle-back" | "battle-front"): string {
@@ -194,7 +203,7 @@ function renderPokemonCard(pokemon: core.Pokemon, stats: core.Stats | null): str
   const displayStats = stats ?? bst;
   return `
     <div class="build-poke-card">
-      <img class="build-sprite" src="${spriteURL(pokemon.Name)}" onerror="this.onerror=null;this.src='${spriteFallback(pokemon.Name)}'" alt="${pokemon.Name}" />
+      <img class="build-sprite" src="${spriteURL(pokemon.Name)}" data-fallback="0" onerror="${spriteOnerror(pokemon.Name)}" alt="${pokemon.Name}" />
       <div class="build-poke-name">${pokemon.Name}</div>
       <div class="build-poke-types">${typeBadges(pokemon.Types)}</div>
       <div class="build-stats-grid">
@@ -391,11 +400,12 @@ function renderHPBar(name: string, level: number, current: number, max: number, 
 function battleSpriteImg(name: string, type: "battle-back" | "battle-front"): string {
   const localSrc = battleSpriteURL(name, type);
   const cdnBattle = battleSpriteFallbackCDN(name, type);
-  const fallbackLocal = spriteURL(name);
-  const fallbackCDN = spriteFallback(name);
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  const fallbackHome = `https://img.pokemondb.net/sprites/home/normal/1x/${safeName}.png`;
+  const fallbackLocal = `/assets/sprites/home-normal/${safeName}.png`;
   return `<img class="battle-sprite battle-sprite--${type === "battle-back" ? "back" : "front"}"
     src="${localSrc}" data-fallback="0"
-    onerror="var f=parseInt(this.dataset.fallback||'0');if(f===0){this.dataset.fallback='1';this.src='${cdnBattle}'}else if(f===1){this.dataset.fallback='2';this.src='${fallbackLocal}'}else if(f===2){this.dataset.fallback='3';this.src='${fallbackCDN}'}else{this.onerror=null;this.style.visibility='hidden'}"
+    onerror="var f=parseInt(this.dataset.fallback||'0');if(f===0){this.dataset.fallback='1';this.src='${cdnBattle}'}else if(f===1){this.dataset.fallback='2';this.src='${fallbackHome}'}else if(f===2){this.dataset.fallback='3';this.src='${fallbackLocal}'}else{this.onerror=null;this.style.visibility='hidden'}"
     alt="${name}" />`;
 }
 
@@ -974,7 +984,7 @@ function renderTeamBattleSection(): string {
           const fainted = teamBattleResult && teamBattleResult.rounds
             ? isMemberFainted(teamBattleResult, "team1", i, t1.members.length)
             : false;
-          return `<img class="tb-sprite ${fainted ? "tb-fainted" : ""}" src="${spriteURL(m.pokemonName)}" onerror="this.onerror=null;this.src='${spriteFallback(m.pokemonName)}'" alt="${m.pokemonName}" title="${m.pokemonName}" />`;
+          return `<img class="tb-sprite ${fainted ? "tb-fainted" : ""}" src="${spriteURL(m.pokemonName)}" data-fallback="0" onerror="${spriteOnerror(m.pokemonName)}" alt="${m.pokemonName}" title="${m.pokemonName}" />`;
         }).join("")}</div>
       </div>
       <span class="tb-vs">VS</span>
@@ -984,7 +994,7 @@ function renderTeamBattleSection(): string {
           const fainted = teamBattleResult && teamBattleResult.rounds
             ? isMemberFainted(teamBattleResult, "team2", i, t2.members.length)
             : false;
-          return `<img class="tb-sprite ${fainted ? "tb-fainted" : ""}" src="${spriteURL(m.pokemonName)}" onerror="this.onerror=null;this.src='${spriteFallback(m.pokemonName)}'" alt="${m.pokemonName}" title="${m.pokemonName}" />`;
+          return `<img class="tb-sprite ${fainted ? "tb-fainted" : ""}" src="${spriteURL(m.pokemonName)}" data-fallback="0" onerror="${spriteOnerror(m.pokemonName)}" alt="${m.pokemonName}" title="${m.pokemonName}" />`;
         }).join("")}</div>
       </div>
     </div>` : "";
@@ -1127,7 +1137,7 @@ function renderTeamsSection(): string {
           : "";
         return `
         <div class="team-member-row${isEditing ? " team-member-row--editing" : ""}">
-          <img class="team-member-sprite" src="${spriteURL(m.pokemonName)}" onerror="this.onerror=null;this.src='${spriteFallback(m.pokemonName)}'" alt="${m.pokemonName}" />
+          <img class="team-member-sprite" src="${spriteURL(m.pokemonName)}" data-fallback="0" onerror="${spriteOnerror(m.pokemonName)}" alt="${m.pokemonName}" />
           <span class="team-member-name">${m.pokemonName}</span>
           <span class="team-member-detail">Lv.${m.level} ${m.nature}</span>
           <span class="team-member-moves">${movesDisplay}</span>
@@ -1238,7 +1248,7 @@ function bindTeamEvents(): void {
         if (team && team.members[idx]) {
           try {
             const pokemon = await GetPokemon(team.members[idx].pokemonName);
-            editingMemberMoves = (pokemon.Moves ?? []).map((mv: core.Move) => mv.Name);
+            editingMemberMoves = (pokemon.Moves ?? []).map((mv: core.PokemonMoveEntry) => mv.Name);
             editingMemberKey = memberKey;
           } catch {
             editingMemberMoves = [];
