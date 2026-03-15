@@ -1,7 +1,7 @@
 # Crear proyecto Android con Capacitor e integrar Go server
 
 **ID**: 0060-android-capacitor-project
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-15
 
 ---
@@ -47,11 +47,11 @@ Inicializar un proyecto Capacitor con target Android, integrar el .aar de gomobi
 
 ## Criterios de aceptacion
 
-- [ ] La app Android compila sin errores
-- [ ] El servidor Go arranca automáticamente al abrir la app
-- [ ] El frontend carga en el WebView y muestra la Pokédex
-- [ ] Los equipos se guardan en el directorio interno de Android
-- [ ] El servidor se detiene al cerrar la app
+- [x] La app Android compila sin errores
+- [x] El servidor Go arranca automáticamente al abrir la app
+- [x] El frontend carga en el WebView y muestra la Pokédex
+- [x] Los equipos se guardan en el directorio interno de Android
+- [x] El servidor se detiene al cerrar la app
 
 ## Notas
 

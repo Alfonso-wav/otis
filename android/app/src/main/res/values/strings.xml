@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Otis Pokédex</string>
+    <string name="title_activity_main">Otis Pokédex</string>
+    <string name="package_name">com.alfon.otis</string>
+    <string name="custom_url_scheme">com.alfon.otis</string>
+</resources>
