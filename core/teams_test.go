@@ -133,6 +133,41 @@ func TestRemoveMemberFromTeam(t *testing.T) {
 	})
 }
 
+func TestUpdateTeamMember(t *testing.T) {
+	team := Team{
+		Name: "Test",
+		Members: []TeamMember{
+			{PokemonName: "pikachu", Level: 50, Moves: []string{}},
+			{PokemonName: "charmander", Level: 50, Moves: []string{}},
+		},
+	}
+
+	t.Run("update moves", func(t *testing.T) {
+		updated := TeamMember{PokemonName: "pikachu", Level: 50, Moves: []string{"thunderbolt", "quick-attack"}}
+		got, err := UpdateTeamMember(team, 0, updated)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(got.Members[0].Moves) != 2 {
+			t.Errorf("expected 2 moves, got %d", len(got.Members[0].Moves))
+		}
+		if got.Members[0].Moves[0] != "thunderbolt" {
+			t.Errorf("expected thunderbolt, got %s", got.Members[0].Moves[0])
+		}
+		// Original unchanged
+		if len(team.Members[0].Moves) != 0 {
+			t.Error("original team should be unchanged")
+		}
+	})
+
+	t.Run("index out of range", func(t *testing.T) {
+		_, err := UpdateTeamMember(team, 5, TeamMember{PokemonName: "bulbasaur", Level: 50})
+		if err != ErrIndexOutOfRange {
+			t.Errorf("expected ErrIndexOutOfRange, got %v", err)
+		}
+	})
+}
+
 func deterministicRng(seq []int) func(int) int {
 	i := 0
 	return func(n int) int {

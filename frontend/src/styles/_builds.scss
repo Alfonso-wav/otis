@@ -1456,6 +1456,56 @@
   &:hover { background: #f7fafc; }
 }
 
+// ─── Team Member Move Editing ────────────────────────────────────────────────
+
+.team-member-edit-btn {
+  background: none;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.1rem 0.3rem;
+  transition: color 0.15s;
+
+  &:hover { color: #3182ce; }
+}
+
+.team-member-row--editing {
+  background: #f0f7ff;
+}
+
+.team-member-edit-moves {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem 0.75rem;
+  border-bottom: 1px solid #edf2f7;
+  background: #f7fafc;
+}
+
+.team-member-move-select {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.78rem;
+  color: #2d3748;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: #cbd5e0; }
+  &:focus { border-color: $pokedex-red; }
+}
+
+@include mobile {
+  .team-member-edit-moves {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 // ─── Team Battle Selects ────────────────────────────────────────────────────
 
 .team-battle-section {
