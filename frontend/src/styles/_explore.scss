@@ -252,78 +252,43 @@
   margin-bottom: 1.25rem;
 }
 
-.abilities-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 0.875rem;
-}
-
-.ability-card {
-  background: white;
-  border-radius: $border-radius-lg;
-  padding: 0.875rem 1rem;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.15s, transform 0.15s;
-
-  &:hover {
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-  }
-
-  &--loading {
-    opacity: 0.5;
-    .ability-card__name {
-      color: #a0aec0;
-    }
-  }
-}
-
-.ability-card__header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.4rem;
-}
-
-.ability-card__name {
-  font-weight: 700;
-  font-size: 0.9rem;
-  text-transform: capitalize;
-}
-
-.ability-card__count {
-  font-size: 0.75rem;
-  color: #a0aec0;
-  white-space: nowrap;
-}
-
-.ability-card__desc {
+.abilities-count {
+  display: inline-block;
   font-size: 0.78rem;
   color: #718096;
-  line-height: 1.45;
-  margin: 0 0 0.6rem;
+  margin-bottom: 0.75rem;
 }
 
-.ability-pokemon-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
+.abilities-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: $border-radius-lg;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  background: white;
 }
 
-.ability-pokemon-tag {
-  background: #edf2f7;
-  color: #4a5568;
-  border-radius: $border-radius-pill;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.72rem;
-  text-transform: capitalize;
-}
+.abilities-table {
+  min-width: 500px;
 
-.ability-pokemon-more {
-  color: #a0aec0;
-  font-size: 0.72rem;
-  padding: 0.15rem 0.25rem;
+  .ability-name-cell {
+    text-transform: capitalize;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .ability-desc-cell {
+    font-size: 0.82rem;
+    color: #4a5568;
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .num-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 // ─── Responsive ─────────────────────────────────────────────────────────────
@@ -356,8 +321,8 @@
     margin: 0 -0.5rem;
   }
 
-  .abilities-grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  .abilities-table-wrap {
+    margin: 0 -0.5rem;
   }
 
   .region-card__header {
@@ -446,25 +411,7 @@
   }
 
   // Abilities
-  .abilities-grid {
-    grid-template-columns: 1fr;
-    gap: 0.65rem;
-  }
-
-  .ability-card {
-    padding: 0.7rem 0.85rem;
-  }
-
-  .ability-card__name {
-    font-size: 0.85rem;
-  }
-
-  .ability-card__desc {
-    font-size: 0.72rem;
-  }
-
-  .ability-pokemon-tag {
-    font-size: 0.68rem;
-    padding: 0.12rem 0.4rem;
+  .abilities-table-wrap {
+    margin: 0 -0.5rem;
   }
 }

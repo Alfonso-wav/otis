@@ -18,6 +18,8 @@ export function ExecuteTurn(arg1:core.TurnInput):Promise<core.TurnResult>;
 
 export function GetAbility(arg1:string):Promise<core.Ability>;
 
+export function GetAllAbilities():Promise<Array<core.Ability>>;
+
 export function GetAllMoves():Promise<Array<core.Move>>;
 
 export function GetEggGroup(arg1:string):Promise<core.EggGroup>;

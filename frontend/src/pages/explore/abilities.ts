@@ -1,130 +1,150 @@
 import gsap from "gsap";
-import { GetAbility } from "../../../wailsjs/go/app/App";
+import { GetAllAbilities } from "../../../wailsjs/go/app/App";
 import type { core } from "../../../wailsjs/go/models";
 
-const KNOWN_ABILITIES = [
-  "overgrow", "blaze", "torrent", "shield-dust", "shed-skin", "compound-eyes",
-  "sturdy", "keen-eye", "run-away", "intimidate", "static", "volt-absorb",
-  "water-absorb", "flash-fire", "swift-swim", "chlorophyll", "hustle",
-  "serene-grace", "synchronize", "levitate", "thick-fat", "natural-cure",
-  "lightning-rod", "wonder-guard", "speed-boost", "battle-armor", "rough-skin",
-  "drought", "drizzle", "sand-stream", "snow-warning", "pressure",
-  "multiscale", "regenerator", "magic-guard", "adaptability", "moxie",
-  "justified", "technician", "sand-rush", "unburden", "gale-wings",
-  "protean", "mega-launcher", "strong-jaw", "refrigerate", "pixilate",
-];
+type SortColumn = "name" | "description" | "pokemon" | null;
+type SortDirection = "asc" | "desc" | null;
 
 interface AbilityState {
-  loaded: Map<string, core.Ability>;
+  allAbilities: core.Ability[];
   searchQuery: string;
+  sortColumn: SortColumn;
+  sortDirection: SortDirection;
+  loading: boolean;
 }
 
 const state: AbilityState = {
-  loaded: new Map(),
+  allAbilities: [],
   searchQuery: "",
+  sortColumn: null,
+  sortDirection: null,
+  loading: false,
 };
 
-function filteredAbilities(): string[] {
-  const q = state.searchQuery.toLowerCase();
-  return KNOWN_ABILITIES.filter((name) =>
-    q === "" || name.includes(q),
-  );
-}
+function filteredAbilities(): core.Ability[] {
+  let abilities = state.allAbilities;
 
-function renderAbilityCard(name: string): string {
-  const ability = state.loaded.get(name);
-  const displayName = name.replace(/-/g, " ");
-  if (!ability) {
-    return `<div class="ability-card ability-card--loading" data-ability="${name}">
-      <span class="ability-card__name">${displayName}</span>
-    </div>`;
+  if (state.searchQuery !== "") {
+    abilities = abilities.filter((a) => a.Name.includes(state.searchQuery));
   }
-  const pokemonPreview = (ability.Pokemon ?? []).slice(0, 5);
-  return `<div class="ability-card" data-ability="${name}">
-    <div class="ability-card__header">
-      <span class="ability-card__name">${displayName}</span>
-      <span class="ability-card__count">${(ability.Pokemon ?? []).length} Pokémon</span>
-    </div>
-    ${ability.Description ? `<p class="ability-card__desc">${ability.Description.replace(/\n/g, " ")}</p>` : ""}
-    ${
-      pokemonPreview.length > 0
-        ? `<div class="ability-pokemon-list">
-            ${pokemonPreview.map((p) => `<span class="ability-pokemon-tag">${p}</span>`).join("")}
-            ${(ability.Pokemon ?? []).length > 5 ? `<span class="ability-pokemon-more">+${(ability.Pokemon ?? []).length - 5} más</span>` : ""}
-          </div>`
-        : ""
-    }
-  </div>`;
+
+  if (state.sortColumn && state.sortDirection) {
+    const mult = state.sortDirection === "asc" ? 1 : -1;
+    abilities = [...abilities].sort((a, b) => {
+      switch (state.sortColumn) {
+        case "name": return mult * a.Name.localeCompare(b.Name);
+        case "description": return mult * a.Description.localeCompare(b.Description);
+        case "pokemon": return mult * ((a.Pokemon ?? []).length - (b.Pokemon ?? []).length);
+        default: return 0;
+      }
+    });
+  }
+
+  return abilities;
 }
 
-function renderGrid(container: HTMLElement): void {
-  const grid = container.querySelector<HTMLElement>("#abilities-grid");
-  if (!grid) return;
+function renderTable(container: HTMLElement): void {
+  const tbody = container.querySelector<HTMLElement>("#abilities-tbody");
+  if (!tbody) return;
 
-  const names = filteredAbilities();
-  if (names.length === 0) {
-    grid.innerHTML = '<p class="loading">No se encontraron habilidades.</p>';
+  const abilities = filteredAbilities();
+  const countEl = container.querySelector<HTMLElement>("#abilities-count");
+  if (countEl) countEl.textContent = `${abilities.length} habilidades`;
+
+  if (abilities.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" class="loading">No se encontraron habilidades.</td></tr>';
     return;
   }
 
-  grid.innerHTML = names.map(renderAbilityCard).join("");
+  tbody.innerHTML = abilities.map((a) => {
+    const desc = a.Description ? a.Description.replace(/\n/g, " ") : "—";
+    const count = (a.Pokemon ?? []).length;
+    return `<tr>
+    <td class="ability-name-cell">${a.Name.replace(/-/g, " ")}</td>
+    <td class="ability-desc-cell">${desc}</td>
+    <td class="num-cell">${count}</td>
+  </tr>`;
+  }).join("");
 
-  const cards = grid.querySelectorAll<HTMLElement>(
-    ".ability-card:not(.ability-card--loading)",
-  );
-  gsap.fromTo(
-    cards,
-    { opacity: 0, y: 10 },
-    { opacity: 1, y: 0, duration: 0.2, stagger: 0.02, ease: "power2.out" },
-  );
-
-  const unloaded = names.filter((n) => !state.loaded.has(n));
-  loadAbilitiesLazy(unloaded, container);
+  gsap.fromTo(tbody, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" });
 }
 
-async function loadAbilitiesLazy(
-  names: string[],
-  container: HTMLElement,
-): Promise<void> {
-  for (const name of names) {
-    try {
-      const ability = await GetAbility(name);
-      state.loaded.set(name, ability);
-      const card = container.querySelector<HTMLElement>(
-        `[data-ability="${name}"]`,
-      );
-      if (card) {
-        const tmp = document.createElement("div");
-        tmp.innerHTML = renderAbilityCard(name);
-        const newCard = tmp.firstElementChild as HTMLElement;
-        gsap.fromTo(newCard, { opacity: 0 }, { opacity: 1, duration: 0.3 });
-        card.replaceWith(newCard);
-      }
-    } catch {
-      // silently skip
+function updateSortIndicators(container: HTMLElement): void {
+  container.querySelectorAll<HTMLElement>("th.sortable").forEach((th) => {
+    const col = th.dataset.col as SortColumn;
+    const indicator = th.querySelector<HTMLElement>(".sort-indicator");
+    if (!indicator) return;
+
+    th.classList.toggle("active", col === state.sortColumn);
+    indicator.className = "sort-indicator";
+    if (col === state.sortColumn && state.sortDirection) {
+      indicator.classList.add(state.sortDirection);
     }
-  }
+  });
 }
 
-export function initAbilities(container: HTMLElement): void {
+export async function initAbilities(container: HTMLElement): Promise<void> {
   container.innerHTML = `
     <div class="section-header"><h2>Habilidades</h2></div>
     <div class="abilities-controls">
-      <input
-        type="text"
-        id="abilities-search"
-        class="explore-input"
-        placeholder="Buscar habilidad..."
-      />
+      <input type="text" id="abilities-search" class="explore-input" placeholder="Buscar habilidad..." />
     </div>
-    <div id="abilities-grid" class="abilities-grid"></div>`;
+    <span id="abilities-count" class="abilities-count"></span>
+    <div class="abilities-table-wrap">
+      <table class="poke-table abilities-table">
+        <thead>
+          <tr>
+            <th class="sortable" data-col="name">Nombre <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="description">Descripción <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="pokemon">Pokémon <span class="sort-indicator"></span></th>
+          </tr>
+        </thead>
+        <tbody id="abilities-tbody">
+          <tr><td colspan="3" class="loading">Cargando habilidades...</td></tr>
+        </tbody>
+      </table>
+    </div>`;
 
-  const searchInput =
-    container.querySelector<HTMLInputElement>("#abilities-search")!;
+  // Search
+  const searchInput = container.querySelector<HTMLInputElement>("#abilities-search")!;
   searchInput.addEventListener("input", () => {
     state.searchQuery = searchInput.value.trim().toLowerCase().replace(/\s+/g, "-");
-    renderGrid(container);
+    renderTable(container);
   });
 
-  renderGrid(container);
+  // Sortable headers
+  container.querySelectorAll<HTMLElement>("th.sortable").forEach((th) => {
+    th.addEventListener("click", () => {
+      const col = th.dataset.col as SortColumn;
+      if (state.sortColumn === col) {
+        if (state.sortDirection === "asc") {
+          state.sortDirection = "desc";
+        } else if (state.sortDirection === "desc") {
+          state.sortColumn = null;
+          state.sortDirection = null;
+        }
+      } else {
+        state.sortColumn = col;
+        state.sortDirection = "asc";
+      }
+      updateSortIndicators(container);
+      renderTable(container);
+    });
+  });
+
+  // Load all abilities
+  if (state.allAbilities.length === 0) {
+    state.loading = true;
+    try {
+      state.allAbilities = await GetAllAbilities();
+    } catch {
+      const tbody = container.querySelector<HTMLElement>("#abilities-tbody");
+      if (tbody) tbody.innerHTML = '<tr><td colspan="3" class="loading">Error al cargar habilidades.</td></tr>';
+      return;
+    } finally {
+      state.loading = false;
+    }
+  }
+
+  renderTable(container);
 }

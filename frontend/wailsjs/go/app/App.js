@@ -34,6 +34,10 @@ export function GetAbility(arg1) {
   return window['go']['app']['App']['GetAbility'](arg1);
 }
 
+export function GetAllAbilities() {
+  return window['go']['app']['App']['GetAllAbilities']();
+}
+
 export function GetAllMoves() {
   return window['go']['app']['App']['GetAllMoves']();
 }

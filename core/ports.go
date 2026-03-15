@@ -57,6 +57,7 @@ type PokemonFetcher interface {
 	// --- Grupo D: Habilidades ---
 	FetchAbilityList(offset int, limit int) (AbilityListResponse, error)
 	FetchAbility(name string) (Ability, error)
+	FetchAllAbilities() ([]Ability, error)
 
 	// --- Evolución ---
 	FetchEvolutionChain(id int) (EvolutionChain, error)
