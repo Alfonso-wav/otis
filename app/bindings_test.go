@@ -94,6 +94,7 @@ func (m *mockFetcher) FetchMoveTarget(name string) (core.MoveTarget, error) {
 func (m *mockFetcher) FetchMachine(id int) (core.Machine, error) { return core.Machine{}, nil }
 
 // --- Grupo D ---
+func (m *mockFetcher) FetchAllAbilities() ([]core.Ability, error) { return nil, nil }
 func (m *mockFetcher) FetchAbilityList(offset int, limit int) (core.AbilityListResponse, error) {
 	return core.AbilityListResponse{}, nil
 }

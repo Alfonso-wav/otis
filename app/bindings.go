@@ -261,6 +261,11 @@ func (a *App) GetMachine(id int) (core.Machine, error) {
 
 // --- Grupo D: Habilidades completas ---
 
+// GetAllAbilities retorna todas las habilidades de PokeAPI (~300) con cache en memoria.
+func (a *App) GetAllAbilities() ([]core.Ability, error) {
+	return a.fetcher.FetchAllAbilities()
+}
+
 func (a *App) ListAbilities(offset int, limit int) (core.AbilityListResponse, error) {
 	return a.fetcher.FetchAbilityList(offset, limit)
 }

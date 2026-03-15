@@ -2,8 +2,14 @@ package shell
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/alfon/pokemon-app/core"
+)
+
+var (
+	allAbilitiesCache []core.Ability
+	allAbilitiesMu    sync.Mutex
 )
 
 // --- Grupo D: Lista de habilidades ---
@@ -28,6 +34,71 @@ func (c *PokeAPIClient) FetchAbilityList(offset int, limit int) (core.AbilityLis
 		results[i] = core.NamedResource{Name: r.Name, URL: r.URL}
 	}
 	return core.AbilityListResponse{Count: raw.Count, Results: results}, nil
+}
+
+// FetchAllAbilities obtiene todas las habilidades de PokeAPI con concurrencia controlada y cache en memoria.
+func (c *PokeAPIClient) FetchAllAbilities() ([]core.Ability, error) {
+	allAbilitiesMu.Lock()
+	if allAbilitiesCache != nil {
+		cached := make([]core.Ability, len(allAbilitiesCache))
+		copy(cached, allAbilitiesCache)
+		allAbilitiesMu.Unlock()
+		return cached, nil
+	}
+	allAbilitiesMu.Unlock()
+
+	list, err := c.FetchAbilityList(0, 2000)
+	if err != nil {
+		return nil, fmt.Errorf("fetching ability list: %w", err)
+	}
+
+	type result struct {
+		index   int
+		ability core.Ability
+		err     error
+	}
+
+	abilities := make([]core.Ability, len(list.Results))
+	results := make(chan result, len(list.Results))
+	sem := make(chan struct{}, 15)
+	var wg sync.WaitGroup
+
+	for i, r := range list.Results {
+		wg.Add(1)
+		go func(idx int, name string) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			a, err := c.FetchAbility(name)
+			results <- result{index: idx, ability: a, err: err}
+		}(i, r.Name)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	for res := range results {
+		if res.err != nil {
+			continue
+		}
+		abilities[res.index] = res.ability
+	}
+
+	filtered := make([]core.Ability, 0, len(abilities))
+	for _, a := range abilities {
+		if a.Name != "" {
+			filtered = append(filtered, a)
+		}
+	}
+
+	allAbilitiesMu.Lock()
+	allAbilitiesCache = make([]core.Ability, len(filtered))
+	copy(allAbilitiesCache, filtered)
+	allAbilitiesMu.Unlock()
+
+	return filtered, nil
 }
 
 // --- Grupo G: Stats ---
