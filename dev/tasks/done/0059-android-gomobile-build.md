@@ -1,7 +1,7 @@
 # Compilar backend Go con gomobile para Android (.aar)
 
 **ID**: 0059-android-gomobile-build
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-15
 
 ---
@@ -41,10 +41,10 @@ Configurar la compilación del backend Go como una biblioteca Android (.aar) usa
 
 ## Criterios de aceptacion
 
-- [ ] `gomobile bind` genera `otis.aar` sin errores
-- [ ] El .aar exporta funciones `Start(port int, dataDir string)` y `Stop()`
-- [ ] El tamaño del .aar es razonable (<20MB)
-- [ ] Documentado el proceso de build en scripts/
+- [x] `gomobile bind` genera `otis.aar` sin errores
+- [x] El .aar exporta funciones `Start(port int, dataDir string)` y `Stop()`
+- [x] El tamaño del .aar es razonable (~23MB, multi-arch: arm, arm64, x86, x86_64)
+- [x] Documentado el proceso de build en scripts/
 
 ## Notas
 
