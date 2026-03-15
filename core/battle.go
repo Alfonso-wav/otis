@@ -1,6 +1,9 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 // FullBattleInput contains everything needed to simulate a complete battle.
 type FullBattleInput struct {
@@ -294,4 +297,88 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 		Damage:   dmg,
 		LogEntry: logEntry,
 	}
+}
+
+// BattleSummary holds the key stats from a single battle simulation.
+type BattleSummary struct {
+	Winner      string `json:"winner"`
+	Turns       int    `json:"turns"`
+	AttackerHP  int    `json:"attackerHP"`
+	DefenderHP  int    `json:"defenderHP"`
+}
+
+// BattleReport aggregates statistics from N battle simulations.
+type BattleReport struct {
+	TotalSimulations int     `json:"totalSimulations"`
+	AttackerWins     int     `json:"attackerWins"`
+	DefenderWins     int     `json:"defenderWins"`
+	Draws            int     `json:"draws"`
+	AttackerWinPct   float64 `json:"attackerWinPct"`
+	DefenderWinPct   float64 `json:"defenderWinPct"`
+	DrawPct          float64 `json:"drawPct"`
+	AvgTurns         float64 `json:"avgTurns"`
+	MinTurns         int     `json:"minTurns"`
+	MaxTurns         int     `json:"maxTurns"`
+	MedianTurns      int     `json:"medianTurns"`
+	AvgWinnerHP      float64 `json:"avgWinnerHP"`
+}
+
+// SimulateMultipleBattles runs N full battle simulations and returns aggregated statistics.
+// randSource is injected for testability; use rand.Intn in production.
+func SimulateMultipleBattles(input FullBattleInput, n int, randSource func(int) int) BattleReport {
+	if n <= 0 {
+		return BattleReport{}
+	}
+
+	summaries := make([]BattleSummary, n)
+	for i := 0; i < n; i++ {
+		result := SimulateFullBattle(input, randSource)
+		summaries[i] = BattleSummary{
+			Winner:     result.Winner,
+			Turns:      result.TurnCount,
+			AttackerHP: result.AttackerHP,
+			DefenderHP: result.DefenderHP,
+		}
+	}
+
+	report := BattleReport{TotalSimulations: n}
+	totalTurns := 0
+	totalWinnerHP := 0
+	turns := make([]int, n)
+
+	for i, s := range summaries {
+		turns[i] = s.Turns
+		totalTurns += s.Turns
+		switch s.Winner {
+		case "attacker":
+			report.AttackerWins++
+			totalWinnerHP += s.AttackerHP
+		case "defender":
+			report.DefenderWins++
+			totalWinnerHP += s.DefenderHP
+		default:
+			report.Draws++
+		}
+	}
+
+	report.AttackerWinPct = float64(report.AttackerWins) / float64(n) * 100
+	report.DefenderWinPct = float64(report.DefenderWins) / float64(n) * 100
+	report.DrawPct = float64(report.Draws) / float64(n) * 100
+	report.AvgTurns = float64(totalTurns) / float64(n)
+
+	sort.Ints(turns)
+	report.MinTurns = turns[0]
+	report.MaxTurns = turns[n-1]
+	if n%2 == 0 {
+		report.MedianTurns = (turns[n/2-1] + turns[n/2]) / 2
+	} else {
+		report.MedianTurns = turns[n/2]
+	}
+
+	winners := report.AttackerWins + report.DefenderWins
+	if winners > 0 {
+		report.AvgWinnerHP = float64(totalWinnerHP) / float64(winners)
+	}
+
+	return report
 }

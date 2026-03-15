@@ -62,6 +62,40 @@ export namespace core {
 		    return a;
 		}
 	}
+	export class BattleReport {
+	    totalSimulations: number;
+	    attackerWins: number;
+	    defenderWins: number;
+	    draws: number;
+	    attackerWinPct: number;
+	    defenderWinPct: number;
+	    drawPct: number;
+	    avgTurns: number;
+	    minTurns: number;
+	    maxTurns: number;
+	    medianTurns: number;
+	    avgWinnerHP: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new BattleReport(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.totalSimulations = source["totalSimulations"];
+	        this.attackerWins = source["attackerWins"];
+	        this.defenderWins = source["defenderWins"];
+	        this.draws = source["draws"];
+	        this.attackerWinPct = source["attackerWinPct"];
+	        this.defenderWinPct = source["defenderWinPct"];
+	        this.drawPct = source["drawPct"];
+	        this.avgTurns = source["avgTurns"];
+	        this.minTurns = source["minTurns"];
+	        this.maxTurns = source["maxTurns"];
+	        this.medianTurns = source["medianTurns"];
+	        this.avgWinnerHP = source["avgWinnerHP"];
+	    }
+	}
 	export class BattleState {
 	    attackerHP: number;
 	    defenderHP: number;

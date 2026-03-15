@@ -971,6 +971,140 @@
   }
 }
 
+// ─── Batch Simulation ────────────────────────────────────────────────────────
+
+.battle-batch-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px dashed #e2e8f0;
+  flex-wrap: wrap;
+}
+
+.battle-batch-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #4a5568;
+}
+
+.battle-batch-input {
+  width: 80px;
+  padding: 0.35rem 0.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus { border-color: #6b46c1; }
+}
+
+.battle-batch-btn {
+  padding: 0.45rem 1.2rem;
+  background: #6b46c1;
+  color: white;
+  border: none;
+  border-radius: $border-radius-pill;
+  font-family: $font-body;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+
+  &:hover:not(:disabled) { background: darken(#6b46c1, 8%); transform: translateY(-1px); }
+  &:active:not(:disabled) { transform: none; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ─── Battle Report ──────────────────────────────────────────────────────────
+
+.battle-report {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f0e8;
+  border: 3px solid #504038;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+.battle-report-title {
+  font-family: $font-display;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  color: #1a1008;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.report-win-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 2px solid #504038;
+  margin-bottom: 0.35rem;
+}
+
+.report-win-bar-segment {
+  transition: width 0.4s ease;
+  min-width: 0;
+}
+
+.report-win-bar--atk { background: $pokedex-red; }
+.report-win-bar--draw { background: #a0aec0; }
+.report-win-bar--def { background: #3182ce; }
+
+.report-win-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.report-win-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+
+  &--atk { color: $pokedex-red; }
+  &--draw { color: #718096; }
+  &--def { color: #3182ce; }
+}
+
+.report-stat-cards {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.report-stat-card {
+  flex: 1;
+  min-width: 80px;
+  background: white;
+  border: 2px solid #504038;
+  border-radius: 4px;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.report-stat-card-value {
+  font-family: $font-display;
+  font-size: 1.2rem;
+  color: #1a1008;
+  letter-spacing: 0.04em;
+}
+
+.report-stat-card-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: #504038;
+  text-transform: uppercase;
+  margin-top: 0.15rem;
+}
+
 // ─── Teams ──────────────────────────────────────────────────────────────────
 
 .team-save-btn {

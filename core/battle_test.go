@@ -391,6 +391,90 @@ func TestSimulateFullBattle_FasterGoesFirst(t *testing.T) {
 	}
 }
 
+func TestSimulateMultipleBattles_N1(t *testing.T) {
+	move := Move{Name: "Tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100}
+	input := FullBattleInput{
+		AttackerStats: Stats{HP: 200, Attack: 200, SpAttack: 100, Defense: 80, SpDefense: 80, Speed: 80},
+		DefenderStats: Stats{HP: 200, Attack: 100, SpAttack: 100, Defense: 80, SpDefense: 80, Speed: 80},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		AttackerMoves: []Move{move},
+		DefenderMoves: []Move{move},
+		AttackerName:  "Snorlax",
+		DefenderName:  "Chansey",
+	}
+	report := SimulateMultipleBattles(input, 1, func(n int) int { return 0 })
+	if report.TotalSimulations != 1 {
+		t.Errorf("TotalSimulations: want 1, got %d", report.TotalSimulations)
+	}
+	total := report.AttackerWins + report.DefenderWins + report.Draws
+	if total != 1 {
+		t.Errorf("Sum of outcomes: want 1, got %d", total)
+	}
+	if report.MinTurns <= 0 {
+		t.Error("MinTurns should be > 0")
+	}
+}
+
+func TestSimulateMultipleBattles_N100(t *testing.T) {
+	move := Move{Name: "Tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100}
+	input := FullBattleInput{
+		AttackerStats: Stats{HP: 200, Attack: 150, SpAttack: 100, Defense: 80, SpDefense: 80, Speed: 80},
+		DefenderStats: Stats{HP: 200, Attack: 150, SpAttack: 100, Defense: 80, SpDefense: 80, Speed: 80},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		AttackerMoves: []Move{move},
+		DefenderMoves: []Move{move},
+		AttackerName:  "Tauros",
+		DefenderName:  "Miltank",
+	}
+	// Use a simple incrementing counter for varied results
+	counter := 0
+	rand := func(n int) int {
+		counter++
+		return counter % n
+	}
+	report := SimulateMultipleBattles(input, 100, rand)
+
+	if report.TotalSimulations != 100 {
+		t.Errorf("TotalSimulations: want 100, got %d", report.TotalSimulations)
+	}
+	totalPct := report.AttackerWinPct + report.DefenderWinPct + report.DrawPct
+	if totalPct < 99.9 || totalPct > 100.1 {
+		t.Errorf("Percentages should sum to ~100, got %.2f", totalPct)
+	}
+	if report.AvgTurns <= 0 {
+		t.Error("AvgTurns should be > 0")
+	}
+	if report.MinTurns > report.MaxTurns {
+		t.Errorf("MinTurns (%d) > MaxTurns (%d)", report.MinTurns, report.MaxTurns)
+	}
+	if report.MedianTurns < report.MinTurns || report.MedianTurns > report.MaxTurns {
+		t.Errorf("MedianTurns (%d) out of range [%d, %d]", report.MedianTurns, report.MinTurns, report.MaxTurns)
+	}
+}
+
+func TestSimulateMultipleBattles_N0(t *testing.T) {
+	move := Move{Name: "Tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100}
+	input := FullBattleInput{
+		AttackerStats: Stats{HP: 200, Attack: 100, SpAttack: 100, Defense: 80, SpDefense: 80, Speed: 80},
+		DefenderStats: Stats{HP: 200, Attack: 100, SpAttack: 100, Defense: 80, SpDefense: 80, Speed: 80},
+		AttackerMoves: []Move{move},
+		DefenderMoves: []Move{move},
+	}
+	report := SimulateMultipleBattles(input, 0, func(n int) int { return 0 })
+	if report.TotalSimulations != 0 {
+		t.Errorf("TotalSimulations: want 0, got %d", report.TotalSimulations)
+	}
+	if report.AttackerWins != 0 || report.DefenderWins != 0 || report.Draws != 0 {
+		t.Error("All outcomes should be 0 for N=0")
+	}
+}
+
 func TestExecuteTurn_NoopWhenOver(t *testing.T) {
 	state := InitBattle(200, 0)
 	state.IsOver = true

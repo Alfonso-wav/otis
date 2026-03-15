@@ -205,3 +205,7 @@ export function SimulateDamage(arg1) {
 export function SimulateFullBattle(arg1) {
   return window['go']['app']['App']['SimulateFullBattle'](arg1);
 }
+
+export function SimulateMultipleBattles(arg1, arg2) {
+  return window['go']['app']['App']['SimulateMultipleBattles'](arg1, arg2);
+}
