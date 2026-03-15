@@ -75,6 +75,22 @@ func SearchMoves(moves []Move, query string) []Move {
 	return result
 }
 
+// FilterPokedexByType retorna los nombres que aparecen tanto en la lista del pokédex regional
+// como en la lista de Pokémon de un tipo dado. Ambas listas se comparan normalizadas.
+func FilterPokedexByType(pokedexNames []string, typePokemonNames []string) []string {
+	typeSet := make(map[string]struct{}, len(typePokemonNames))
+	for _, n := range typePokemonNames {
+		typeSet[NormalizeName(n)] = struct{}{}
+	}
+	result := make([]string, 0)
+	for _, n := range pokedexNames {
+		if _, ok := typeSet[NormalizeName(n)]; ok {
+			result = append(result, NormalizeName(n))
+		}
+	}
+	return result
+}
+
 // SearchAbilities retorna las habilidades cuyo nombre contiene la query (case-insensitive).
 func SearchAbilities(abilities []Ability, query string) []Ability {
 	q := NormalizeName(query)

@@ -158,6 +158,101 @@
   height: 220px;
 }
 
+// ─── Type Modal ─────────────────────────────────────────────────────────────
+
+.type-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.type-modal {
+  background: white;
+  border-radius: $border-radius-lg;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.type-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+
+.type-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #718096;
+  line-height: 1;
+  padding: 0 0.25rem;
+
+  &:hover {
+    color: #2d3748;
+  }
+}
+
+.type-modal-body {
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+}
+
+.type-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.75rem;
+}
+
+.type-modal-pokemon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border-radius: $border-radius;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #f7fafc;
+  }
+
+  img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+  }
+}
+
+.type-modal-pokemon-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  text-align: center;
+  color: #4a5568;
+}
+
+.type-modal-empty {
+  text-align: center;
+  color: #718096;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+}
+
 // ─── Moves ──────────────────────────────────────────────────────────────────
 
 .moves-controls {
@@ -390,6 +485,26 @@
 
   .region-chart {
     height: 180px;
+  }
+
+  // Type Modal
+  .type-modal {
+    max-width: 100%;
+    max-height: 85vh;
+  }
+
+  .type-modal-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .type-modal-pokemon img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .type-modal-pokemon-name {
+    font-size: 0.7rem;
   }
 
   // Moves

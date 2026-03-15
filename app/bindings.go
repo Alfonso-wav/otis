@@ -67,6 +67,44 @@ func (a *App) SimulateDamage(input core.DamageInput) (core.DamageResult, error) 
 	return core.CalculateDamage(input), nil
 }
 
+// GetRegionPokemonByType retorna los nombres de Pokémon de un tipo dado dentro de una región.
+func (a *App) GetRegionPokemonByType(region, typeName string) ([]string, error) {
+	pokedexMap := map[string]string{
+		"kanto":  "kanto",
+		"johto":  "original-johto",
+		"hoenn":  "hoenn",
+		"sinnoh": "original-sinnoh",
+		"unova":  "original-unova",
+		"kalos":  "kalos-central",
+	}
+	pokedexName, ok := pokedexMap[core.NormalizeName(region)]
+	if !ok {
+		pokedexName = core.NormalizeName(region)
+	}
+
+	pokedex, err := a.fetcher.FetchPokedex(pokedexName)
+	if err != nil {
+		return nil, err
+	}
+
+	typeDetail, err := a.fetcher.FetchType(core.NormalizeName(typeName))
+	if err != nil {
+		return nil, err
+	}
+
+	pokedexNames := make([]string, len(pokedex.PokemonEntries))
+	for i, e := range pokedex.PokemonEntries {
+		pokedexNames[i] = e.Pokemon
+	}
+
+	typePokemonNames := make([]string, len(typeDetail.Pokemon))
+	for i, p := range typeDetail.Pokemon {
+		typePokemonNames[i] = p.Name
+	}
+
+	return core.FilterPokedexByType(pokedexNames, typePokemonNames), nil
+}
+
 // GetAbility retorna el detalle de una habilidad.
 func (a *App) GetAbility(name string) (core.Ability, error) {
 	return a.fetcher.FetchAbility(core.NormalizeName(name))

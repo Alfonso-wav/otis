@@ -124,6 +124,34 @@ func TestSearchAbilities(t *testing.T) {
 	}
 }
 
+func TestFilterPokedexByType(t *testing.T) {
+	pokedex := []string{"pikachu", "charmander", "bulbasaur", "squirtle", "gastly"}
+	typePokemon := []string{"charmander", "vulpix", "growlithe", "gastly"}
+
+	got := FilterPokedexByType(pokedex, typePokemon)
+	if len(got) != 2 {
+		t.Fatalf("FilterPokedexByType partial: len = %d, want 2", len(got))
+	}
+
+	// Empty intersection
+	got = FilterPokedexByType(pokedex, []string{"mewtwo", "mew"})
+	if len(got) != 0 {
+		t.Fatalf("FilterPokedexByType empty: len = %d, want 0", len(got))
+	}
+
+	// Full intersection
+	got = FilterPokedexByType([]string{"pikachu"}, []string{"pikachu", "raichu"})
+	if len(got) != 1 {
+		t.Fatalf("FilterPokedexByType full: len = %d, want 1", len(got))
+	}
+
+	// Case insensitive
+	got = FilterPokedexByType([]string{"Pikachu"}, []string{"pikachu"})
+	if len(got) != 1 {
+		t.Fatalf("FilterPokedexByType case: len = %d, want 1", len(got))
+	}
+}
+
 func TestGetStat(t *testing.T) {
 	p := Pokemon{
 		Stats: []Stat{
