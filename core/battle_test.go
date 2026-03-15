@@ -475,6 +475,138 @@ func TestSimulateMultipleBattles_N0(t *testing.T) {
 	}
 }
 
+// --- Team Battle Tests ---
+
+func makeTeamBattleMember(name string, hp, atk, def, speed int) TeamBattleMember {
+	move := Move{Name: "tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100}
+	return TeamBattleMember{
+		PokemonName: name,
+		Stats:       Stats{HP: hp, Attack: atk, Defense: def, SpAttack: atk, SpDefense: def, Speed: speed},
+		Types:       []PokemonType{{Name: "normal"}},
+		Moves:       []Move{move},
+		Level:       50,
+	}
+}
+
+func TestSimulateTeamBattle_1v1(t *testing.T) {
+	input := TeamBattleInput{
+		Team1Name:    "Alpha",
+		Team1Members: []TeamBattleMember{makeTeamBattleMember("pikachu", 200, 100, 80, 90)},
+		Team2Name:    "Beta",
+		Team2Members: []TeamBattleMember{makeTeamBattleMember("charmander", 200, 100, 80, 90)},
+	}
+	counter := 0
+	rng := func(n int) int { counter++; return counter % n }
+	result := SimulateTeamBattle(input, rng)
+
+	if !result.IsOver {
+		t.Error("battle should be over")
+	}
+	if result.Winner != "team1" && result.Winner != "team2" {
+		t.Errorf("unexpected winner: %s", result.Winner)
+	}
+	if len(result.Rounds) != 1 {
+		t.Errorf("expected 1 round, got %d", len(result.Rounds))
+	}
+	if len(result.Log) != 1 {
+		t.Errorf("expected 1 log entry, got %d", len(result.Log))
+	}
+}
+
+func TestSimulateTeamBattle_3v3(t *testing.T) {
+	input := TeamBattleInput{
+		Team1Name: "Alpha",
+		Team1Members: []TeamBattleMember{
+			makeTeamBattleMember("pikachu", 200, 120, 80, 100),
+			makeTeamBattleMember("bulbasaur", 220, 100, 90, 70),
+			makeTeamBattleMember("squirtle", 210, 90, 100, 60),
+		},
+		Team2Name: "Beta",
+		Team2Members: []TeamBattleMember{
+			makeTeamBattleMember("charmander", 200, 110, 80, 90),
+			makeTeamBattleMember("eevee", 180, 90, 70, 80),
+			makeTeamBattleMember("jigglypuff", 300, 60, 50, 40),
+		},
+	}
+	counter := 0
+	rng := func(n int) int { counter++; return counter % n }
+	result := SimulateTeamBattle(input, rng)
+
+	if !result.IsOver {
+		t.Error("battle should be over")
+	}
+	if result.Winner != "team1" && result.Winner != "team2" {
+		t.Errorf("unexpected winner: %s", result.Winner)
+	}
+	if result.Team1Remaining+result.Team2Remaining < 1 {
+		t.Error("at least one team should have remaining members")
+	}
+	// Winner should have remaining members, loser 0
+	if result.Winner == "team1" && result.Team1Remaining == 0 {
+		t.Error("team1 won but has 0 remaining")
+	}
+	if result.Winner == "team2" && result.Team2Remaining == 0 {
+		t.Error("team2 won but has 0 remaining")
+	}
+}
+
+func TestSimulateTeamBattle_CarryOverHP(t *testing.T) {
+	// Team1 has one very strong Pokemon, Team2 has two weak ones
+	input := TeamBattleInput{
+		Team1Name:    "Strong",
+		Team1Members: []TeamBattleMember{makeTeamBattleMember("mewtwo", 500, 200, 100, 150)},
+		Team2Name:    "Weak",
+		Team2Members: []TeamBattleMember{
+			makeTeamBattleMember("magikarp", 50, 20, 20, 20),
+			makeTeamBattleMember("caterpie", 50, 20, 20, 20),
+		},
+	}
+	counter := 0
+	rng := func(n int) int { counter++; return counter % n }
+	result := SimulateTeamBattle(input, rng)
+
+	if result.Winner != "team1" {
+		t.Errorf("expected team1 to win, got %s", result.Winner)
+	}
+	if len(result.Rounds) != 2 {
+		t.Errorf("expected 2 rounds, got %d", len(result.Rounds))
+	}
+	// Verify carry-over: mewtwo should have taken some damage in round 1
+	// and started round 2 with less HP
+	if result.Team1Remaining != 1 {
+		t.Errorf("expected 1 remaining for team1, got %d", result.Team1Remaining)
+	}
+}
+
+func TestSimulateMultipleTeamBattles(t *testing.T) {
+	input := TeamBattleInput{
+		Team1Name: "A",
+		Team1Members: []TeamBattleMember{
+			makeTeamBattleMember("pikachu", 200, 100, 80, 90),
+			makeTeamBattleMember("bulbasaur", 200, 100, 80, 70),
+		},
+		Team2Name: "B",
+		Team2Members: []TeamBattleMember{
+			makeTeamBattleMember("charmander", 200, 100, 80, 85),
+			makeTeamBattleMember("squirtle", 200, 100, 80, 75),
+		},
+	}
+	counter := 0
+	rng := func(n int) int { counter++; return counter % n }
+	report := SimulateMultipleTeamBattles(input, 10, rng)
+
+	if report.TotalSimulations != 10 {
+		t.Errorf("expected 10 sims, got %d", report.TotalSimulations)
+	}
+	total := report.Team1Wins + report.Team2Wins + report.Draws
+	if total != 10 {
+		t.Errorf("wins+draws should equal 10, got %d", total)
+	}
+	if report.AvgTotalTurns <= 0 {
+		t.Error("avgTotalTurns should be > 0")
+	}
+}
+
 func TestExecuteTurn_NoopWhenOver(t *testing.T) {
 	state := InitBattle(200, 0)
 	state.IsOver = true

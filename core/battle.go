@@ -323,6 +323,116 @@ type BattleReport struct {
 	AvgWinnerHP      float64 `json:"avgWinnerHP"`
 }
 
+// SimulateTeamBattle simulates a full team-vs-team battle.
+// When one Pokemon faints, the next on that team enters. The winner's HP carries over.
+func SimulateTeamBattle(input TeamBattleInput, randSource func(int) int) TeamBattleState {
+	if len(input.Team1Members) == 0 || len(input.Team2Members) == 0 {
+		return TeamBattleState{IsOver: true, Winner: "draw"}
+	}
+
+	idx1, idx2 := 0, 0
+	carryHP1, carryHP2 := 0, 0 // 0 means use full HP
+	totalTurns := 0
+	var rounds []BattleState
+	var log []string
+
+	for idx1 < len(input.Team1Members) && idx2 < len(input.Team2Members) {
+		m1 := input.Team1Members[idx1]
+		m2 := input.Team2Members[idx2]
+
+		bi := FullBattleInput{
+			AttackerStats: m1.Stats,
+			DefenderStats: m2.Stats,
+			AttackerTypes: m1.Types,
+			DefenderTypes: m2.Types,
+			AttackerLevel: m1.Level,
+			DefenderLevel: m2.Level,
+			AttackerMoves: m1.Moves,
+			DefenderMoves: m2.Moves,
+			AttackerName:  m1.PokemonName,
+			DefenderName:  m2.PokemonName,
+		}
+
+		// Apply carry-over HP
+		if carryHP1 > 0 {
+			bi.AttackerStats.HP = carryHP1
+		}
+		if carryHP2 > 0 {
+			bi.DefenderStats.HP = carryHP2
+		}
+
+		result := SimulateFullBattle(bi, randSource)
+		rounds = append(rounds, result)
+		totalTurns += result.TurnCount
+
+		roundNum := len(rounds)
+		if result.Winner == "attacker" {
+			log = append(log, fmt.Sprintf("[Ronda %d] %s venció a %s (HP restante: %d)",
+				roundNum, m1.PokemonName, m2.PokemonName, result.AttackerHP))
+			carryHP1 = result.AttackerHP
+			carryHP2 = 0
+			idx2++
+		} else {
+			log = append(log, fmt.Sprintf("[Ronda %d] %s venció a %s (HP restante: %d)",
+				roundNum, m2.PokemonName, m1.PokemonName, result.DefenderHP))
+			carryHP2 = result.DefenderHP
+			carryHP1 = 0
+			idx1++
+		}
+	}
+
+	winner := "team1"
+	if idx1 >= len(input.Team1Members) {
+		winner = "team2"
+	}
+
+	return TeamBattleState{
+		Team1Remaining: len(input.Team1Members) - idx1,
+		Team2Remaining: len(input.Team2Members) - idx2,
+		TotalTurns:     totalTurns,
+		Rounds:         rounds,
+		Log:            log,
+		IsOver:         true,
+		Winner:         winner,
+	}
+}
+
+// SimulateMultipleTeamBattles runs N team battle simulations and returns aggregated statistics.
+func SimulateMultipleTeamBattles(input TeamBattleInput, n int, randSource func(int) int) TeamBattleReport {
+	if n <= 0 {
+		return TeamBattleReport{}
+	}
+
+	report := TeamBattleReport{TotalSimulations: n}
+	totalTurns := 0
+	totalT1Rem := 0
+	totalT2Rem := 0
+
+	for i := 0; i < n; i++ {
+		result := SimulateTeamBattle(input, randSource)
+		totalTurns += result.TotalTurns
+		totalT1Rem += result.Team1Remaining
+		totalT2Rem += result.Team2Remaining
+		switch result.Winner {
+		case "team1":
+			report.Team1Wins++
+		case "team2":
+			report.Team2Wins++
+		default:
+			report.Draws++
+		}
+	}
+
+	report.Team1WinPct = float64(report.Team1Wins) / float64(n) * 100
+	report.Team2WinPct = float64(report.Team2Wins) / float64(n) * 100
+	report.DrawPct = float64(report.Draws) / float64(n) * 100
+	report.AvgTotalTurns = float64(totalTurns) / float64(n)
+	report.AvgTeam1Remaining = float64(totalT1Rem) / float64(n)
+	report.AvgTeam2Remaining = float64(totalT2Rem) / float64(n)
+
+	return report
+}
+
 // SimulateMultipleBattles runs N full battle simulations and returns aggregated statistics.
 // randSource is injected for testability; use rand.Intn in production.
 func SimulateMultipleBattles(input FullBattleInput, n int, randSource func(int) int) BattleReport {

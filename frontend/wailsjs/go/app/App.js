@@ -217,3 +217,11 @@ export function SimulateFullBattle(arg1) {
 export function SimulateMultipleBattles(arg1, arg2) {
   return window['go']['app']['App']['SimulateMultipleBattles'](arg1, arg2);
 }
+
+export function SimulateMultipleTeamBattles(arg1, arg2, arg3) {
+  return window['go']['app']['App']['SimulateMultipleTeamBattles'](arg1, arg2, arg3);
+}
+
+export function SimulateTeamBattle(arg1, arg2) {
+  return window['go']['app']['App']['SimulateTeamBattle'](arg1, arg2);
+}

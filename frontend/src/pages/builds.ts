@@ -16,6 +16,8 @@ import {
   DeleteTeamMember,
   CreateTeam,
   FillTeamRandom,
+  SimulateTeamBattle,
+  SimulateMultipleTeamBattles,
 } from "../../wailsjs/go/app/App";
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
@@ -65,6 +67,13 @@ interface BattleUIState {
 let battleUI: BattleUIState = { battleState: null, phase: "idle" };
 let batchReport: core.BattleReport | null = null;
 let batchRunning = false;
+
+// Team battle state
+let teamBattleTeam1: string | null = null;
+let teamBattleTeam2: string | null = null;
+let teamBattleResult: core.TeamBattleState | null = null;
+let teamBattleReport: core.TeamBattleReport | null = null;
+let teamBattleRunning = false;
 
 let state: BuildState = {
   attacker: null,
@@ -937,6 +946,147 @@ async function handleDeleteTeamMember(teamName: string, index: number): Promise<
   }
 }
 
+function renderTeamBattleSection(): string {
+  const validTeams = cachedTeams.filter((t) => t.members.length > 0);
+  if (validTeams.length < 2) return "";
+
+  const options = validTeams
+    .map((t) => `<option value="${t.name}">${t.name} (${t.members.length})</option>`)
+    .join("");
+
+  const team1Select = `<select class="team-battle-select" id="tb-team1"><option value="">Seleccionar equipo 1</option>${options}</select>`;
+  const team2Select = `<select class="team-battle-select" id="tb-team2"><option value="">Seleccionar equipo 2</option>${options}</select>`;
+
+  const canBattle = teamBattleTeam1 && teamBattleTeam2 && teamBattleTeam1 !== teamBattleTeam2;
+
+  // Preview sprites
+  const t1 = cachedTeams.find((t) => t.name === teamBattleTeam1);
+  const t2 = cachedTeams.find((t) => t.name === teamBattleTeam2);
+
+  const previewHTML = (t1 && t2) ? `
+    <div class="tb-preview">
+      <div class="tb-preview-team">
+        <strong>${t1.name}</strong>
+        <div class="tb-sprites">${t1.members.map((m, i) => {
+          const fainted = teamBattleResult && teamBattleResult.rounds
+            ? isMemberFainted(teamBattleResult, "team1", i, t1.members.length)
+            : false;
+          return `<img class="tb-sprite ${fainted ? "tb-fainted" : ""}" src="${spriteURL(m.pokemonName)}" onerror="this.onerror=null;this.src='${spriteFallback(m.pokemonName)}'" alt="${m.pokemonName}" title="${m.pokemonName}" />`;
+        }).join("")}</div>
+      </div>
+      <span class="tb-vs">VS</span>
+      <div class="tb-preview-team">
+        <strong>${t2.name}</strong>
+        <div class="tb-sprites">${t2.members.map((m, i) => {
+          const fainted = teamBattleResult && teamBattleResult.rounds
+            ? isMemberFainted(teamBattleResult, "team2", i, t2.members.length)
+            : false;
+          return `<img class="tb-sprite ${fainted ? "tb-fainted" : ""}" src="${spriteURL(m.pokemonName)}" onerror="this.onerror=null;this.src='${spriteFallback(m.pokemonName)}'" alt="${m.pokemonName}" title="${m.pokemonName}" />`;
+        }).join("")}</div>
+      </div>
+    </div>` : "";
+
+  // Result section
+  let resultHTML = "";
+  if (teamBattleResult && teamBattleResult.isOver) {
+    const winnerName = teamBattleResult.winner === "team1" ? teamBattleTeam1 : teamBattleTeam2;
+    const logEntries = (teamBattleResult.log ?? [])
+      .map((entry) => `<div class="battle-log-entry">${entry}</div>`).join("");
+    resultHTML = `
+      <div class="tb-result">
+        <div class="battle-winner-banner">${winnerName} gana la batalla de equipos!</div>
+        <div class="tb-stats">
+          <span>Rondas: ${teamBattleResult.rounds?.length ?? 0}</span>
+          <span>Turnos totales: ${teamBattleResult.totalTurns}</span>
+          <span>${teamBattleTeam1}: ${teamBattleResult.team1Remaining} restantes</span>
+          <span>${teamBattleTeam2}: ${teamBattleResult.team2Remaining} restantes</span>
+        </div>
+        <div class="battle-log">${logEntries}</div>
+      </div>`;
+  }
+
+  // Batch report
+  let batchHTML = "";
+  if (teamBattleReport && teamBattleReport.totalSimulations > 0) {
+    const r = teamBattleReport;
+    const t1Pct = r.team1WinPct.toFixed(1);
+    const t2Pct = r.team2WinPct.toFixed(1);
+    const drawPct = r.drawPct.toFixed(1);
+    batchHTML = `
+      <div class="battle-report" id="tb-report">
+        <h4 class="battle-report-title">Resultados de ${r.totalSimulations} simulaciones</h4>
+        <div class="report-win-bar">
+          <div class="report-win-bar-segment report-win-bar--atk" style="width:${t1Pct}%" title="${teamBattleTeam1}: ${t1Pct}%"></div>
+          <div class="report-win-bar-segment report-win-bar--draw" style="width:${drawPct}%" title="Empate: ${drawPct}%"></div>
+          <div class="report-win-bar-segment report-win-bar--def" style="width:${t2Pct}%" title="${teamBattleTeam2}: ${t2Pct}%"></div>
+        </div>
+        <div class="report-win-bar-labels">
+          <span class="report-win-label report-win-label--atk">${teamBattleTeam1} ${t1Pct}%</span>
+          ${parseFloat(drawPct) > 0 ? `<span class="report-win-label report-win-label--draw">Empate ${drawPct}%</span>` : ""}
+          <span class="report-win-label report-win-label--def">${teamBattleTeam2} ${t2Pct}%</span>
+        </div>
+        <div class="report-stat-cards">
+          <div class="report-stat-card">
+            <div class="report-stat-card-value">${r.team1Wins}</div>
+            <div class="report-stat-card-label">${teamBattleTeam1}</div>
+          </div>
+          <div class="report-stat-card">
+            <div class="report-stat-card-value">${r.team2Wins}</div>
+            <div class="report-stat-card-label">${teamBattleTeam2}</div>
+          </div>
+          <div class="report-stat-card">
+            <div class="report-stat-card-value">${r.draws}</div>
+            <div class="report-stat-card-label">Empates</div>
+          </div>
+        </div>
+        <div class="report-stat-cards">
+          <div class="report-stat-card">
+            <div class="report-stat-card-value">${r.avgTotalTurns.toFixed(1)}</div>
+            <div class="report-stat-card-label">Media turnos</div>
+          </div>
+          <div class="report-stat-card">
+            <div class="report-stat-card-value">${r.avgTeam1Remaining.toFixed(1)}</div>
+            <div class="report-stat-card-label">${teamBattleTeam1} restantes (media)</div>
+          </div>
+          <div class="report-stat-card">
+            <div class="report-stat-card-value">${r.avgTeam2Remaining.toFixed(1)}</div>
+            <div class="report-stat-card-label">${teamBattleTeam2} restantes (media)</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="team-battle-section">
+      <details class="teams-details" open>
+        <summary class="build-section-title teams-summary">Batalla de equipos</summary>
+        <div class="tb-selectors">
+          ${team1Select}
+          <span class="tb-vs-label">VS</span>
+          ${team2Select}
+        </div>
+        ${previewHTML}
+        <div class="tb-actions">
+          <button class="battle-auto-btn" id="tb-simulate-btn" ${!canBattle ? "disabled" : ""}>Simular batalla de equipos</button>
+          <div class="battle-batch-row">
+            <input type="number" id="tb-batch-n" class="battle-batch-input" min="1" max="10000" value="100" />
+            <button class="battle-batch-btn" id="tb-batch-btn" ${!canBattle || teamBattleRunning ? "disabled" : ""}>
+              ${teamBattleRunning ? "Simulando..." : "Simular N batallas"}
+            </button>
+          </div>
+        </div>
+        ${resultHTML}
+        ${batchHTML}
+      </details>
+    </div>`;
+}
+
+function isMemberFainted(result: core.TeamBattleState, team: "team1" | "team2", memberIdx: number, totalMembers: number): boolean {
+  const remaining = team === "team1" ? result.team1Remaining : result.team2Remaining;
+  const faintedCount = totalMembers - remaining;
+  return memberIdx < faintedCount;
+}
+
 function renderTeamsSection(): string {
   const createTeamHTML = creatingTeam
     ? `<div class="team-create-form">
@@ -1166,6 +1316,7 @@ function buildLayout(): void {
   const dmgSection = renderDamageSection();
   const btlSection = renderBattleSection();
   const teamsSection = renderTeamsSection();
+  const teamBattleSection = renderTeamBattleSection();
   const saveModal = renderSaveModal();
 
   container.innerHTML = `
@@ -1201,17 +1352,70 @@ function buildLayout(): void {
     ${defenderMovesSection}
     ${dmgSection}
     ${btlSection}
+    ${teamBattleSection}
     ${saveModal}
   `;
 
   bindEvents();
   bindBattleEvents();
   bindTeamEvents();
+  bindTeamBattleEvents();
   bindSaveModalEvents();
 
   if (dmgSection) {
     loadDamageTable();
   }
+}
+
+function bindTeamBattleEvents(): void {
+  const team1Select = container.querySelector<HTMLSelectElement>("#tb-team1");
+  const team2Select = container.querySelector<HTMLSelectElement>("#tb-team2");
+
+  if (team1Select) {
+    team1Select.value = teamBattleTeam1 ?? "";
+    team1Select.addEventListener("change", () => {
+      teamBattleTeam1 = team1Select.value || null;
+      teamBattleResult = null;
+      teamBattleReport = null;
+      buildLayout();
+    });
+  }
+  if (team2Select) {
+    team2Select.value = teamBattleTeam2 ?? "";
+    team2Select.addEventListener("change", () => {
+      teamBattleTeam2 = team2Select.value || null;
+      teamBattleResult = null;
+      teamBattleReport = null;
+      buildLayout();
+    });
+  }
+
+  container.querySelector<HTMLButtonElement>("#tb-simulate-btn")?.addEventListener("click", async () => {
+    if (!teamBattleTeam1 || !teamBattleTeam2) return;
+    try {
+      teamBattleResult = await SimulateTeamBattle(teamBattleTeam1, teamBattleTeam2);
+      buildLayout();
+    } catch (e: unknown) {
+      alert(`Error: ${e}`);
+    }
+  });
+
+  container.querySelector<HTMLButtonElement>("#tb-batch-btn")?.addEventListener("click", async () => {
+    if (!teamBattleTeam1 || !teamBattleTeam2) return;
+    const nInput = container.querySelector<HTMLInputElement>("#tb-batch-n");
+    const n = parseInt(nInput?.value ?? "100");
+    if (isNaN(n) || n < 1) return;
+    teamBattleRunning = true;
+    buildLayout();
+    try {
+      teamBattleReport = await SimulateMultipleTeamBattles(teamBattleTeam1, teamBattleTeam2, n);
+    } catch (e: unknown) {
+      alert(`Error: ${e}`);
+    } finally {
+      teamBattleRunning = false;
+      buildLayout();
+    }
+  });
 }
 
 // ─── Event binding ────────────────────────────────────────────────────────────

@@ -345,6 +345,50 @@ type Team struct {
 	Members []TeamMember `json:"members"`
 }
 
+// --- Team Battle ---
+
+// TeamBattleMember holds resolved data for one team member in a team battle.
+type TeamBattleMember struct {
+	PokemonName string        `json:"pokemonName"`
+	Stats       Stats         `json:"stats"`
+	Types       []PokemonType `json:"types"`
+	Moves       []Move        `json:"moves"`
+	Level       int           `json:"level"`
+}
+
+// TeamBattleInput contains everything needed to simulate a full team battle.
+type TeamBattleInput struct {
+	Team1Name    string              `json:"team1Name"`
+	Team1Members []TeamBattleMember  `json:"team1Members"`
+	Team2Name    string              `json:"team2Name"`
+	Team2Members []TeamBattleMember  `json:"team2Members"`
+}
+
+// TeamBattleState is the result of a full team battle simulation.
+type TeamBattleState struct {
+	Team1Remaining int           `json:"team1Remaining"`
+	Team2Remaining int           `json:"team2Remaining"`
+	TotalTurns     int           `json:"totalTurns"`
+	Rounds         []BattleState `json:"rounds"`
+	Log            []string      `json:"log"`
+	IsOver         bool          `json:"isOver"`
+	Winner         string        `json:"winner"`
+}
+
+// TeamBattleReport aggregates statistics from N team battle simulations.
+type TeamBattleReport struct {
+	TotalSimulations  int     `json:"totalSimulations"`
+	Team1Wins         int     `json:"team1Wins"`
+	Team2Wins         int     `json:"team2Wins"`
+	Draws             int     `json:"draws"`
+	Team1WinPct       float64 `json:"team1WinPct"`
+	Team2WinPct       float64 `json:"team2WinPct"`
+	DrawPct           float64 `json:"drawPct"`
+	AvgTotalTurns     float64 `json:"avgTotalTurns"`
+	AvgTeam1Remaining float64 `json:"avgTeam1Remaining"`
+	AvgTeam2Remaining float64 `json:"avgTeam2Remaining"`
+}
+
 // --- Sprites ---
 
 type SpriteCategory string

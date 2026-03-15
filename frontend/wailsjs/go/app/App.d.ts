@@ -109,3 +109,7 @@ export function SimulateDamage(arg1:core.DamageInput):Promise<core.DamageResult>
 export function SimulateFullBattle(arg1:core.FullBattleInput):Promise<core.BattleState>;
 
 export function SimulateMultipleBattles(arg1:core.FullBattleInput,arg2:number):Promise<core.BattleReport>;
+
+export function SimulateMultipleTeamBattles(arg1:string,arg2:string,arg3:number):Promise<core.TeamBattleReport>;
+
+export function SimulateTeamBattle(arg1:string,arg2:string):Promise<core.TeamBattleState>;
