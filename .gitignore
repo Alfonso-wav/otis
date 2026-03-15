@@ -10,3 +10,13 @@ build/bin/
 *.exe
 *.exe~
 *.stackdump
+
+# Android build artifacts
+android/app/build/
+android/build/
+android/.gradle/
+android/app/libs/*.aar
+android/app/libs/*.jar
+android/local.properties
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
