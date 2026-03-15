@@ -2,8 +2,14 @@ package shell
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/alfon/pokemon-app/core"
+)
+
+var (
+	allMovesCache []core.Move
+	allMovesMu    sync.Mutex
 )
 
 // --- Lista de movimientos ---
@@ -28,6 +34,72 @@ func (c *PokeAPIClient) FetchMoveList(offset int, limit int) (core.MoveListRespo
 		results[i] = core.NamedResource{Name: r.Name, URL: r.URL}
 	}
 	return core.MoveListResponse{Count: raw.Count, Results: results}, nil
+}
+
+// FetchAllMoves obtiene todos los movimientos de PokeAPI con concurrencia controlada y cache en memoria.
+func (c *PokeAPIClient) FetchAllMoves() ([]core.Move, error) {
+	allMovesMu.Lock()
+	if allMovesCache != nil {
+		cached := make([]core.Move, len(allMovesCache))
+		copy(cached, allMovesCache)
+		allMovesMu.Unlock()
+		return cached, nil
+	}
+	allMovesMu.Unlock()
+
+	list, err := c.FetchMoveList(0, 2000)
+	if err != nil {
+		return nil, fmt.Errorf("fetching move list: %w", err)
+	}
+
+	type result struct {
+		index int
+		move  core.Move
+		err   error
+	}
+
+	moves := make([]core.Move, len(list.Results))
+	results := make(chan result, len(list.Results))
+	sem := make(chan struct{}, 15)
+	var wg sync.WaitGroup
+
+	for i, r := range list.Results {
+		wg.Add(1)
+		go func(idx int, name string) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			m, err := c.FetchMove(name)
+			results <- result{index: idx, move: m, err: err}
+		}(i, r.Name)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	for res := range results {
+		if res.err != nil {
+			continue
+		}
+		moves[res.index] = res.move
+	}
+
+	// Filter out zero-value entries (failed fetches)
+	filtered := make([]core.Move, 0, len(moves))
+	for _, m := range moves {
+		if m.Name != "" {
+			filtered = append(filtered, m)
+		}
+	}
+
+	allMovesMu.Lock()
+	allMovesCache = make([]core.Move, len(filtered))
+	copy(allMovesCache, filtered)
+	allMovesMu.Unlock()
+
+	return filtered, nil
 }
 
 // --- Clases de daño ---

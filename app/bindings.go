@@ -234,6 +234,11 @@ func (a *App) GetGrowthRate(name string) (core.GrowthRate, error) {
 
 // --- Grupo C: Movimientos completos ---
 
+// GetAllMoves retorna todos los movimientos de PokeAPI (~920) con cache en memoria.
+func (a *App) GetAllMoves() ([]core.Move, error) {
+	return a.fetcher.FetchAllMoves()
+}
+
 func (a *App) ListMoves(offset int, limit int) (core.MoveListResponse, error) {
 	return a.fetcher.FetchMoveList(offset, limit)
 }

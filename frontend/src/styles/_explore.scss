@@ -194,48 +194,35 @@
   }
 }
 
-.moves-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 0.875rem;
-}
-
-.move-card {
-  background: white;
+.moves-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: $border-radius-lg;
-  padding: 0.875rem 1rem;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 0.15s, transform 0.15s;
+  background: white;
+}
 
-  &:hover {
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
+.moves-table {
+  min-width: 600px;
+
+  .move-name-cell {
+    text-transform: capitalize;
+    font-weight: 600;
+    white-space: nowrap;
   }
 
-  &--loading {
-    opacity: 0.5;
-    .move-card__name {
-      color: #a0aec0;
-    }
+  .move-cat-cell {
+    text-align: center;
+  }
+
+  .num-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 }
 
-.move-card__header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.move-card__name {
-  font-weight: 700;
-  font-size: 0.9rem;
-  text-transform: capitalize;
-  flex: 1;
-}
-
-.move-card__type {
+.type-badge {
+  display: inline-block;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -243,34 +230,20 @@
   color: white;
   padding: 0.15rem 0.5rem;
   border-radius: $border-radius-pill;
+  white-space: nowrap;
 }
 
-.move-card__cat {
-  font-size: 0.9rem;
-}
-
-.move-card__stats {
-  display: flex;
-  gap: 0.75rem;
-  font-size: 0.78rem;
-  color: #4a5568;
-  margin-bottom: 0.4rem;
-}
-
-.move-stat {
-  b {
-    color: #718096;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    display: block;
-  }
-}
-
-.move-card__desc {
+.moves-count {
+  display: inline-block;
   font-size: 0.78rem;
   color: #718096;
-  line-height: 1.4;
-  margin: 0;
+  margin-bottom: 0.75rem;
+}
+
+.moves-type-select {
+  max-width: 180px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
 }
 
 // ─── Abilities ──────────────────────────────────────────────────────────────
@@ -379,8 +352,8 @@
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   }
 
-  .moves-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  .moves-table-wrap {
+    margin: 0 -0.5rem;
   }
 
   .abilities-grid {
@@ -455,9 +428,8 @@
   }
 
   // Moves
-  .moves-grid {
-    grid-template-columns: 1fr;
-    gap: 0.65rem;
+  .moves-table-wrap {
+    margin: 0 -0.5rem;
   }
 
   .moves-filters {
@@ -469,21 +441,8 @@
     padding: 0.3rem 0.7rem;
   }
 
-  .move-card {
-    padding: 0.7rem 0.85rem;
-  }
-
-  .move-card__name {
-    font-size: 0.85rem;
-  }
-
-  .move-card__stats {
-    gap: 0.5rem;
-    font-size: 0.72rem;
-  }
-
-  .move-card__desc {
-    font-size: 0.72rem;
+  .moves-type-select {
+    max-width: 100%;
   }
 
   // Abilities
