@@ -30,6 +30,10 @@ export function ExecuteTurn(arg1) {
   return window['go']['app']['App']['ExecuteTurn'](arg1);
 }
 
+export function FillTeamRandom(arg1) {
+  return window['go']['app']['App']['FillTeamRandom'](arg1);
+}
+
 export function GetAbility(arg1) {
   return window['go']['app']['App']['GetAbility'](arg1);
 }

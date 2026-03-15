@@ -16,6 +16,8 @@ export function DownloadSprites(arg1:Array<core.SpriteCategory>):Promise<core.Sp
 
 export function ExecuteTurn(arg1:core.TurnInput):Promise<core.TurnResult>;
 
+export function FillTeamRandom(arg1:string):Promise<core.Team>;
+
 export function GetAbility(arg1:string):Promise<core.Ability>;
 
 export function GetAllAbilities():Promise<Array<core.Ability>>;

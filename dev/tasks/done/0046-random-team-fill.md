@@ -1,7 +1,7 @@
 # Rellenar equipo aleatoriamente
 
 **ID**: 0046-random-team-fill
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-15
 **Depende de**: 0045-create-team-from-panel
 
@@ -57,9 +57,9 @@ Añadir un botón "Rellenar aleatoriamente" en cada equipo del panel "Mis Equipo
 
 ## Criterios de aceptacion
 
-- [ ] Botón "Rellenar aleatorio" visible en equipos con < 6 miembros
-- [ ] Al rellenar, se completan las plazas vacías hasta 6
-- [ ] No se repiten Pokémon dentro del mismo equipo
-- [ ] Cada miembro generado tiene 4 movimientos, naturaleza válida, EVs ≤ 510
-- [ ] El equipo relleno se persiste correctamente
-- [ ] Si el equipo ya tiene 6 miembros, el botón no aparece o está deshabilitado
+- [x] Botón "Rellenar aleatorio" visible en equipos con < 6 miembros
+- [x] Al rellenar, se completan las plazas vacías hasta 6
+- [x] No se repiten Pokémon dentro del mismo equipo
+- [x] Cada miembro generado tiene 4 movimientos, naturaleza válida, EVs ≤ 510
+- [x] El equipo relleno se persiste correctamente
+- [x] Si el equipo ya tiene 6 miembros, el botón no aparece o está deshabilitado

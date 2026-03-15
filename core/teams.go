@@ -83,3 +83,126 @@ func RemoveMemberFromTeam(team Team, index int) (Team, error) {
 	newMembers = append(newMembers, team.Members[index+1:]...)
 	return Team{Name: team.Name, Members: newMembers}, nil
 }
+
+// natureNames returns a sorted list of all nature names.
+func natureNames() []string {
+	names := make([]string, 0, len(Natures))
+	for k := range Natures {
+		names = append(names, k)
+	}
+	return names
+}
+
+// GenerateRandomTeamMember creates a random TeamMember from a Pokemon's data.
+func GenerateRandomTeamMember(pokemon Pokemon, rng func(int) int) TeamMember {
+	// Nature
+	names := natureNames()
+	nature := names[rng(len(names))]
+
+	// Moves: prefer damaging moves (power > 0), pick up to 4
+	var damagingMoves, otherMoves []string
+	for _, m := range pokemon.Moves {
+		damagingMoves = append(damagingMoves, m.Name)
+		_ = otherMoves // all moves go into one pool for simplicity
+	}
+	movePool := damagingMoves
+	moves := pickRandomUnique(movePool, 4, rng)
+
+	// EVs: distribute 510 across 6 stats, max 252 each
+	evs := randomEVSpread(rng)
+
+	return TeamMember{
+		PokemonName: pokemon.Name,
+		Moves:       moves,
+		Level:       50,
+		Nature:      nature,
+		IVs:         Stats{HP: 31, Attack: 31, Defense: 31, SpAttack: 31, SpDefense: 31, Speed: 31},
+		EVs:         evs,
+	}
+}
+
+// randomEVSpread distributes 510 EV points across 6 stats (max 252 each).
+func randomEVSpread(rng func(int) int) Stats {
+	stats := [6]int{}
+	remaining := MaxTotalEVs
+	for i := 0; i < 6 && remaining > 0; i++ {
+		max := remaining
+		if max > MaxSingleEV {
+			max = MaxSingleEV
+		}
+		if i == 5 {
+			stats[i] = remaining
+			if stats[i] > MaxSingleEV {
+				stats[i] = MaxSingleEV
+			}
+			break
+		}
+		stats[i] = rng(max + 1)
+		remaining -= stats[i]
+	}
+	return Stats{
+		HP: stats[0], Attack: stats[1], Defense: stats[2],
+		SpAttack: stats[3], SpDefense: stats[4], Speed: stats[5],
+	}
+}
+
+// pickRandomUnique selects up to n unique items from a slice.
+func pickRandomUnique(items []string, n int, rng func(int) int) []string {
+	if len(items) == 0 {
+		return nil
+	}
+	if n > len(items) {
+		n = len(items)
+	}
+	// Fisher-Yates partial shuffle
+	pool := make([]string, len(items))
+	copy(pool, items)
+	for i := 0; i < n; i++ {
+		j := i + rng(len(pool)-i)
+		pool[i], pool[j] = pool[j], pool[i]
+	}
+	return pool[:n]
+}
+
+// FillTeamRandom fills empty slots (up to 6) with random Pokemon members.
+func FillTeamRandom(team Team, availablePokemon []Pokemon, rng func(int) int) Team {
+	slotsNeeded := MaxTeamMembers - len(team.Members)
+	if slotsNeeded <= 0 || len(availablePokemon) == 0 {
+		return team
+	}
+
+	// Collect existing pokemon names to avoid duplicates
+	existing := make(map[string]bool)
+	for _, m := range team.Members {
+		existing[m.PokemonName] = true
+	}
+
+	// Filter out already-used pokemon
+	var candidates []Pokemon
+	for _, p := range availablePokemon {
+		if !existing[p.Name] {
+			candidates = append(candidates, p)
+		}
+	}
+
+	if len(candidates) == 0 {
+		return team
+	}
+
+	// Shuffle candidates and pick up to slotsNeeded
+	for i := range candidates {
+		j := i + rng(len(candidates)-i)
+		candidates[i], candidates[j] = candidates[j], candidates[i]
+	}
+	if slotsNeeded > len(candidates) {
+		slotsNeeded = len(candidates)
+	}
+
+	newMembers := make([]TeamMember, len(team.Members), len(team.Members)+slotsNeeded)
+	copy(newMembers, team.Members)
+	for i := 0; i < slotsNeeded; i++ {
+		newMembers = append(newMembers, GenerateRandomTeamMember(candidates[i], rng))
+	}
+
+	return Team{Name: team.Name, Members: newMembers}
+}

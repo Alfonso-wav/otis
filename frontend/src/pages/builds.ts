@@ -15,6 +15,7 @@ import {
   DeleteTeam,
   DeleteTeamMember,
   CreateTeam,
+  FillTeamRandom,
 } from "../../wailsjs/go/app/App";
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
@@ -983,6 +984,7 @@ function renderTeamsSection(): string {
         </div>
         <div class="team-members-list">${membersHTML}</div>
         ${addMemberHTML}
+        ${canAdd ? `<button class="team-random-fill-btn" data-team="${team.name}">Rellenar aleatorio</button>` : ""}
       </div>`;
   }).join("");
 
@@ -1018,6 +1020,20 @@ function bindTeamEvents(): void {
 
   container.querySelectorAll<HTMLButtonElement>(".team-delete-btn").forEach((btn) => {
     btn.addEventListener("click", () => handleDeleteTeam(btn.dataset.team!));
+  });
+
+  container.querySelectorAll<HTMLButtonElement>(".team-random-fill-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const teamName = btn.dataset.team!;
+      try {
+        await FillTeamRandom(teamName);
+        cachedTeams = await ListTeams();
+        teamsDetailsOpen = true;
+        buildLayout();
+      } catch (e: unknown) {
+        alert(`Error al rellenar equipo: ${e}`);
+      }
+    });
   });
 
   container.querySelectorAll<HTMLButtonElement>(".team-member-delete-btn").forEach((btn) => {
