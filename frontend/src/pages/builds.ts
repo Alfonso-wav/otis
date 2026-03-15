@@ -9,6 +9,7 @@ import {
   InitBattle,
   ExecuteTurn,
   SimulateFullBattle,
+  SimulateMultipleBattles,
   SaveToTeam,
   ListTeams,
   DeleteTeam,
@@ -60,6 +61,8 @@ interface BattleUIState {
 }
 
 let battleUI: BattleUIState = { battleState: null, phase: "idle" };
+let batchReport: core.BattleReport | null = null;
+let batchRunning = false;
 
 let state: BuildState = {
   attacker: null,
@@ -409,6 +412,15 @@ function renderBattleSection(): string {
           <button class="battle-start-btn" id="battle-start-btn">Iniciar batalla turno a turno</button>
           ${canAutoSimulate ? `<button class="battle-auto-btn" id="battle-auto-btn">Simular batalla completa</button>` : ""}
         </div>
+        ${canAutoSimulate ? `
+        <div class="battle-batch-row">
+          <label class="battle-batch-label">Simulaciones masivas:</label>
+          <input type="number" id="batch-n-input" class="battle-batch-input" min="1" max="10000" value="100" />
+          <button class="battle-batch-btn" id="batch-btn" ${batchRunning ? "disabled" : ""}>
+            ${batchRunning ? "Simulando..." : "Simular N batallas"}
+          </button>
+        </div>` : ""}
+        ${renderBatchReport()}
       </div>`;
   }
 
@@ -588,6 +600,108 @@ async function simulateFullBattle(): Promise<void> {
   renderBattleInPlace();
 }
 
+async function simulateBatchBattles(): Promise<void> {
+  if (!state.attacker || !state.defender) return;
+
+  const atkMoves = state.slots.filter((s) => s.move !== null).map((s) => s.move!);
+  const defMoves = state.defenderSlots.filter((s) => s.move !== null).map((s) => s.move!);
+  if (atkMoves.length === 0 || defMoves.length === 0) return;
+
+  const nInput = container.querySelector<HTMLInputElement>("#batch-n-input");
+  const n = nInput ? parseInt(nInput.value) : 100;
+  if (isNaN(n) || n < 1 || n > 10000) {
+    alert("El número de simulaciones debe estar entre 1 y 10000.");
+    return;
+  }
+
+  const attackerStats = state.attackerStats ?? statsFromPokemon(state.attacker);
+  const defenderStats = state.defenderStats ?? statsFromPokemon(state.defender);
+
+  batchRunning = true;
+  renderBattleInPlace();
+
+  try {
+    batchReport = await SimulateMultipleBattles({
+      attackerStats,
+      defenderStats,
+      attackerTypes: state.attacker.Types,
+      defenderTypes: state.defender.Types,
+      attackerLevel: state.attackerLevel,
+      defenderLevel: state.defenderLevel,
+      attackerMoves: atkMoves,
+      defenderMoves: defMoves,
+      attackerName: state.attacker.Name,
+      defenderName: state.defender.Name,
+    } as core.FullBattleInput, n);
+  } catch (err) {
+    alert("Error al simular: " + err);
+  } finally {
+    batchRunning = false;
+    renderBattleInPlace();
+  }
+}
+
+function renderBatchReport(): string {
+  if (!batchReport || batchReport.totalSimulations === 0) return "";
+  const r = batchReport;
+  const atkName = state.attacker?.Name ?? "Atacante";
+  const defName = state.defender?.Name ?? "Defensor";
+
+  const atkPct = r.attackerWinPct.toFixed(1);
+  const defPct = r.defenderWinPct.toFixed(1);
+  const drawPct = r.drawPct.toFixed(1);
+
+  return `
+    <div class="battle-report" id="battle-report">
+      <h4 class="battle-report-title">Resultados de ${r.totalSimulations} simulaciones</h4>
+      <div class="report-win-bar">
+        <div class="report-win-bar-segment report-win-bar--atk" style="width:${atkPct}%" title="${atkName}: ${atkPct}%"></div>
+        <div class="report-win-bar-segment report-win-bar--draw" style="width:${drawPct}%" title="Empate: ${drawPct}%"></div>
+        <div class="report-win-bar-segment report-win-bar--def" style="width:${defPct}%" title="${defName}: ${defPct}%"></div>
+      </div>
+      <div class="report-win-bar-labels">
+        <span class="report-win-label report-win-label--atk">${atkName} ${atkPct}%</span>
+        ${parseFloat(drawPct) > 0 ? `<span class="report-win-label report-win-label--draw">Empate ${drawPct}%</span>` : ""}
+        <span class="report-win-label report-win-label--def">${defName} ${defPct}%</span>
+      </div>
+      <div class="report-stat-cards">
+        <div class="report-stat-card">
+          <div class="report-stat-card-value">${r.attackerWins}</div>
+          <div class="report-stat-card-label">${atkName}</div>
+        </div>
+        <div class="report-stat-card">
+          <div class="report-stat-card-value">${r.defenderWins}</div>
+          <div class="report-stat-card-label">${defName}</div>
+        </div>
+        <div class="report-stat-card">
+          <div class="report-stat-card-value">${r.draws}</div>
+          <div class="report-stat-card-label">Empates</div>
+        </div>
+      </div>
+      <div class="report-stat-cards">
+        <div class="report-stat-card">
+          <div class="report-stat-card-value">${r.avgTurns.toFixed(1)}</div>
+          <div class="report-stat-card-label">Media turnos</div>
+        </div>
+        <div class="report-stat-card">
+          <div class="report-stat-card-value">${r.medianTurns}</div>
+          <div class="report-stat-card-label">Mediana turnos</div>
+        </div>
+        <div class="report-stat-card">
+          <div class="report-stat-card-value">${r.minTurns} — ${r.maxTurns}</div>
+          <div class="report-stat-card-label">Min — Max turnos</div>
+        </div>
+      </div>
+      ${r.avgWinnerHP > 0 ? `
+      <div class="report-stat-cards">
+        <div class="report-stat-card">
+          <div class="report-stat-card-value">${r.avgWinnerHP.toFixed(1)}</div>
+          <div class="report-stat-card-label">HP media del ganador</div>
+        </div>
+      </div>` : ""}
+    </div>`;
+}
+
 function renderBattleInPlace(): void {
   const existing = container.querySelector<HTMLElement>("#battle-section");
   if (!existing) {
@@ -602,6 +716,7 @@ function bindBattleEvents(): void {
   container.querySelector<HTMLButtonElement>("#battle-start-btn")?.addEventListener("click", () => startBattle());
   container.querySelector<HTMLButtonElement>("#battle-reset-btn")?.addEventListener("click", () => startBattle());
   container.querySelector<HTMLButtonElement>("#battle-auto-btn")?.addEventListener("click", () => simulateFullBattle());
+  container.querySelector<HTMLButtonElement>("#batch-btn")?.addEventListener("click", () => simulateBatchBattles());
   container.querySelectorAll<HTMLButtonElement>(".move-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const idx = parseInt(btn.dataset.slot ?? "0");

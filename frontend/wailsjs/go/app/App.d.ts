@@ -103,3 +103,5 @@ export function ScrapePokedex():Promise<Array<core.PokedexDBEntry>>;
 export function SimulateDamage(arg1:core.DamageInput):Promise<core.DamageResult>;
 
 export function SimulateFullBattle(arg1:core.FullBattleInput):Promise<core.BattleState>;
+
+export function SimulateMultipleBattles(arg1:core.FullBattleInput,arg2:number):Promise<core.BattleReport>;

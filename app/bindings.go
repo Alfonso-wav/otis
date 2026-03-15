@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"math/rand"
 
 	"github.com/alfon/pokemon-app/core"
@@ -211,6 +212,16 @@ func (a *App) SimulateFullBattle(input core.FullBattleInput) core.BattleState {
 	return core.SimulateFullBattle(input, func(n int) int {
 		return rand.Intn(n)
 	})
+}
+
+// SimulateMultipleBattles runs N full battle simulations and returns aggregated statistics.
+func (a *App) SimulateMultipleBattles(input core.FullBattleInput, n int) (core.BattleReport, error) {
+	if n < 1 || n > 10000 {
+		return core.BattleReport{}, fmt.Errorf("n must be between 1 and 10000, got %d", n)
+	}
+	return core.SimulateMultipleBattles(input, n, func(v int) int {
+		return rand.Intn(v)
+	}), nil
 }
 
 // --- Grupo A: Pokémon extendido ---
