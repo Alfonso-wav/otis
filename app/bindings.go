@@ -362,6 +362,42 @@ func (a *App) DownloadSprites(categories []core.SpriteCategory) (core.SpriteDown
 
 // --- Teams ---
 
+// FillTeamRandom fills empty slots of a team with random Pokemon.
+func (a *App) FillTeamRandom(teamName string) (core.Team, error) {
+	team, err := a.teams.GetTeam(teamName)
+	if err != nil {
+		return core.Team{}, err
+	}
+	if len(team.Members) >= core.MaxTeamMembers {
+		return team, nil
+	}
+
+	slotsNeeded := core.MaxTeamMembers - len(team.Members)
+	list, err := a.fetcher.FetchPokemonList(0, 151)
+	if err != nil {
+		return core.Team{}, err
+	}
+
+	var pokemon []core.Pokemon
+	for _, item := range list.Results {
+		if len(pokemon) >= slotsNeeded+len(team.Members) {
+			break
+		}
+		p, ferr := a.fetcher.FetchPokemon(item.Name)
+		if ferr == nil {
+			pokemon = append(pokemon, p)
+		}
+	}
+
+	filled := core.FillTeamRandom(team, pokemon, func(n int) int {
+		return rand.Intn(n)
+	})
+	if err := a.teams.SaveTeam(filled); err != nil {
+		return core.Team{}, err
+	}
+	return filled, nil
+}
+
 // CreateTeam creates a new empty team with the given name.
 func (a *App) CreateTeam(name string) error {
 	team := core.Team{Name: name, Members: []core.TeamMember{}}
