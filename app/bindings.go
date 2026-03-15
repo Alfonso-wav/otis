@@ -450,7 +450,6 @@ func (a *App) FillTeamRandom(teamName string) (core.Team, error) {
 		return team, nil
 	}
 
-	slotsNeeded := core.MaxTeamMembers - len(team.Members)
 	list, err := a.fetcher.FetchPokemonList(0, 151)
 	if err != nil {
 		return core.Team{}, err
@@ -458,9 +457,6 @@ func (a *App) FillTeamRandom(teamName string) (core.Team, error) {
 
 	var pokemon []core.Pokemon
 	for _, item := range list.Results {
-		if len(pokemon) >= slotsNeeded+len(team.Members) {
-			break
-		}
 		p, ferr := a.fetcher.FetchPokemon(item.Name)
 		if ferr == nil {
 			pokemon = append(pokemon, p)

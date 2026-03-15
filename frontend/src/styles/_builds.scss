@@ -1512,6 +1512,12 @@
   margin-top: 1.5rem;
 }
 
+.tb-sprite {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+}
+
 .tb-selectors {
   display: flex;
   align-items: center;

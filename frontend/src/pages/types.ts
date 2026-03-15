@@ -13,18 +13,17 @@ const GAME_TYPES = new Set([
 let container: HTMLElement;
 let initialized = false;
 
-function idFromURL(url: string): string {
-  const parts = url.replace(/\/$/, "").split("/");
-  return parts[parts.length - 1];
-}
-
 function spriteURL(name: string): string {
   const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
-  return `/assets/sprites/home-normal/${safeName}.png`;
+  return `https://img.pokemondb.net/sprites/black-white/normal/${safeName}.png`;
 }
 
-function spriteFallbackById(id: string): string {
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+function spriteOnerror(name: string): string {
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  const fb1 = `https://img.pokemondb.net/sprites/x-y/normal/${safeName}.png`;
+  const fb2 = `https://img.pokemondb.net/sprites/home/normal/1x/${safeName}.png`;
+  const fb3 = `/assets/sprites/home-normal/${safeName}.png`;
+  return `var f=parseInt(this.dataset.fallback||'0');if(f===0){this.dataset.fallback='1';this.src='${fb1}'}else if(f===1){this.dataset.fallback='2';this.src='${fb2}'}else if(f===2){this.dataset.fallback='3';this.src='${fb3}'}else{this.onerror=null;this.style.visibility='hidden'}`;
 }
 
 function typeHeaderClass(typeName: string): string {
@@ -107,9 +106,8 @@ async function toggleType(card: HTMLDivElement): Promise<void> {
 
     const pokemonHTML = entries
       .map((p) => {
-        const id = idFromURL(p.URL);
         return `<div class="type-pokemon-item" data-name="${p.Name}">
-          <img src="${spriteURL(p.Name)}" onerror="this.onerror=null;this.src='${spriteFallbackById(id)}'" alt="${p.Name}" loading="lazy" />
+          <img src="${spriteURL(p.Name)}" data-fallback="0" onerror="${spriteOnerror(p.Name)}" alt="${p.Name}" loading="lazy" />
           <span>${p.Name}</span>
         </div>`;
       })

@@ -1,6 +1,7 @@
 import gsap from "gsap";
 import { GetAllAbilities } from "../../../wailsjs/go/app/App";
 import type { core } from "../../../wailsjs/go/models";
+import { openAbilityPokemonModal } from "../../components/ability-pokemon-modal";
 
 type SortColumn = "name" | "description" | "pokemon" | null;
 type SortDirection = "asc" | "desc" | null;
@@ -58,11 +59,15 @@ function renderTable(container: HTMLElement): void {
 
   tbody.innerHTML = abilities.map((a) => {
     const desc = a.Description ? a.Description.replace(/\n/g, " ") : "—";
-    const count = (a.Pokemon ?? []).length;
+    const pokemonList = a.Pokemon ?? [];
+    const count = pokemonList.length;
+    const countHtml = count > 0
+      ? `<span class="ability-pokemon-count" data-ability="${a.Name}">${count}</span>`
+      : `${count}`;
     return `<tr>
     <td class="ability-name-cell">${a.Name.replace(/-/g, " ")}</td>
     <td class="ability-desc-cell">${desc}</td>
-    <td class="num-cell">${count}</td>
+    <td class="num-cell">${countHtml}</td>
   </tr>`;
   }).join("");
 
@@ -130,6 +135,18 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
       updateSortIndicators(container);
       renderTable(container);
     });
+  });
+
+  // Delegated click on pokemon count
+  const tableWrap = container.querySelector<HTMLElement>(".abilities-table-wrap")!;
+  tableWrap.addEventListener("click", (e) => {
+    const target = (e.target as HTMLElement).closest<HTMLElement>(".ability-pokemon-count");
+    if (!target) return;
+    const abilityName = target.dataset.ability;
+    if (!abilityName) return;
+    const ability = state.allAbilities.find((a) => a.Name === abilityName);
+    if (!ability || (ability.Pokemon ?? []).length === 0) return;
+    openAbilityPokemonModal(abilityName, ability.Pokemon);
   });
 
   // Load all abilities

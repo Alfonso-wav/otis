@@ -284,12 +284,11 @@ function renderGrid(items: PokemonListItem[]): void {
     .map((item) => {
       const id = idFromURL(item.URL);
       const sprite = spriteURL(item.Name);
-      const fallback = spriteFallbackById(id);
       const numId = parseInt(id, 10);
       const paddedId = isNaN(numId) ? "" : `#${String(numId).padStart(3, "0")}`;
       return `<div class="poke-card" data-name="${item.Name}">
         <span class="poke-card__number">${paddedId}</span>
-        <img class="poke-card__sprite" src="${sprite}" onerror="this.onerror=null;this.src='${fallback}'" alt="${item.Name}" loading="lazy" />
+        <img class="poke-card__sprite" src="${sprite}" data-fallback="0" onerror="${spriteOnerror(item.Name)}" alt="${item.Name}" loading="lazy" />
         <div class="poke-card__name">${item.Name}</div>
       </div>`;
     })
@@ -685,13 +684,15 @@ function idFromURL(url: string): string {
 
 function spriteURL(name: string): string {
   const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
-  return `/assets/sprites/home-normal/${safeName}.png`;
+  return `https://img.pokemondb.net/sprites/black-white/normal/${safeName}.png`;
 }
 
-function spriteFallbackById(id: string): string {
-  const numId = parseInt(id, 10);
-  if (isNaN(numId)) return "";
-  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${numId}.png`;
+function spriteOnerror(name: string): string {
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  const fb1 = `https://img.pokemondb.net/sprites/x-y/normal/${safeName}.png`;
+  const fb2 = `https://img.pokemondb.net/sprites/home/normal/1x/${safeName}.png`;
+  const fb3 = `/assets/sprites/home-normal/${safeName}.png`;
+  return `var f=parseInt(this.dataset.fallback||'0');if(f===0){this.dataset.fallback='1';this.src='${fb1}'}else if(f===1){this.dataset.fallback='2';this.src='${fb2}'}else if(f===2){this.dataset.fallback='3';this.src='${fb3}'}else{this.onerror=null;this.style.visibility='hidden'}`;
 }
 
 // -- Current page items helper -----------------------------------------------
