@@ -175,10 +175,13 @@
   border-radius: $border-radius;
   font-family: $font-body;
   font-size: 0.82rem;
+  color: #2d3748;
+  background: white;
   outline: none;
   cursor: pointer;
   transition: border-color 0.15s;
 
+  &:hover { border-color: #cbd5e0; }
   &:focus { border-color: $pokedex-red; }
 }
 
@@ -304,9 +307,13 @@
   border-radius: $border-radius;
   font-family: $font-body;
   font-size: 0.8rem;
+  color: #2d3748;
+  background: white;
   cursor: pointer;
   outline: none;
+  transition: border-color 0.15s;
 
+  &:hover { border-color: #cbd5e0; }
   &:focus { border-color: $pokedex-red; }
 }
 
@@ -1447,4 +1454,64 @@
   transition: background 0.15s;
 
   &:hover { background: #f7fafc; }
+}
+
+// ─── Team Battle Selects ────────────────────────────────────────────────────
+
+.team-battle-section {
+  margin-top: 1.5rem;
+}
+
+.tb-selectors {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding: 0 1.25rem;
+}
+
+.tb-vs-label {
+  font-family: $font-display;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  color: #718096;
+}
+
+.team-battle-select {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.4rem 0.6rem;
+  border: 2px solid #e2e8f0;
+  border-radius: $border-radius;
+  font-family: $font-body;
+  font-size: 0.85rem;
+  color: #2d3748;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:hover { border-color: #cbd5e0; }
+  &:focus {
+    border-color: $pokedex-red;
+    box-shadow: 0 0 0 3px rgba($pokedex-red, 0.12);
+  }
+}
+
+@include mobile {
+  .tb-selectors {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 0.9rem;
+  }
+
+  .team-battle-select {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .tb-vs-label {
+    text-align: center;
+  }
 }
