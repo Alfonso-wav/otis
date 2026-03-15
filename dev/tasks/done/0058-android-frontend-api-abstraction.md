@@ -1,7 +1,7 @@
 # Abstraer llamadas frontend: IPC Wails → fetch HTTP
 
 **ID**: 0058-android-frontend-api-abstraction
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-15
 
 ---
@@ -48,11 +48,11 @@ Todas las páginas del frontend (`pokedex.ts`, `builds.ts`, `explore.ts`, etc.) 
 
 ## Criterios de aceptacion
 
-- [ ] Todas las llamadas al backend pasan por `api.ts`
-- [ ] En entorno Wails, usa IPC como antes
-- [ ] En entorno HTTP (Android), usa fetch a localhost
-- [ ] No hay imports directos de `wailsjs/` fuera de `api.ts`
-- [ ] La app desktop funciona sin regresiones
+- [x] Todas las llamadas al backend pasan por `api.ts`
+- [x] En entorno Wails, usa IPC como antes
+- [x] En entorno HTTP (Android), usa fetch a localhost
+- [x] No hay imports directos de `wailsjs/` fuera de `api.ts`
+- [x] La app desktop funciona sin regresiones
 
 ## Notas
 

@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { GetAllAbilities } from "../../../wailsjs/go/app/App";
+import { GetAllAbilities } from "../../api";
 import type { core } from "../../../wailsjs/go/models";
 import { openAbilityPokemonModal } from "../../components/ability-pokemon-modal";
 

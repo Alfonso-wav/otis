@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { ListTypes, GetType } from "../../wailsjs/go/app/App";
+import { ListTypes, GetType } from "../api";
 import type { PokemonListItem } from "../types";
 
 const POKEMON_DISPLAY_LIMIT = 50;

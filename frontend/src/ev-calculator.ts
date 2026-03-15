@@ -1,4 +1,4 @@
-import { CalculateEVs, GetNatures } from "../wailsjs/go/app/App";
+import { CalculateEVs, GetNatures } from "./api";
 import { core } from "../wailsjs/go/models";
 import type { Pokemon } from "./types";
 
