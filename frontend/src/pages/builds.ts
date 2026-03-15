@@ -84,6 +84,9 @@ let natures: core.Nature[] = [];
 let pokemonNames: string[] = [];
 let container: HTMLElement;
 let cachedTeams: core.Team[] = [];
+let teamsDetailsOpen = false;
+let saveModalPrefix: "atk" | "def" | null = null;
+let addMemberTeamName: string | null = null;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -626,20 +629,118 @@ function buildTeamMember(prefix: "atk" | "def"): core.TeamMember | null {
   } as core.TeamMember;
 }
 
-async function saveToTeam(prefix: "atk" | "def"): Promise<void> {
-  const member = buildTeamMember(prefix);
-  if (!member) return;
+function openSaveModal(prefix: "atk" | "def"): void {
+  saveModalPrefix = prefix;
+  buildLayout();
+}
 
-  const teamName = prompt("Nombre del equipo:");
-  if (!teamName || !teamName.trim()) return;
+function closeSaveModal(): void {
+  saveModalPrefix = null;
+  buildLayout();
+}
+
+async function saveToTeamByName(teamName: string): Promise<void> {
+  if (!saveModalPrefix) return;
+  const member = buildTeamMember(saveModalPrefix);
+  if (!member) return;
 
   try {
     await SaveToTeam(teamName.trim(), member);
-    alert(`${member.pokemonName} guardado en "${teamName.trim()}"`);
+    saveModalPrefix = null;
+    teamsDetailsOpen = true;
     cachedTeams = await ListTeams();
     buildLayout();
   } catch (err: unknown) {
     alert(`Error al guardar: ${String(err)}`);
+  }
+}
+
+function renderSaveModal(): string {
+  if (!saveModalPrefix) return "";
+
+  const pokemon = saveModalPrefix === "atk" ? state.attacker : state.defender;
+  if (!pokemon) return "";
+
+  const availableTeams = cachedTeams.filter((t) => t.members.length < 6);
+  const teamOptions = availableTeams
+    .map(
+      (t) =>
+        `<button class="save-modal-team-btn" data-team="${t.name}">${t.name} (${t.members.length}/6)</button>`,
+    )
+    .join("");
+
+  return `
+    <div class="save-modal-overlay" id="save-modal-overlay">
+      <div class="save-modal">
+        <div class="save-modal-header">
+          <span>Guardar ${pokemon.Name} en equipo</span>
+          <button class="save-modal-close" id="save-modal-close">✕</button>
+        </div>
+        ${teamOptions ? `<div class="save-modal-teams">${teamOptions}</div>` : ""}
+        <div class="save-modal-new">
+          <input id="save-modal-new-name" class="save-modal-input" type="text" placeholder="Nombre del nuevo equipo..." />
+          <button class="save-modal-create-btn" id="save-modal-create-btn">Crear equipo</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function bindSaveModalEvents(): void {
+  container.querySelector("#save-modal-close")?.addEventListener("click", closeSaveModal);
+  container.querySelector("#save-modal-overlay")?.addEventListener("click", (e) => {
+    if ((e.target as HTMLElement).id === "save-modal-overlay") closeSaveModal();
+  });
+
+  container.querySelectorAll<HTMLButtonElement>(".save-modal-team-btn").forEach((btn) => {
+    btn.addEventListener("click", () => saveToTeamByName(btn.dataset.team!));
+  });
+
+  const newNameInput = container.querySelector<HTMLInputElement>("#save-modal-new-name");
+  const createBtn = container.querySelector<HTMLButtonElement>("#save-modal-create-btn");
+  createBtn?.addEventListener("click", () => {
+    const name = newNameInput?.value?.trim();
+    if (name) saveToTeamByName(name);
+  });
+  newNameInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const name = newNameInput.value.trim();
+      if (name) saveToTeamByName(name);
+    }
+    if (e.key === "Escape") closeSaveModal();
+  });
+}
+
+async function addMemberFromSearch(teamName: string, pokemonName: string): Promise<void> {
+  try {
+    const member = {
+      pokemonName,
+      moves: [] as string[],
+      level: 50,
+      nature: "Hardy",
+      ivs: defaultIVs(),
+      evs: defaultStats(),
+    } as unknown as core.TeamMember;
+    await SaveToTeam(teamName, member);
+    addMemberTeamName = null;
+    teamsDetailsOpen = true;
+    cachedTeams = await ListTeams();
+    buildLayout();
+  } catch (err: unknown) {
+    alert(`Error al añadir miembro: ${String(err)}`);
+  }
+}
+
+async function addCurrentBuildToTeam(teamName: string, prefix: "atk" | "def"): Promise<void> {
+  const member = buildTeamMember(prefix);
+  if (!member) return;
+  try {
+    await SaveToTeam(teamName, member);
+    addMemberTeamName = null;
+    teamsDetailsOpen = true;
+    cachedTeams = await ListTeams();
+    buildLayout();
+  } catch (err: unknown) {
+    alert(`Error al añadir miembro: ${String(err)}`);
   }
 }
 
@@ -694,6 +795,7 @@ async function handleDeleteTeam(name: string): Promise<void> {
   if (!confirm(`Eliminar equipo "${name}"?`)) return;
   try {
     await DeleteTeam(name);
+    teamsDetailsOpen = true;
     cachedTeams = await ListTeams();
     buildLayout();
   } catch (err: unknown) {
@@ -705,6 +807,7 @@ async function handleDeleteTeamMember(teamName: string, index: number): Promise<
   if (!confirm("Eliminar este miembro del equipo?")) return;
   try {
     await DeleteTeamMember(teamName, index);
+    teamsDetailsOpen = true;
     cachedTeams = await ListTeams();
     buildLayout();
   } catch (err: unknown) {
@@ -729,6 +832,22 @@ function renderTeamsSection(): string {
         </div>`)
       .join("");
 
+    const canAdd = team.members.length < 6;
+    const isAddingToThis = addMemberTeamName === team.name;
+
+    const addMemberHTML = canAdd
+      ? isAddingToThis
+        ? `<div class="team-add-member-panel">
+            <div class="team-add-search-row">
+              <input class="team-add-search-input build-search-input" data-team="${team.name}" type="text" placeholder="Buscar Pokémon..." />
+            </div>
+            ${state.attacker ? `<button class="team-add-from-build-btn" data-team="${team.name}" data-prefix="atk">Añadir ${state.attacker.Name} (atacante actual)</button>` : ""}
+            ${state.defender ? `<button class="team-add-from-build-btn" data-team="${team.name}" data-prefix="def">Añadir ${state.defender.Name} (defensor actual)</button>` : ""}
+            <button class="team-add-cancel-btn" data-team="${team.name}">Cancelar</button>
+          </div>`
+        : `<button class="team-add-member-btn" data-team="${team.name}">+ Añadir Pokémon</button>`
+      : "";
+
     return `
       <div class="team-card">
         <div class="team-card-header">
@@ -736,12 +855,13 @@ function renderTeamsSection(): string {
           <button class="team-delete-btn" data-team="${team.name}">Eliminar equipo</button>
         </div>
         <div class="team-members-list">${membersHTML}</div>
+        ${addMemberHTML}
       </div>`;
   }).join("");
 
   return `
     <div class="teams-section">
-      <details class="teams-details">
+      <details class="teams-details" ${teamsDetailsOpen ? "open" : ""}>
         <summary class="build-section-title teams-summary">Mis equipos (${cachedTeams.length})</summary>
         <div class="teams-list">${teamsHTML}</div>
       </details>
@@ -752,7 +872,7 @@ function bindTeamEvents(): void {
   container.querySelectorAll<HTMLButtonElement>(".team-save-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       const prefix = btn.dataset.prefix as "atk" | "def";
-      saveToTeam(prefix);
+      openSaveModal(prefix);
     });
   });
 
@@ -776,6 +896,47 @@ function bindTeamEvents(): void {
     btn.addEventListener("click", () => {
       handleDeleteTeamMember(btn.dataset.team!, parseInt(btn.dataset.idx!));
     });
+  });
+
+  // Add member buttons
+  container.querySelectorAll<HTMLButtonElement>(".team-add-member-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      addMemberTeamName = btn.dataset.team!;
+      teamsDetailsOpen = true;
+      buildLayout();
+    });
+  });
+
+  container.querySelectorAll<HTMLButtonElement>(".team-add-cancel-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      addMemberTeamName = null;
+      teamsDetailsOpen = true;
+      buildLayout();
+    });
+  });
+
+  container.querySelectorAll<HTMLButtonElement>(".team-add-from-build-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const teamName = btn.dataset.team!;
+      const prefix = btn.dataset.prefix as "atk" | "def";
+      addCurrentBuildToTeam(teamName, prefix);
+    });
+  });
+
+  // Autocomplete for add member search inputs
+  container.querySelectorAll<HTMLInputElement>(".team-add-search-input").forEach((input) => {
+    const teamName = input.dataset.team!;
+    if (pokemonNames.length > 0) {
+      createAutocomplete(input, pokemonNames, (name) => {
+        addMemberFromSearch(teamName, name);
+      });
+    }
+  });
+
+  // Track details open/close state
+  const details = container.querySelector<HTMLDetailsElement>(".teams-details");
+  details?.addEventListener("toggle", () => {
+    teamsDetailsOpen = details.open;
   });
 }
 
@@ -821,9 +982,12 @@ function buildLayout(): void {
   const dmgSection = renderDamageSection();
   const btlSection = renderBattleSection();
   const teamsSection = renderTeamsSection();
+  const saveModal = renderSaveModal();
 
   container.innerHTML = `
     <div class="section-header"><h2>Builds & Simulador</h2></div>
+
+    ${teamsSection}
 
     <div class="build-layout">
       <div class="build-col build-col--attacker">
@@ -853,12 +1017,13 @@ function buildLayout(): void {
     ${defenderMovesSection}
     ${dmgSection}
     ${btlSection}
-    ${teamsSection}
+    ${saveModal}
   `;
 
   bindEvents();
   bindBattleEvents();
   bindTeamEvents();
+  bindSaveModalEvents();
 
   if (dmgSection) {
     loadDamageTable();
