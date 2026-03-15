@@ -1,7 +1,7 @@
 # Orden aleatorio inicial y cambio inteligente por debilidades de tipo
 
 **ID**: 0049-team-battle-smart-switching
-**Estado**: todo
+**Estado**: done
 **Fecha**: 2026-03-15
 
 ---
@@ -42,11 +42,11 @@ Actualmente la batalla por equipos usa orden secuencial fijo (idx1=0, idx2=0 e i
 
 ## Criterios de aceptacion
 
-- [ ] El orden de inicio de los miembros es aleatorio en cada batalla
-- [ ] Al caer un Pokémon, se envía al que tiene mejor ventaja de tipo contra el oponente actual
-- [ ] Si no hay ventaja clara, se elige cualquiera de los disponibles
-- [ ] Los tests verifican la selección inteligente con tipos conocidos
-- [ ] La función `ChooseBestMember` es pura (sin efectos secundarios)
+- [x] El orden de inicio de los miembros es aleatorio en cada batalla
+- [x] Al caer un Pokémon, se envía al que tiene mejor ventaja de tipo contra el oponente actual
+- [x] Si no hay ventaja clara, se elige cualquiera de los disponibles
+- [x] Los tests verifican la selección inteligente con tipos conocidos
+- [x] La función `ChooseBestMember` es pura (sin efectos secundarios)
 
 ## Notas
 

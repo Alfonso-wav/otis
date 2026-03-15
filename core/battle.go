@@ -323,22 +323,66 @@ type BattleReport struct {
 	AvgWinnerHP      float64 `json:"avgWinnerHP"`
 }
 
+// ChooseBestMember selects the member from available with the best type advantage
+// against opponentTypes. Returns the index into the available slice.
+// Advantage is calculated by finding the max effectiveness of any move the member
+// has against the opponent's types. If no clear advantage, returns 0.
+func ChooseBestMember(available []TeamBattleMember, opponentTypes []PokemonType) int {
+	if len(available) <= 1 {
+		return 0
+	}
+	bestIdx := 0
+	bestScore := -1.0
+	for i, m := range available {
+		score := 0.0
+		for _, mv := range m.Moves {
+			if mv.Power <= 0 {
+				continue
+			}
+			eff := TypeEffectiveness(mv.Type, opponentTypes)
+			if eff > score {
+				score = eff
+			}
+		}
+		if score > bestScore {
+			bestScore = score
+			bestIdx = i
+		}
+	}
+	return bestIdx
+}
+
+// shuffleMembers returns a new shuffled copy of the members slice using randSource.
+func shuffleMembers(members []TeamBattleMember, randSource func(int) int) []TeamBattleMember {
+	shuffled := make([]TeamBattleMember, len(members))
+	copy(shuffled, members)
+	for i := len(shuffled) - 1; i > 0; i-- {
+		j := randSource(i + 1)
+		shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+	}
+	return shuffled
+}
+
 // SimulateTeamBattle simulates a full team-vs-team battle.
-// When one Pokemon faints, the next on that team enters. The winner's HP carries over.
+// Members are shuffled at the start. When one Pokemon faints, the replacement
+// is chosen by type advantage (smart switching). The winner's HP carries over.
 func SimulateTeamBattle(input TeamBattleInput, randSource func(int) int) TeamBattleState {
 	if len(input.Team1Members) == 0 || len(input.Team2Members) == 0 {
 		return TeamBattleState{IsOver: true, Winner: "draw"}
 	}
 
-	idx1, idx2 := 0, 0
+	// Shuffle initial order
+	avail1 := shuffleMembers(input.Team1Members, randSource)
+	avail2 := shuffleMembers(input.Team2Members, randSource)
+
 	carryHP1, carryHP2 := 0, 0 // 0 means use full HP
 	totalTurns := 0
 	var rounds []BattleState
 	var log []string
 
-	for idx1 < len(input.Team1Members) && idx2 < len(input.Team2Members) {
-		m1 := input.Team1Members[idx1]
-		m2 := input.Team2Members[idx2]
+	for len(avail1) > 0 && len(avail2) > 0 {
+		m1 := avail1[0]
+		m2 := avail2[0]
 
 		bi := FullBattleInput{
 			AttackerStats: m1.Stats,
@@ -377,24 +421,40 @@ func SimulateTeamBattle(input TeamBattleInput, randSource func(int) int) TeamBat
 				roundNum, m1.PokemonName, m2.PokemonName, result.AttackerHP))
 			carryHP1 = result.AttackerHP
 			carryHP2 = 0
-			idx2++
+			// Remove defeated member from team2
+			avail2 = avail2[1:]
+			// Smart switch: choose best counter for surviving opponent
+			if len(avail2) > 0 {
+				bestIdx := ChooseBestMember(avail2, m1.Types)
+				if bestIdx != 0 {
+					avail2[0], avail2[bestIdx] = avail2[bestIdx], avail2[0]
+				}
+			}
 		} else {
 			log = append(log, fmt.Sprintf("[Ronda %d] %s venció a %s (HP restante: %d)",
 				roundNum, m2.PokemonName, m1.PokemonName, result.DefenderHP))
 			carryHP2 = result.DefenderHP
 			carryHP1 = 0
-			idx1++
+			// Remove defeated member from team1
+			avail1 = avail1[1:]
+			// Smart switch: choose best counter for surviving opponent
+			if len(avail1) > 0 {
+				bestIdx := ChooseBestMember(avail1, m2.Types)
+				if bestIdx != 0 {
+					avail1[0], avail1[bestIdx] = avail1[bestIdx], avail1[0]
+				}
+			}
 		}
 	}
 
 	winner := "team1"
-	if idx1 >= len(input.Team1Members) {
+	if len(avail1) == 0 {
 		winner = "team2"
 	}
 
 	return TeamBattleState{
-		Team1Remaining: len(input.Team1Members) - idx1,
-		Team2Remaining: len(input.Team2Members) - idx2,
+		Team1Remaining: len(avail1),
+		Team2Remaining: len(avail2),
 		TotalTurns:     totalTurns,
 		Rounds:         rounds,
 		Log:            log,
