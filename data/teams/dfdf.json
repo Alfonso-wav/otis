@@ -1,0 +1,167 @@
+{
+  "name": "dfdf",
+  "members": [
+    {
+      "pokemonName": "weepinbell",
+      "moves": [
+        "stun-spore",
+        "sleep-talk",
+        "grass-knot",
+        "synthesis"
+      ],
+      "level": 50,
+      "nature": "Relaxed",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 88,
+        "attack": 146,
+        "defense": 90,
+        "spAttack": 154,
+        "spDefense": 22,
+        "speed": 10
+      }
+    },
+    {
+      "pokemonName": "marowak",
+      "moves": [
+        "scorching-sands",
+        "fling",
+        "tail-whip",
+        "fissure"
+      ],
+      "level": 50,
+      "nature": "Bold",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 224,
+        "attack": 121,
+        "defense": 136,
+        "spAttack": 8,
+        "spDefense": 6,
+        "speed": 15
+      }
+    },
+    {
+      "pokemonName": "jolteon",
+      "moves": [
+        "bite",
+        "hyper-beam",
+        "baby-doll-eyes",
+        "facade"
+      ],
+      "level": 50,
+      "nature": "Brave",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 242,
+        "attack": 252,
+        "defense": 7,
+        "spAttack": 4,
+        "spDefense": 2,
+        "speed": 3
+      }
+    },
+    {
+      "pokemonName": "golem",
+      "moves": [
+        "bide",
+        "iron-head",
+        "bulldoze",
+        "scary-face"
+      ],
+      "level": 50,
+      "nature": "Lax",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 184,
+        "attack": 180,
+        "defense": 21,
+        "spAttack": 13,
+        "spDefense": 68,
+        "speed": 44
+      }
+    },
+    {
+      "pokemonName": "arbok",
+      "moves": [
+        "toxic-spikes",
+        "double-team",
+        "confide",
+        "screech"
+      ],
+      "level": 50,
+      "nature": "Gentle",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 215,
+        "attack": 57,
+        "defense": 114,
+        "spAttack": 110,
+        "spDefense": 11,
+        "speed": 3
+      }
+    },
+    {
+      "pokemonName": "starmie",
+      "moves": [
+        "protect",
+        "mimic",
+        "recover",
+        "trick"
+      ],
+      "level": 50,
+      "nature": "Gentle",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 198,
+        "attack": 210,
+        "defense": 99,
+        "spAttack": 0,
+        "spDefense": 0,
+        "speed": 3
+      }
+    }
+  ]
+}
