@@ -10,10 +10,6 @@ export function CalculateStats(arg1) {
   return window['go']['app']['App']['CalculateStats'](arg1);
 }
 
-export function ComparePokemons(arg1, arg2) {
-  return window['go']['app']['App']['ComparePokemons'](arg1, arg2);
-}
-
 export function DeleteTeam(arg1) {
   return window['go']['app']['App']['DeleteTeam'](arg1);
 }

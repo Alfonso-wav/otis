@@ -961,66 +961,6 @@ export namespace core {
 		    return a;
 		}
 	}
-	export class StatComparison {
-	    Name: string;
-	    StatA: number;
-	    StatB: number;
-	    Diff: number;
-	    Winner: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new StatComparison(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Name = source["Name"];
-	        this.StatA = source["StatA"];
-	        this.StatB = source["StatB"];
-	        this.Diff = source["Diff"];
-	        this.Winner = source["Winner"];
-	    }
-	}
-	export class PokemonComparison {
-	    PokemonA: Pokemon;
-	    PokemonB: Pokemon;
-	    Stats: StatComparison[];
-	    TotalA: number;
-	    TotalB: number;
-	    Winner: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new PokemonComparison(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.PokemonA = this.convertValues(source["PokemonA"], Pokemon);
-	        this.PokemonB = this.convertValues(source["PokemonB"], Pokemon);
-	        this.Stats = this.convertValues(source["Stats"], StatComparison);
-	        this.TotalA = source["TotalA"];
-	        this.TotalB = source["TotalB"];
-	        this.Winner = source["Winner"];
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
 	
 	export class PokemonForm {
 	    Name: string;
@@ -1320,7 +1260,6 @@ export namespace core {
 		    return a;
 		}
 	}
-	
 	export class StatDetail {
 	    Name: string;
 	    IsBattleOnly: boolean;
