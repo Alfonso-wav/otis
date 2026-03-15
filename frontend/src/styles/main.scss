@@ -38,3 +38,6 @@
 
 // Builds view
 @import "builds";
+
+// Mobile optimizations (must be last for specificity)
+@import "mobile";

@@ -1,0 +1,177 @@
+@use "variables" as *;
+
+// ─── Mobile-specific optimizations ───────────────────────────────────────────
+// Ensures the app is usable on 360px+ screens with proper touch targets.
+
+// ─── Global touch target minimum ─────────────────────────────────────────────
+
+@include tablet {
+  // Ensure all interactive elements meet 48px touch target
+  button,
+  .btn,
+  select,
+  input[type="text"],
+  input[type="number"],
+  a {
+    min-height: 48px;
+  }
+}
+
+// ─── Bottom tab navigation for mobile ────────────────────────────────────────
+
+@media (max-width: $bp-tablet) {
+  // Move header tabs to fixed bottom bar
+  .tab-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    background: $pokedex-red;
+    padding: 0;
+    gap: 0;
+    display: flex;
+    justify-content: stretch;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 0.75rem 0.25rem;
+    font-size: 0.72rem;
+    border-radius: 0;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::after {
+      // Move indicator to top of bottom bar
+      bottom: auto;
+      top: 0;
+    }
+  }
+
+  // Add bottom padding to main content so it doesn't hide behind bottom nav
+  main.container-fluid {
+    padding-bottom: 4.5rem !important;
+  }
+
+  // Compact header on mobile
+  .pokedex-header {
+    position: sticky;
+    top: 0;
+    z-index: 800;
+  }
+
+  .header-brand {
+    padding: 0.5rem 0.75rem !important;
+
+    h1 {
+      font-size: 1.4rem;
+    }
+
+    #search-bar {
+      gap: 0.5rem;
+    }
+
+    #search-input {
+      max-width: none;
+      flex: 1;
+      min-height: 48px;
+      font-size: 1rem;
+    }
+
+    #search-btn {
+      min-height: 48px;
+      min-width: 48px;
+      padding: 0 0.75rem;
+    }
+  }
+
+  // Main content compact padding
+  main.container-fluid {
+    padding: 0.75rem !important;
+  }
+}
+
+// ─── Prevent horizontal overflow ─────────────────────────────────────────────
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+// ─── Reduce animations on mobile for performance ─────────────────────────────
+
+@media (max-width: $bp-tablet) {
+  // Reduce card hover animations
+  .poke-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  // Simpler transitions for page switches (GSAP handles these, but CSS fallback)
+  .tab-page {
+    will-change: auto; // Avoid promoting too many layers
+  }
+
+  // Ensure filter dropdowns don't go off-screen
+  .filter-dropdown__panel {
+    position: fixed;
+    top: auto;
+    bottom: 60px; // Above the bottom tab bar
+    left: 0.5rem;
+    right: 0.5rem;
+    max-height: 50vh;
+    z-index: 950;
+  }
+}
+
+// ─── Small phone adjustments (360px) ─────────────────────────────────────────
+
+@media (max-width: 380px) {
+  .header-brand h1 {
+    font-size: 1.2rem;
+  }
+
+  .tab-btn {
+    font-size: 0.65rem;
+    padding: 0.65rem 0.15rem;
+  }
+
+  #pokemon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .poke-card {
+    padding: 0.6rem 0.35rem 0.5rem;
+  }
+
+  .poke-card__sprite {
+    width: 64px;
+    height: 64px;
+  }
+
+  .poke-card__name {
+    font-size: 0.85rem;
+  }
+}
+
+// ─── Safe area insets for notched phones ─────────────────────────────────────
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .tab-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  main.container-fluid {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)) !important;
+  }
+}
