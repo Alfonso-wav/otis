@@ -6,7 +6,7 @@ import {
   ListTypes,
   GetType,
   GetPokemonSpecies,
-} from "../../wailsjs/go/app/App";
+} from "../api";
 import type { Pokemon, PokemonListItem } from "../types";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
 import { renderEVCalculatorForm, initEVCalculator } from "../ev-calculator";

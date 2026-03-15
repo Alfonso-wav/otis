@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { GetAllMoves } from "../../../wailsjs/go/app/App";
+import { GetAllMoves } from "../../api";
 import type { core } from "../../../wailsjs/go/models";
 
 type Category = "all" | "physical" | "special" | "status";

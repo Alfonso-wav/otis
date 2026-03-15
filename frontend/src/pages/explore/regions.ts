@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { ListRegions, GetRegion, GetRegionPokemonByType } from "../../../wailsjs/go/app/App";
+import { ListRegions, GetRegion, GetRegionPokemonByType } from "../../api";
 import { renderTypeDistributionChart } from "../../charts/type-distribution";
 import { openTypeModal } from "../../components/pokemon-type-modal";
 

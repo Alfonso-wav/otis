@@ -19,7 +19,7 @@ import {
   SimulateTeamBattle,
   SimulateMultipleTeamBattles,
   UpdateTeamMember,
-} from "../../wailsjs/go/app/App";
+} from "../api";
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
 
