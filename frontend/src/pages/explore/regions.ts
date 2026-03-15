@@ -1,6 +1,7 @@
 import gsap from "gsap";
-import { ListRegions, GetRegion } from "../../../wailsjs/go/app/App";
+import { ListRegions, GetRegion, GetRegionPokemonByType } from "../../../wailsjs/go/app/App";
 import { renderTypeDistributionChart } from "../../charts/type-distribution";
+import { openTypeModal } from "../../components/pokemon-type-modal";
 
 let initialized = false;
 
@@ -93,7 +94,14 @@ async function loadRegionDetail(
       { opacity: 1, y: 0, duration: 0.2, stagger: 0.02, ease: "power2.out" },
     );
 
-    renderTypeDistributionChart(chartId, regionName);
+    renderTypeDistributionChart(chartId, regionName, async (typeName: string) => {
+      try {
+        const names = await GetRegionPokemonByType(regionName, typeName);
+        openTypeModal(regionName, typeName, names ?? []);
+      } catch {
+        openTypeModal(regionName, typeName, []);
+      }
+    });
   } catch (err: unknown) {
     body.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
   }

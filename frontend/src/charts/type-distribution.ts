@@ -1,6 +1,6 @@
 import * as echarts from "echarts";
 
-// Pokémon por región (Gen representativa para distribución de tipos ilustrativa)
+// Pokemon por region (Gen representativa para distribucion de tipos ilustrativa)
 const REGION_TYPE_DATA: Record<string, Record<string, number>> = {
   kanto: {
     normal: 22, fire: 12, water: 32, grass: 14, electric: 9,
@@ -45,6 +45,7 @@ const TYPE_COLORS: Record<string, string> = {
 export function renderTypeDistributionChart(
   containerId: string,
   regionName: string,
+  onTypeClick?: (typeName: string) => void,
 ): void {
   const el = document.getElementById(containerId);
   if (!el) return;
@@ -92,6 +93,13 @@ export function renderTypeDistributionChart(
       },
     ],
   });
+
+  if (onTypeClick) {
+    chart.on("click", (params: { name?: string }) => {
+      if (params.name) onTypeClick(params.name);
+    });
+    el.style.cursor = "pointer";
+  }
 
   window.addEventListener("resize", () => chart.resize());
 }

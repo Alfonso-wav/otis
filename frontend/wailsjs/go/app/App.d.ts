@@ -58,6 +58,8 @@ export function GetPokemonSpecies(arg1:string):Promise<core.PokemonSpecies>;
 
 export function GetRegion(arg1:string):Promise<core.Region>;
 
+export function GetRegionPokemonByType(arg1:string,arg2:string):Promise<Array<string>>;
+
 export function GetStatDetail(arg1:string):Promise<core.StatDetail>;
 
 export function GetTeam(arg1:string):Promise<core.Team>;
