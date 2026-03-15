@@ -6,8 +6,6 @@ export function CalculateEVs(arg1:core.EVCalculatorInput):Promise<core.EVCalcula
 
 export function CalculateStats(arg1:core.StatCalculatorInput):Promise<core.Stats>;
 
-export function ComparePokemons(arg1:string,arg2:string):Promise<core.PokemonComparison>;
-
 export function DeleteTeam(arg1:string):Promise<void>;
 
 export function DeleteTeamMember(arg1:string,arg2:number):Promise<void>;
