@@ -935,8 +935,11 @@ async function importFromTeam(prefix: "atk" | "def", member: core.TeamMember): P
   }
 }
 
+let isDeletingTeam = false;
 async function handleDeleteTeam(name: string): Promise<void> {
+  if (isDeletingTeam) return;
   if (!confirm(`Eliminar equipo "${name}"?`)) return;
+  isDeletingTeam = true;
   try {
     await DeleteTeam(name);
   } catch (err: unknown) {
@@ -945,6 +948,7 @@ async function handleDeleteTeam(name: string): Promise<void> {
     teamsDetailsOpen = true;
     cachedTeams = await ListTeams();
     buildLayout();
+    isDeletingTeam = false;
   }
 }
 
