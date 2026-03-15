@@ -102,6 +102,12 @@ function battleSpriteURL(name: string, type: "battle-back" | "battle-front"): st
   return `/assets/sprites/${type}/${safeName}.png`;
 }
 
+function battleSpriteFallbackCDN(name: string, type: "battle-back" | "battle-front"): string {
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  const dir = type === "battle-back" ? "back-normal" : "normal";
+  return `https://img.pokemondb.net/sprites/black-white/anim/${dir}/${safeName}.gif`;
+}
+
 function typeBadge(type: string): string {
   return `<span class="type-badge type-${type}">${type}</span>`;
 }
@@ -363,11 +369,12 @@ function renderHPBar(name: string, level: number, current: number, max: number, 
 
 function battleSpriteImg(name: string, type: "battle-back" | "battle-front"): string {
   const localSrc = battleSpriteURL(name, type);
+  const cdnBattle = battleSpriteFallbackCDN(name, type);
   const fallbackLocal = spriteURL(name);
   const fallbackCDN = spriteFallback(name);
   return `<img class="battle-sprite battle-sprite--${type === "battle-back" ? "back" : "front"}"
     src="${localSrc}" data-fallback="0"
-    onerror="var f=parseInt(this.dataset.fallback||'0');if(f===0){this.dataset.fallback='1';this.src='${fallbackLocal}'}else if(f===1){this.dataset.fallback='2';this.src='${fallbackCDN}'}else{this.onerror=null;this.style.visibility='hidden'}"
+    onerror="var f=parseInt(this.dataset.fallback||'0');if(f===0){this.dataset.fallback='1';this.src='${cdnBattle}'}else if(f===1){this.dataset.fallback='2';this.src='${fallbackLocal}'}else if(f===2){this.dataset.fallback='3';this.src='${fallbackCDN}'}else{this.onerror=null;this.style.visibility='hidden'}"
     alt="${name}" />`;
 }
 
