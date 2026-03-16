@@ -172,6 +172,10 @@ function typeBadge(type: string): string {
   return `<span class="type-badge type-${type}"><img src="/src/assets/types/${type}.svg" alt="" class="type-icon">${type}</span>`;
 }
 
+function typeBadgeIcon(type: string): string {
+  return `<span class="type-badge type-badge--icon-only type-${type}" title="${type}"><img src="/src/assets/types/${type}.svg" alt="${type}" class="type-icon"></span>`;
+}
+
 function typeBadges(types: Array<{ Name: string }>): string {
   return types.map((t) => typeBadge(t.Name)).join(" ");
 }
@@ -387,7 +391,7 @@ async function loadDamageTable(): Promise<void> {
       ({ slot, result }) => `
     <tr class="damage-row ${effectClass(result)}">
       <td class="dmg-move" data-col="move">${slot.move!.Name} ${stabBadge(result)}</td>
-      <td data-col="type">${typeBadge(slot.move!.Type)}</td>
+      <td data-col="type">${typeBadgeIcon(slot.move!.Type)}</td>
       <td class="dmg-cat" data-col="cat">${categoryIcon(slot.move!.Category)}</td>
       <td class="dmg-val" data-col="min">${result.min}</td>
       <td class="dmg-val" data-col="max">${result.max}</td>
@@ -441,7 +445,7 @@ async function loadDefenderDamageTable(): Promise<void> {
       ({ slot, result }) => `
     <tr class="damage-row ${effectClass(result)}">
       <td class="dmg-move" data-col="move">${slot.move!.Name} ${stabBadge(result)}</td>
-      <td data-col="type">${typeBadge(slot.move!.Type)}</td>
+      <td data-col="type">${typeBadgeIcon(slot.move!.Type)}</td>
       <td class="dmg-cat" data-col="cat">${categoryIcon(slot.move!.Category)}</td>
       <td class="dmg-val" data-col="min">${result.min}</td>
       <td class="dmg-val" data-col="max">${result.max}</td>
