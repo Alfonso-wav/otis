@@ -2,6 +2,7 @@ import gsap from "gsap";
 import { GetAllMoves } from "../../api";
 import type { core } from "../../../wailsjs/go/models";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
+import { SortCache } from "../../utils/sort-cache";
 
 type Category = "all" | "physical" | "special" | "status";
 type SortColumn = "name" | "type" | "category" | "power" | "accuracy" | "pp" | "priority" | null;
@@ -26,6 +27,16 @@ const state: MoveState = {
   sortDirection: null,
   loading: false,
 };
+
+const movesSortCache = new SortCache<core.Move>([
+  { key: "name", compare: (a, b) => a.Name.localeCompare(b.Name) },
+  { key: "type", compare: (a, b) => a.Type.localeCompare(b.Type) },
+  { key: "category", compare: (a, b) => a.Category.localeCompare(b.Category) },
+  { key: "power", compare: (a, b) => a.Power - b.Power },
+  { key: "accuracy", compare: (a, b) => a.Accuracy - b.Accuracy },
+  { key: "pp", compare: (a, b) => a.PP - b.PP },
+  { key: "priority", compare: (a, b) => a.Priority - b.Priority },
+]);
 
 const MOVES_TABLE_COLUMNS: ColumnConfig[] = [
   { key: "name", label: "Nombre", fixed: true },
@@ -73,19 +84,8 @@ function filteredMoves(): core.Move[] {
   }
 
   if (state.sortColumn && state.sortDirection) {
-    const mult = state.sortDirection === "asc" ? 1 : -1;
-    moves = [...moves].sort((a, b) => {
-      switch (state.sortColumn) {
-        case "name": return mult * a.Name.localeCompare(b.Name);
-        case "type": return mult * a.Type.localeCompare(b.Type);
-        case "category": return mult * a.Category.localeCompare(b.Category);
-        case "power": return mult * (a.Power - b.Power);
-        case "accuracy": return mult * (a.Accuracy - b.Accuracy);
-        case "pp": return mult * (a.PP - b.PP);
-        case "priority": return mult * (a.Priority - b.Priority);
-        default: return 0;
-      }
-    });
+    movesSortCache.setData(moves);
+    moves = movesSortCache.get(state.sortColumn, state.sortDirection);
   }
 
   return moves;
