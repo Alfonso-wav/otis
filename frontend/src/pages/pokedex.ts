@@ -9,7 +9,6 @@ import {
 } from "../api";
 import type { Pokemon, PokemonListItem } from "../types";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
-import { renderEVCalculatorForm, initEVCalculator } from "../ev-calculator";
 
 const LIMIT = 20;
 
@@ -525,12 +524,50 @@ async function renderDetail(p: Pokemon): Promise<void> {
     <div class="types">${types}</div>
     <p class="meta">Altura: ${p.Height / 10} m &nbsp;&middot;&nbsp; Peso: ${p.Weight / 10} kg</p>
     <div id="stats-chart" style="width:100%;height:300px;"></div>
-    ${renderEVCalculatorForm(p)}`;
+    <div id="pokemon-lore" class="pokemon-lore"><p class="loading">Cargando lore...</p></div>`;
 
   const chartContainer = document.getElementById("stats-chart") as HTMLDivElement;
   const { renderStatsChart } = await import("../charts/stats-chart");
   renderStatsChart(chartContainer, p.Stats || []);
-  await initEVCalculator(p);
+
+  loadLore(p.Name);
+}
+
+async function loadLore(name: string): Promise<void> {
+  const loreEl = document.getElementById("pokemon-lore") as HTMLDivElement;
+  if (!loreEl) return;
+
+  try {
+    const species = await GetPokemonSpecies(name);
+
+    const flavorText = cleanFlavorText(species.FlavorText);
+    const badges: string[] = [];
+    if (species.IsLegendary) badges.push('<span class="lore-badge lore-badge--legendary">Legendary</span>');
+    if (species.IsMythical) badges.push('<span class="lore-badge lore-badge--mythical">Mythical</span>');
+
+    const infoRows: string[] = [];
+    if (species.Genus) infoRows.push(`<div class="lore-info-row"><span class="lore-label">Category</span><span class="lore-value">${species.Genus}</span></div>`);
+    if (species.Habitat) infoRows.push(`<div class="lore-info-row"><span class="lore-label">Habitat</span><span class="lore-value">${capitalize(species.Habitat)}</span></div>`);
+    if (species.Color) infoRows.push(`<div class="lore-info-row"><span class="lore-label">Color</span><span class="lore-value">${capitalize(species.Color)}</span></div>`);
+    if (species.Shape) infoRows.push(`<div class="lore-info-row"><span class="lore-label">Shape</span><span class="lore-value">${capitalize(species.Shape)}</span></div>`);
+
+    loreEl.innerHTML = `
+      <h3>Lore</h3>
+      ${badges.length > 0 ? `<div class="lore-badges">${badges.join("")}</div>` : ""}
+      ${flavorText ? `<p class="lore-flavor-text">${flavorText}</p>` : ""}
+      ${infoRows.length > 0 ? `<div class="lore-info">${infoRows.join("")}</div>` : ""}
+    `;
+  } catch {
+    loreEl.innerHTML = '<p class="lore-error">Could not load lore data.</p>';
+  }
+}
+
+function cleanFlavorText(text: string): string {
+  return text.replace(/[\n\f\r]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 // -- Búsqueda ----------------------------------------------------------------

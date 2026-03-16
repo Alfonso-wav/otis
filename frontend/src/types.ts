@@ -65,28 +65,3 @@ export interface Nature {
   decreasedStat: string;
 }
 
-export interface StatRange {
-  min: number;
-  max: number;
-}
-
-export interface EVCalculatorInput {
-  pokemonName: string;
-  level: number;
-  natureName: string;
-  currentStats: Stats;
-  knownIVs?: Stats;
-}
-
-export interface EVCalculatorResult {
-  pokemon: string;
-  level: number;
-  nature: string;
-  baseStats: Stats;
-  estimatedEVs: Stats;
-  evRanges: Record<string, StatRange>;
-  totalEVsUsed: number;
-  evsRemaining: number;
-  maxPossibleStats: Stats;
-  usedIVs: Stats;
-}

@@ -70,7 +70,6 @@
 // SimulateMultipleTeamBattles → POST /api/battle/team-simulate-multiple
 //
 // --- Calculadoras ---
-// CalculateEVs         → POST /api/calculator/evs
 // CalculateStats       → POST /api/calculator/stats
 //
 // --- Equipos ---
@@ -628,20 +627,6 @@ func RegisterRoutes(mux *http.ServeMux, a *app.App) {
 	})
 
 	// --- Calculadoras ---
-
-	mux.HandleFunc("POST /api/calculator/evs", func(w http.ResponseWriter, r *http.Request) {
-		var input core.EVCalculatorInput
-		if err := decodeBody(r, &input); err != nil {
-			jsonError(w, "invalid request body", http.StatusBadRequest)
-			return
-		}
-		result, err := a.CalculateEVs(input)
-		if err != nil {
-			jsonError(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		jsonResponse(w, result)
-	})
 
 	mux.HandleFunc("POST /api/calculator/stats", func(w http.ResponseWriter, r *http.Request) {
 		var input core.StatCalculatorInput
