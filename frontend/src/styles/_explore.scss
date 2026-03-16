@@ -329,7 +329,9 @@
 }
 
 .type-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
