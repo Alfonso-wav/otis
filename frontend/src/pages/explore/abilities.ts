@@ -3,6 +3,7 @@ import { GetAllAbilities } from "../../api";
 import type { core } from "../../../wailsjs/go/models";
 import { openAbilityPokemonModal } from "../../components/ability-pokemon-modal";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
+import { SortCache } from "../../utils/sort-cache";
 
 type SortColumn = "name" | "description" | "pokemon" | null;
 type SortDirection = "asc" | "desc" | null;
@@ -29,6 +30,12 @@ const state: AbilityState = {
   loading: false,
 };
 
+const abilitiesSortCache = new SortCache<core.Ability>([
+  { key: "name", compare: (a, b) => a.Name.localeCompare(b.Name) },
+  { key: "description", compare: (a, b) => a.Description.localeCompare(b.Description) },
+  { key: "pokemon", compare: (a, b) => (a.Pokemon ?? []).length - (b.Pokemon ?? []).length },
+]);
+
 function filteredAbilities(): core.Ability[] {
   let abilities = state.allAbilities;
 
@@ -37,15 +44,8 @@ function filteredAbilities(): core.Ability[] {
   }
 
   if (state.sortColumn && state.sortDirection) {
-    const mult = state.sortDirection === "asc" ? 1 : -1;
-    abilities = [...abilities].sort((a, b) => {
-      switch (state.sortColumn) {
-        case "name": return mult * a.Name.localeCompare(b.Name);
-        case "description": return mult * a.Description.localeCompare(b.Description);
-        case "pokemon": return mult * ((a.Pokemon ?? []).length - (b.Pokemon ?? []).length);
-        default: return 0;
-      }
-    });
+    abilitiesSortCache.setData(abilities);
+    abilities = abilitiesSortCache.get(state.sortColumn, state.sortDirection);
   }
 
   return abilities;
