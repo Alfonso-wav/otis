@@ -1,0 +1,95 @@
+// _splash.scss — Snorlax splash screen animations
+
+#splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #1a202c;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+
+  &.splash-fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.splash-snorlax {
+  width: 150px;
+  height: 150px;
+  animation: snorlax-breathe 2.5s ease-in-out infinite;
+}
+
+.splash-text {
+  margin-top: 1.5rem;
+  color: #a0aec0;
+  font-family: "Exo 2", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.splash-zzz {
+  position: absolute;
+  top: 28%;
+  right: 28%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+
+  span {
+    color: #a0aec0;
+    font-family: "Bebas Neue", sans-serif;
+    font-weight: 700;
+    opacity: 0;
+
+    &:nth-child(1) {
+      font-size: 0.9rem;
+      animation: zzz-float 2.5s ease-in-out infinite 0s;
+    }
+
+    &:nth-child(2) {
+      font-size: 1.2rem;
+      animation: zzz-float 2.5s ease-in-out infinite 0.4s;
+    }
+
+    &:nth-child(3) {
+      font-size: 1.5rem;
+      animation: zzz-float 2.5s ease-in-out infinite 0.8s;
+    }
+  }
+}
+
+// Breathing animation — subtle scale
+@keyframes snorlax-breathe {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.04) translateY(-3px);
+  }
+}
+
+// Floating zzZ letters
+@keyframes zzz-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(10px, -20px);
+  }
+}

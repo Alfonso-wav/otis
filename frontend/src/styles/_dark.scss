@@ -107,11 +107,11 @@
 
   // ─── Detail view ──────────────────────────────────────────────────────
   #back-btn {
-    border-color: $pokedex-red;
-    color: $pokedex-red;
+    border-color: $navy-blue-text;
+    color: $navy-blue-text;
 
     &:hover {
-      background: rgba($pokedex-red, 0.15);
+      background: $navy-blue-subtle;
     }
   }
 
@@ -340,5 +340,189 @@
 
   .report-stat-card-label {
     color: #a0aec0;
+  }
+
+  // ─── Navy blue accent overrides (replaces red brand accent) ─────────
+
+  // Section headers
+  .section-header {
+    background: $navy-blue;
+  }
+
+  // Pokedex header
+  .pokedex-header {
+    background: $navy-blue;
+  }
+
+  // Tab bar (mobile bottom nav)
+  .tab-nav {
+    background: $navy-blue;
+  }
+
+  // Search button
+  #search-btn {
+    color: $navy-blue-text;
+
+    &:hover {
+      background: $navy-blue-light;
+    }
+  }
+
+  // Filter select focus
+  .filter-select {
+    &:focus {
+      border-color: $navy-blue-hover;
+      box-shadow: 0 0 0 3px $navy-blue-subtle;
+    }
+  }
+
+  // Filter dropdown trigger active
+  .filter-dropdown__trigger--active {
+    border-color: $navy-blue-hover;
+    color: $navy-blue-text;
+  }
+
+  // Filter chips active
+  .filter-chip.active {
+    background: $navy-blue;
+    border-color: $navy-blue;
+    box-shadow: 0 2px 6px $navy-blue-subtle;
+  }
+
+  // Filter reset button hover
+  .filter-reset-btn:hover {
+    color: $navy-blue-text;
+    border-color: $navy-blue-hover;
+    background: $navy-blue-subtle;
+  }
+
+  // Autocomplete dropdown active/hover
+  .autocomplete-dropdown__item {
+    &:hover,
+    &--active {
+      background: $navy-blue;
+    }
+  }
+
+  // Explore tabs active
+  .explore-tab-btn.active {
+    background: $navy-blue;
+  }
+
+  // Explore input focus
+  .explore-input:focus {
+    border-color: $navy-blue-hover;
+  }
+
+  // Filter button active (moves)
+  .filter-btn.active {
+    background: $navy-blue;
+  }
+
+  // Ability pokemon count link
+  .ability-pokemon-count {
+    color: $navy-blue-text;
+
+    &:hover {
+      color: lighten($navy-blue-text, 10%);
+    }
+  }
+
+  // Stat total
+  .stat-total {
+    color: $navy-blue-text;
+  }
+
+  // Stat bar
+  .stat-bar {
+    background: $navy-blue-light;
+  }
+
+  // Pokemon lore heading
+  .pokemon-lore h3 {
+    color: $navy-blue-text;
+  }
+
+  // Settings toggle checked
+  .toggle-switch input:checked + .toggle-slider {
+    background: $navy-blue;
+  }
+
+  // ─── Builds navy overrides ──────────────────────────────────────────
+
+  // Build search input focus
+  .build-search-input:focus {
+    border-color: $navy-blue-hover;
+    box-shadow: 0 0 0 3px $navy-blue-subtle;
+  }
+
+  // Build search button
+  .build-search-btn {
+    background: $navy-blue;
+
+    &:hover {
+      background: $navy-blue-light;
+    }
+  }
+
+  // Attacker column title
+  .build-col--attacker .build-col-title {
+    color: $navy-blue-text;
+  }
+
+  // SC input/select focus
+  .sc-input:focus,
+  .sc-select:focus {
+    border-color: $navy-blue-hover;
+  }
+
+  // Build move select focus
+  .build-move-select:focus {
+    border-color: $navy-blue-hover;
+  }
+
+  // Team member move select focus
+  .team-member-move-select:focus {
+    border-color: $navy-blue-hover;
+  }
+
+  // Battle section border
+  .battle-section {
+    border-top-color: $navy-blue;
+  }
+
+  // Battle start button
+  .battle-start-btn {
+    background: $navy-blue;
+
+    &:hover {
+      background: $navy-blue-light;
+    }
+  }
+
+  // Battle turn label strong
+  .battle-turn-label strong {
+    color: $navy-blue-text;
+  }
+
+  // Report win bar attacker segment
+  .report-win-bar--atk {
+    background: $navy-blue;
+  }
+
+  // Report win label attacker
+  .report-win-label--atk {
+    color: $navy-blue-text;
+  }
+
+  // Team battle select focus
+  .team-battle-select:focus {
+    border-color: $navy-blue-hover;
+    box-shadow: 0 0 0 3px $navy-blue-subtle;
+  }
+
+  // Build slot clear hover — NOT delete/error semantic
+  .build-slot-clear:hover {
+    color: $navy-blue-text;
   }
 }

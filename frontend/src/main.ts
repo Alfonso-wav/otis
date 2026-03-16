@@ -5,6 +5,19 @@ import { initTypes } from "./pages/types";
 import { initExplore } from "./pages/explore";
 import { initBuilds } from "./pages/builds";
 import { initSettings } from "./settings";
+import { ListGenerations } from "./api";
+
+function dismissSplash(): void {
+  const splash = document.getElementById("splash-screen");
+  if (!splash) return;
+  splash.classList.add("splash-fade-out");
+  splash.addEventListener("transitionend", () => splash.remove(), { once: true });
+}
+
+// Ping the API to detect when the server is ready, then dismiss splash.
+ListGenerations()
+  .then(() => dismissSplash())
+  .catch(() => dismissSplash());
 
 registerPage({
   id: "pokedex",

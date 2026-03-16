@@ -311,10 +311,18 @@ function renderDamageSection(): string {
   const filledSlots = state.slots.filter((s) => s.move !== null);
   if (!state.attacker || !state.defender || filledSlots.length === 0) return "";
 
+  const filledDefSlots = state.defenderSlots.filter((s) => s.move !== null);
+  const defenderTable = filledDefSlots.length > 0
+    ? `<h4 class="build-subsection-title">Daño del Defensor</h4>
+       <div id="defender-damage-table-content"><p class="loading">Calculando...</p></div>`
+    : "";
+
   return `
     <div class="build-damage-section">
       <h3 class="build-section-title">Simulación de daño</h3>
+      <h4 class="build-subsection-title">Daño del Atacante</h4>
       <div id="damage-table-content"><p class="loading">Calculando...</p></div>
+      ${defenderTable}
     </div>`;
 }
 
@@ -337,6 +345,58 @@ async function loadDamageTable(): Promise<void> {
         attackerTypes: state.attacker!.Types,
         defenderTypes: state.defender!.Types,
         level: state.attackerLevel,
+        isCritical: slot.isCritical,
+        weatherBonus: 1.0,
+      } as core.DamageInput);
+      return { slot, result };
+    }),
+  );
+
+  const rows = results
+    .map(
+      ({ slot, result }) => `
+    <tr class="damage-row ${effectClass(result)}">
+      <td class="dmg-move">${slot.move!.Name} ${stabBadge(result)}</td>
+      <td>${typeBadge(slot.move!.Type)}</td>
+      <td class="dmg-cat">${categoryIcon(slot.move!.Category)}</td>
+      <td class="dmg-val">${result.min}</td>
+      <td class="dmg-val">${result.max}</td>
+      <td class="dmg-eff">${effectLabel(result)}</td>
+    </tr>`,
+    )
+    .join("");
+
+  el.innerHTML = `
+    <table class="damage-table">
+      <thead>
+        <tr>
+          <th>Movimiento</th><th>Tipo</th><th>Cat.</th>
+          <th>Mín</th><th>Máx</th><th>Efectividad</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function loadDefenderDamageTable(): Promise<void> {
+  const el = container.querySelector<HTMLElement>("#defender-damage-table-content");
+  if (!el || !state.attacker || !state.defender) return;
+
+  const filledSlots = state.defenderSlots.filter((s) => s.move !== null);
+  if (filledSlots.length === 0) return;
+
+  const defenderAsAttackerStats = state.defenderStats ?? statsFromPokemon(state.defender);
+  const attackerAsDefenderStats = state.attackerStats ?? statsFromPokemon(state.attacker);
+
+  const results = await Promise.all(
+    filledSlots.map(async (slot) => {
+      const result = await SimulateDamage({
+        attackerStats: defenderAsAttackerStats,
+        defenderStats: attackerAsDefenderStats,
+        move: slot.move!,
+        attackerTypes: state.defender!.Types,
+        defenderTypes: state.attacker!.Types,
+        level: state.defenderLevel,
         isCritical: slot.isCritical,
         weatherBonus: 1.0,
       } as core.DamageInput);
@@ -1464,6 +1524,7 @@ function buildLayout(): void {
 
   if (dmgSection) {
     loadDamageTable();
+    loadDefenderDamageTable();
   }
 }
 

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Snorlax stylized silhouette for splash screen -->
+  <!-- Body -->
+  <ellipse cx="100" cy="120" rx="70" ry="60" fill="#2d3748"/>
+  <!-- Belly -->
+  <ellipse cx="100" cy="125" rx="45" ry="40" fill="#e2d8b3"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="70" rx="50" ry="38" fill="#2d3748"/>
+  <!-- Face details -->
+  <!-- Closed eyes (sleeping) -->
+  <path d="M72 65 Q80 60 88 65" stroke="#1a202c" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M112 65 Q120 60 128 65" stroke="#1a202c" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Mouth -->
+  <ellipse cx="100" cy="80" rx="8" ry="4" fill="#1a202c"/>
+  <!-- Fangs -->
+  <rect x="94" y="76" width="4" height="5" rx="1" fill="#e8e8e8"/>
+  <rect x="102" y="76" width="4" height="5" rx="1" fill="#e8e8e8"/>
+  <!-- Ears -->
+  <ellipse cx="60" cy="48" rx="12" ry="10" fill="#2d3748"/>
+  <ellipse cx="140" cy="48" rx="12" ry="10" fill="#2d3748"/>
+  <!-- Arms -->
+  <ellipse cx="38" cy="115" rx="18" ry="14" fill="#2d3748" transform="rotate(-15 38 115)"/>
+  <ellipse cx="162" cy="115" rx="18" ry="14" fill="#2d3748" transform="rotate(15 162 115)"/>
+  <!-- Feet -->
+  <ellipse cx="70" cy="170" rx="22" ry="12" fill="#2d3748"/>
+  <ellipse cx="130" cy="170" rx="22" ry="12" fill="#2d3748"/>
+  <!-- Claws on feet -->
+  <circle cx="55" cy="168" r="3" fill="#e2d8b3"/>
+  <circle cx="63" cy="165" r="3" fill="#e2d8b3"/>
+  <circle cx="71" cy="164" r="3" fill="#e2d8b3"/>
+  <circle cx="129" cy="164" r="3" fill="#e2d8b3"/>
+  <circle cx="137" cy="165" r="3" fill="#e2d8b3"/>
+  <circle cx="145" cy="168" r="3" fill="#e2d8b3"/>
+</svg>
