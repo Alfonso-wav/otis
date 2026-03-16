@@ -14,6 +14,7 @@ import { showView, staggerCards, morphToTable, morphToGrid } from "../animations
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../components/column-toggle";
 import { SortCache } from "../utils/sort-cache";
 import { showSortingOverlay, updateSortingOverlayText, hideSortingOverlay } from "../components/sorting-overlay";
+import { createAutocomplete } from "../autocomplete";
 
 const LIMIT = 20;
 
@@ -1082,4 +1083,13 @@ export function initPokedex(): void {
 
   populateFilters();
   loadList();
+
+  // Load all pokemon names for autocomplete (non-blocking)
+  ListPokemon(0, 2000).then((data) => {
+    const names = data.Results.map((r) => r.Name);
+    createAutocomplete(searchInput, names, (name) => {
+      searchInput.value = name;
+      showDetail(name);
+    });
+  });
 }
