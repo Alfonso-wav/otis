@@ -832,10 +832,26 @@
 
   .build-col {
     padding: 0.75rem;
+    max-width: 100%;
+    overflow: hidden;
   }
 
   .build-col-title {
     font-size: 1.2rem;
+  }
+
+  // Fix overflow: search row wraps on narrow screens
+  .build-search-row {
+    flex-wrap: wrap;
+  }
+
+  .build-search-input {
+    min-width: 0;
+  }
+
+  .build-search-btn {
+    min-height: 44px;
+    flex-shrink: 0;
   }
 
   .build-slots {
@@ -1503,6 +1519,40 @@
 @include mobile {
   .team-member-edit-moves {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  // Fix overflow: team member rows wrap on narrow screens
+  .team-member-row {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .team-member-name {
+    min-width: 70px;
+  }
+
+  .team-member-detail {
+    min-width: 0;
+  }
+
+  .team-member-moves {
+    flex-basis: 100%;
+    order: 10;
+  }
+
+  .team-import-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .team-member-delete-btn {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
