@@ -579,40 +579,51 @@ async function loadEncounters(name: string): Promise<void> {
       return;
     }
 
-    // Group by location area
-    const rows = encounters.map((enc: any) => {
-      const versions = (enc.Versions || []).map((v: any) => {
-        const methods = (v.Details || []).map((d: any) => {
+    // Flatten encounters into table rows
+    const rows: string[] = [];
+    for (const enc of encounters) {
+      const location = formatLocationName(enc.LocationArea);
+      for (const v of enc.Versions || []) {
+        const game = capitalize(v.Version);
+        for (const d of v.Details || []) {
+          const method = formatEncounterMethod(d.Method);
+          const chance = `${d.Chance}%`;
+          const levels = d.MinLevel === d.MaxLevel
+            ? `Lv. ${d.MinLevel}`
+            : `Lv. ${d.MinLevel}-${d.MaxLevel}`;
           const conditions = (d.Conditions || [])
             .map((c: any) => c.Name)
             .filter(Boolean)
-            .join(", ");
-          const levelRange = d.MinLevel === d.MaxLevel
-            ? `Lv. ${d.MinLevel}`
-            : `Lv. ${d.MinLevel}-${d.MaxLevel}`;
-          return `<div class="encounter-method">
-            <span class="encounter-method-name">${formatEncounterMethod(d.Method)}</span>
-            <span class="encounter-chance">${d.Chance}%</span>
-            <span class="encounter-levels">${levelRange}</span>
-            ${conditions ? `<span class="encounter-conditions">${conditions}</span>` : ""}
-          </div>`;
-        }).join("");
-
-        return `<div class="encounter-version">
-          <span class="encounter-version-name">${capitalize(v.Version)}</span>
-          ${methods}
-        </div>`;
-      }).join("");
-
-      return `<div class="encounter-location">
-        <div class="encounter-location-name">${formatLocationName(enc.LocationArea)}</div>
-        <div class="encounter-versions">${versions}</div>
-      </div>`;
-    }).join("");
+            .join(", ") || "\u2014";
+          rows.push(`<tr>
+            <td>${location}</td>
+            <td>${game}</td>
+            <td>${method}</td>
+            <td>${chance}</td>
+            <td>${levels}</td>
+            <td>${conditions}</td>
+          </tr>`);
+        }
+      }
+    }
 
     el.innerHTML = `
       <h3>Encounters</h3>
-      <div class="encounters-list">${rows}</div>`;
+      <div class="encounters-table-wrap">
+        <table class="poke-table encounters-table">
+          <thead>
+            <tr>
+              <th>Location</th>
+              <th>Game</th>
+              <th>Method</th>
+              <th>Chance</th>
+              <th>Levels</th>
+              <th>Conditions</th>
+            </tr>
+          </thead>
+          <tbody>${rows.join("")}</tbody>
+        </table>
+      </div>`;
   } catch {
     el.innerHTML = `
       <h3>Encounters</h3>
