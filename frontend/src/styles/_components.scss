@@ -276,6 +276,16 @@
   flex-shrink: 0;
 }
 
+.type-badge--icon-only {
+  padding: 0.25rem 0.35rem;
+  gap: 0;
+
+  .type-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
 @each $type, $color in $type-colors {
   .type-#{$type} {
     background: $color;
@@ -306,6 +316,55 @@
 
 .hidden {
   display: none !important;
+}
+
+// ─── Column hidden tags ─────────────────────────────────────────────────────
+
+.col-hidden-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.col-hidden-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border: 1.5px solid #cbd5e0;
+  border-radius: $border-radius-pill;
+  background: #edf2f7;
+  font-family: $font-body;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #e2e8f0;
+    border-color: #a0aec0;
+  }
+
+  &__x {
+    font-size: 1rem;
+    line-height: 1;
+    opacity: 0.6;
+  }
+
+  &:hover &__x {
+    opacity: 1;
+  }
+
+  @include mobile {
+    font-size: 0.72rem;
+    padding: 0.18rem 0.5rem;
+  }
 }
 
 // ─── Column visibility toggle ───────────────────────────────────────────────
