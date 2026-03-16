@@ -508,6 +508,24 @@ th.sortable.active .sort-indicator {
   }
 }
 
+.encounters-filter-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.filter-chip--reset {
+  border-style: dashed;
+  color: #a0aec0;
+  font-size: 0.72rem;
+
+  &:hover {
+    border-color: $pokedex-red;
+    color: $pokedex-red;
+    background: rgba($pokedex-red, 0.05);
+  }
+}
+
 .encounters-empty,
 .encounters-error {
   font-family: $font-body;
