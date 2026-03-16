@@ -12,6 +12,7 @@ import {
 import type { Pokemon, PokemonListItem } from "../types";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../components/column-toggle";
+import { SortCache } from "../utils/sort-cache";
 
 const LIMIT = 20;
 
@@ -37,6 +38,22 @@ let currentSortColumn: SortColumn = null;
 let currentSortDirection: SortDirection = null;
 let sortedFullList: Pokemon[] | null = null;
 let sortingLoading = false;
+
+const pokemonSortCache = new SortCache<Pokemon>([
+  { key: "id", compare: (a, b) => a.ID - b.ID },
+  { key: "name", compare: (a, b) => a.Name.localeCompare(b.Name) },
+  { key: "hp", compare: (a, b) => a.Stats[0].BaseStat - b.Stats[0].BaseStat },
+  { key: "atk", compare: (a, b) => a.Stats[1].BaseStat - b.Stats[1].BaseStat },
+  { key: "def", compare: (a, b) => a.Stats[2].BaseStat - b.Stats[2].BaseStat },
+  { key: "spa", compare: (a, b) => a.Stats[3].BaseStat - b.Stats[3].BaseStat },
+  { key: "spd", compare: (a, b) => a.Stats[4].BaseStat - b.Stats[4].BaseStat },
+  { key: "vel", compare: (a, b) => a.Stats[5].BaseStat - b.Stats[5].BaseStat },
+  { key: "total", compare: (a, b) => {
+    const totalA = a.Stats.reduce((s, st) => s + st.BaseStat, 0);
+    const totalB = b.Stats.reduce((s, st) => s + st.BaseStat, 0);
+    return totalA - totalB;
+  }},
+]);
 
 const POKEDEX_TABLE_COLUMNS: ColumnConfig[] = [
   { key: "id", label: "#" },
@@ -341,7 +358,9 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
     }),
   );
 
-  const sortedData = sortPokemonData(pokemonData, currentSortColumn, currentSortDirection);
+  const sortedData = (currentSortColumn && currentSortDirection)
+    ? sortPokemonData(pokemonData, currentSortColumn, currentSortDirection)
+    : pokemonData;
 
   const statColKeys = ["hp", "atk", "def", "spa", "spd", "vel"];
   const rows = sortedData
@@ -435,7 +454,8 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
       sortingLoading = true;
       try {
         const allPokemon = await ensureAllPokemonLoaded();
-        sortedFullList = sortPokemonData(allPokemon, currentSortColumn, currentSortDirection);
+        pokemonSortCache.setData(allPokemon);
+        sortedFullList = pokemonSortCache.get(currentSortColumn!, currentSortDirection as 'asc' | 'desc');
         offset = 0;
         await renderTable(getCurrentPageItems());
         updatePagination();
@@ -476,6 +496,7 @@ function resetSorting(): void {
   currentSortColumn = null;
   currentSortDirection = null;
   sortedFullList = null;
+  pokemonSortCache.invalidate();
 }
 
 async function prevPage(): Promise<void> {
