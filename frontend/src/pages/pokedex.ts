@@ -550,9 +550,73 @@ async function loadLore(name: string): Promise<void> {
   }
 }
 
+type EncounterSortColumn = "location" | "game" | "method" | "chance" | "levels" | "conditions" | null;
+type EncounterSortDirection = "asc" | "desc" | null;
+
+interface EncounterRow {
+  location: string;
+  game: string;
+  method: string;
+  chance: number;
+  minLevel: number;
+  maxLevel: number;
+  conditions: string;
+}
+
+let encounterSortColumn: EncounterSortColumn = null;
+let encounterSortDirection: EncounterSortDirection = null;
+let encounterRows: EncounterRow[] = [];
+
+function sortEncounterRows(rows: EncounterRow[], column: EncounterSortColumn, direction: EncounterSortDirection): EncounterRow[] {
+  if (!column || !direction) return rows;
+  const mult = direction === "asc" ? 1 : -1;
+  return [...rows].sort((a, b) => {
+    switch (column) {
+      case "location": return mult * a.location.localeCompare(b.location);
+      case "game": return mult * a.game.localeCompare(b.game);
+      case "method": return mult * a.method.localeCompare(b.method);
+      case "chance": return mult * (a.chance - b.chance);
+      case "levels": return mult * (a.minLevel - b.minLevel || a.maxLevel - b.maxLevel);
+      case "conditions": return mult * a.conditions.localeCompare(b.conditions);
+      default: return 0;
+    }
+  });
+}
+
+function renderEncounterTbody(el: HTMLElement): void {
+  const sorted = sortEncounterRows(encounterRows, encounterSortColumn, encounterSortDirection);
+  const tbody = el.querySelector(".encounters-table tbody");
+  if (!tbody) return;
+  tbody.innerHTML = sorted.map((r) => `<tr>
+            <td>${r.location}</td>
+            <td>${r.game}</td>
+            <td>${r.method}</td>
+            <td>${r.chance}%</td>
+            <td>${r.minLevel === r.maxLevel ? `Lv. ${r.minLevel}` : `Lv. ${r.minLevel}-${r.maxLevel}`}</td>
+            <td>${r.conditions}</td>
+          </tr>`).join("");
+}
+
+function updateEncounterSortIndicators(el: HTMLElement): void {
+  el.querySelectorAll<HTMLElement>("th.sortable").forEach((th) => {
+    const col = th.dataset.col as EncounterSortColumn;
+    const indicator = th.querySelector<HTMLElement>(".sort-indicator");
+    if (!indicator) return;
+    th.classList.toggle("active", col === encounterSortColumn);
+    indicator.className = "sort-indicator";
+    if (col === encounterSortColumn && encounterSortDirection) {
+      indicator.classList.add(encounterSortDirection);
+    }
+  });
+}
+
 async function loadEncounters(name: string): Promise<void> {
   const el = document.getElementById("pokemon-encounters") as HTMLDivElement;
   if (!el) return;
+
+  encounterSortColumn = null;
+  encounterSortDirection = null;
+  encounterRows = [];
 
   try {
     const encounters = await GetPokemonEncounters(name);
@@ -564,30 +628,20 @@ async function loadEncounters(name: string): Promise<void> {
       return;
     }
 
-    // Flatten encounters into table rows
-    const rows: string[] = [];
     for (const enc of encounters) {
       const location = formatLocationName(enc.LocationArea);
       for (const v of enc.Versions || []) {
         const game = capitalize(v.Version);
         for (const d of v.Details || []) {
-          const method = formatEncounterMethod(d.Method);
-          const chance = `${d.Chance}%`;
-          const levels = d.MinLevel === d.MaxLevel
-            ? `Lv. ${d.MinLevel}`
-            : `Lv. ${d.MinLevel}-${d.MaxLevel}`;
-          const conditions = (d.Conditions || [])
-            .map((c: any) => c.Name)
-            .filter(Boolean)
-            .join(", ") || "\u2014";
-          rows.push(`<tr>
-            <td>${location}</td>
-            <td>${game}</td>
-            <td>${method}</td>
-            <td>${chance}</td>
-            <td>${levels}</td>
-            <td>${conditions}</td>
-          </tr>`);
+          encounterRows.push({
+            location,
+            game,
+            method: formatEncounterMethod(d.Method),
+            chance: d.Chance,
+            minLevel: d.MinLevel,
+            maxLevel: d.MaxLevel,
+            conditions: (d.Conditions || []).map((c: any) => c.Name).filter(Boolean).join(", ") || "\u2014",
+          });
         }
       }
     }
@@ -598,17 +652,38 @@ async function loadEncounters(name: string): Promise<void> {
         <table class="poke-table encounters-table">
           <thead>
             <tr>
-              <th>Location</th>
-              <th>Game</th>
-              <th>Method</th>
-              <th>Chance</th>
-              <th>Levels</th>
-              <th>Conditions</th>
+              <th class="sortable" data-col="location">Location <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="game">Game <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="method">Method <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="chance">Chance <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="levels">Levels <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="conditions">Conditions <span class="sort-indicator"></span></th>
             </tr>
           </thead>
-          <tbody>${rows.join("")}</tbody>
+          <tbody></tbody>
         </table>
       </div>`;
+
+    renderEncounterTbody(el);
+
+    el.querySelectorAll<HTMLElement>("th.sortable").forEach((th) => {
+      th.addEventListener("click", () => {
+        const col = th.dataset.col as EncounterSortColumn;
+        if (encounterSortColumn === col) {
+          if (encounterSortDirection === "asc") {
+            encounterSortDirection = "desc";
+          } else if (encounterSortDirection === "desc") {
+            encounterSortColumn = null;
+            encounterSortDirection = null;
+          }
+        } else {
+          encounterSortColumn = col;
+          encounterSortDirection = "asc";
+        }
+        updateEncounterSortIndicators(el);
+        renderEncounterTbody(el);
+      });
+    });
   } catch {
     el.innerHTML = `
       <h3>Encounters</h3>
