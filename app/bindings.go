@@ -350,6 +350,11 @@ func (a *App) GetLocationArea(name string) (core.LocationArea, error) {
 	return a.fetcher.FetchLocationArea(core.NormalizeName(name))
 }
 
+// GetLocationEncounters returns aggregated encounters for all areas of a location.
+func (a *App) GetLocationEncounters(name string) ([]core.PokemonEncounter, error) {
+	return a.fetcher.FetchLocationEncounters(core.NormalizeName(name))
+}
+
 // --- Grupo G: Stats y generaciones ---
 
 func (a *App) GetStatDetail(name string) (core.StatDetail, error) {
