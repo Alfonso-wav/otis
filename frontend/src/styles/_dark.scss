@@ -525,4 +525,14 @@
   .build-slot-clear:hover {
     color: $navy-blue-text;
   }
+
+  // ─── Explore table wrappers ────────────────────────────────────────────
+  .moves-table-wrap,
+  .abilities-table-wrap {
+    background: #1a202c;
+  }
+
+  .abilities-table .ability-desc-cell {
+    color: #a0aec0;
+  }
 }
