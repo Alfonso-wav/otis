@@ -620,6 +620,7 @@ interface EncounterRow {
 let encounterSortColumn: EncounterSortColumn = null;
 let encounterSortDirection: EncounterSortDirection = null;
 let encounterRows: EncounterRow[] = [];
+let selectedGames: string[] = [];
 
 function sortEncounterRows(rows: EncounterRow[], column: EncounterSortColumn, direction: EncounterSortDirection): EncounterRow[] {
   if (!column || !direction) return rows;
@@ -638,7 +639,10 @@ function sortEncounterRows(rows: EncounterRow[], column: EncounterSortColumn, di
 }
 
 function renderEncounterTbody(el: HTMLElement): void {
-  const sorted = sortEncounterRows(encounterRows, encounterSortColumn, encounterSortDirection);
+  const filtered = selectedGames.length > 0
+    ? encounterRows.filter((r) => selectedGames.includes(r.game))
+    : encounterRows;
+  const sorted = sortEncounterRows(filtered, encounterSortColumn, encounterSortDirection);
   const tbody = el.querySelector(".encounters-table tbody");
   if (!tbody) return;
   tbody.innerHTML = sorted.map((r) => `<tr>
@@ -673,6 +677,7 @@ async function loadEncounters(name: string): Promise<void> {
   encounterSortColumn = null;
   encounterSortDirection = null;
   encounterRows = [];
+  selectedGames = [];
 
   try {
     const encounters = await GetPokemonEncounters(name);
@@ -702,8 +707,16 @@ async function loadEncounters(name: string): Promise<void> {
       }
     }
 
+    const availableGames = [...new Set(encounterRows.map((r) => r.game))].sort();
+
     el.innerHTML = `
       <h3>Encounters</h3>
+      <div class="encounters-filter-bar">
+        <div class="filter-dropdown" id="dropdown-encounter-game">
+          <button class="filter-dropdown__trigger" type="button">Game</button>
+          <div class="filter-dropdown__panel" id="filter-encounter-game"></div>
+        </div>
+      </div>
       <div class="encounters-table-wrap">
         <table class="poke-table encounters-table" data-table-id="encounters">
           <thead>
@@ -719,6 +732,44 @@ async function loadEncounters(name: string): Promise<void> {
           <tbody></tbody>
         </table>
       </div>`;
+
+    // Setup game filter dropdown
+    const gameDropdown = document.getElementById("dropdown-encounter-game")!;
+    const gamePanel = document.getElementById("filter-encounter-game")!;
+
+    gameDropdown.querySelector(".filter-dropdown__trigger")!.addEventListener("click", () => {
+      toggleDropdown("dropdown-encounter-game");
+    });
+
+    availableGames.forEach((game) => {
+      const chip = document.createElement("button");
+      chip.className = "filter-chip";
+      chip.dataset.value = game;
+      chip.textContent = game;
+      chip.addEventListener("click", () => {
+        chip.classList.toggle("active");
+        if (chip.classList.contains("active")) {
+          selectedGames.push(game);
+        } else {
+          selectedGames = selectedGames.filter((g) => g !== game);
+        }
+        updateDropdownTrigger("dropdown-encounter-game", "Game", selectedGames.length);
+        renderEncounterTbody(el);
+      });
+      gamePanel.appendChild(chip);
+    });
+
+    // Reset button
+    const resetBtn = document.createElement("button");
+    resetBtn.className = "filter-chip filter-chip--reset";
+    resetBtn.textContent = "✕ Reset";
+    resetBtn.addEventListener("click", () => {
+      selectedGames = [];
+      gamePanel.querySelectorAll(".filter-chip.active").forEach((c) => c.classList.remove("active"));
+      updateDropdownTrigger("dropdown-encounter-game", "Game", 0);
+      renderEncounterTbody(el);
+    });
+    gamePanel.insertBefore(resetBtn, gamePanel.firstChild);
 
     renderEncounterTbody(el);
     initColumnToggle("encounters", ENCOUNTER_TABLE_COLUMNS);
