@@ -270,7 +270,29 @@ th.sortable.active .sort-indicator {
   color: $pokedex-red;
 }
 
+// -- Scroll sentinel (infinite scroll loader) --------------------------------
+
+.scroll-sentinel {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem 0;
+
+  &.hidden {
+    display: none;
+  }
+
+  &__text {
+    font-family: $font-body;
+    font-size: 0.85rem;
+    color: #a0aec0;
+  }
+}
+
 // -- Pagination --------------------------------------------------------------
+
+#pagination.hidden {
+  display: none !important;
+}
 
 #pagination {
   @include mobile {
