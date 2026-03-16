@@ -44,6 +44,7 @@
 // --- Ubicaciones (Grupo F) ---
 // GetPokemonEncounters → GET  /api/pokemon/{name}/encounters
 // GetLocation          → GET  /api/locations/{name}
+// GetLocationEncounters → GET /api/locations/{name}/encounters
 // GetLocationArea      → GET  /api/location-areas/{name}
 //
 // --- Stats y generaciones (Grupo G) ---
@@ -439,6 +440,15 @@ func RegisterRoutes(mux *http.ServeMux, a *app.App) {
 
 	mux.HandleFunc("GET /api/locations/{name}", func(w http.ResponseWriter, r *http.Request) {
 		result, err := a.GetLocation(r.PathValue("name"))
+		if err != nil {
+			jsonError(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		jsonResponse(w, result)
+	})
+
+	mux.HandleFunc("GET /api/locations/{name}/encounters", func(w http.ResponseWriter, r *http.Request) {
+		result, err := a.GetLocationEncounters(r.PathValue("name"))
 		if err != nil {
 			jsonError(w, err.Error(), http.StatusNotFound)
 			return
