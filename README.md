@@ -22,7 +22,7 @@
 
 ## Que es Otis
 
-Una aplicacion de escritorio y movil para explorar el mundo Pokemon: buscar Pokemon, consultar movimientos y habilidades, recorrer regiones, montar equipos y simular combates con calculo de dano real.
+Una aplicacion de escritorio y movil para explorar el mundo Pokemon: buscar Pokemon, consultar movimientos y habilidades, recorrer regiones, montar equipos y simular combates con calculo de daño real.
 
 Todo el backend es Go puro con arquitectura funcional (Core / Shell / App). El frontend es TypeScript con Bootstrap, ECharts y GSAP. Corre como app nativa via Wails (desktop) o Capacitor (Android).
 
@@ -84,12 +84,12 @@ Todo el backend es Go puro con arquitectura funcional (Core / Shell / App). El f
 <tr>
 <td>
 
-### Calculadora de dano
+### Calculadora de daño
 <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/376.png" width="40" />
 
-- Formula real de dano Pokemon
+- Formula real de daño Pokemon
 - STAB, matchups de tipo, golpes criticos
-- Rango de dano (min/max)
+- Rango de daño (min/max)
 
 </td>
 <td>
