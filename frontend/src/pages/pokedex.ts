@@ -30,6 +30,10 @@ let filteredList: PokemonListItem[] = [];
 let offset = 0;
 let totalCount = 0;
 let viewMode: "grid" | "table" = "grid";
+let infiniteLoading = false;
+let scrollObserver: IntersectionObserver | null = null;
+let scrollSentinel: HTMLDivElement;
+let paginationEl: HTMLDivElement;
 
 // -- Sorting state -----------------------------------------------------------
 
@@ -179,8 +183,13 @@ async function loadList(): Promise<void> {
   try {
     const data = await ListPokemon(offset, LIMIT);
     totalCount = data.Count;
-    await renderCurrentView(data.Results);
-    updatePagination();
+    if (viewMode === "grid") {
+      renderGrid(data.Results, false);
+      updateScrollSentinel();
+    } else {
+      await renderTable(data.Results);
+      updatePagination();
+    }
   } catch (err: unknown) {
     grid.innerHTML = `<p class="loading error-text">${String(err)}</p>`;
   }
@@ -249,8 +258,13 @@ async function loadFiltered(): Promise<void> {
     offset = 0;
 
     const page = filteredList.slice(0, LIMIT);
-    await renderCurrentView(page);
-    updatePagination();
+    if (viewMode === "grid") {
+      renderGrid(page, false);
+      updateScrollSentinel();
+    } else {
+      await renderTable(page);
+      updatePagination();
+    }
   } catch (err: unknown) {
     grid.innerHTML = `<p class="loading error-text">${String(err)}</p>`;
   }
@@ -301,14 +315,14 @@ async function filterByLegendary(list: PokemonListItem[]): Promise<PokemonListIt
 
 // -- Render ------------------------------------------------------------------
 
-function renderGrid(items: PokemonListItem[]): void {
+function renderGrid(items: PokemonListItem[], append = false): void {
   lastRenderedItems = items;
   if (!items || items.length === 0) {
-    grid.innerHTML = '<p class="loading">No se encontraron Pokémon.</p>';
+    if (!append) grid.innerHTML = '<p class="loading">No se encontraron Pokémon.</p>';
     return;
   }
 
-  grid.innerHTML = items
+  const html = items
     .map((item) => {
       const id = idFromURL(item.URL);
       const sprite = spriteURL(item.Name);
@@ -322,14 +336,30 @@ function renderGrid(items: PokemonListItem[]): void {
     })
     .join("");
 
-  grid.querySelectorAll<HTMLDivElement>(".poke-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      const name = card.dataset.name;
-      if (name) showDetail(name);
+  if (append) {
+    const countBefore = grid.querySelectorAll(".poke-card").length;
+    grid.insertAdjacentHTML("beforeend", html);
+    // Attach click listeners and animate only new cards
+    const allCards = grid.querySelectorAll<HTMLDivElement>(".poke-card");
+    allCards.forEach((card, i) => {
+      if (i >= countBefore) {
+        card.addEventListener("click", () => {
+          const name = card.dataset.name;
+          if (name) showDetail(name);
+        });
+      }
     });
-  });
-
-  staggerCards(grid);
+    staggerNewCards(grid, countBefore);
+  } else {
+    grid.innerHTML = html;
+    grid.querySelectorAll<HTMLDivElement>(".poke-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const name = card.dataset.name;
+        if (name) showDetail(name);
+      });
+    });
+    staggerCards(grid);
+  }
 }
 
 async function renderCurrentView(items: PokemonListItem[]): Promise<void> {
@@ -337,7 +367,7 @@ async function renderCurrentView(items: PokemonListItem[]): Promise<void> {
   if (viewMode === "table") {
     await renderTable(items);
   } else {
-    renderGrid(items);
+    renderGrid(items, false);
   }
 }
 
@@ -833,7 +863,7 @@ function capitalize(s: string): string {
 async function search(): Promise<void> {
   const query = searchInput.value.trim().toLowerCase();
   if (!query) {
-    offset = 0;
+    resetInfiniteScroll();
     filter = { generations: [], types: [], legendary: false, mythical: false };
     filteredList = [];
     resetSorting();
@@ -941,7 +971,7 @@ function formatGenName(name: string): string {
 }
 
 function applyFilters(): void {
-  offset = 0;
+  resetInfiniteScroll();
   filteredList = [];
 
   if (hasFilter()) {
@@ -990,6 +1020,94 @@ function spriteOnerror(name: string): string {
   return `var f=parseInt(this.dataset.fallback||'0');if(f===0){this.dataset.fallback='1';this.src='${fb1}'}else if(f===1){this.dataset.fallback='2';this.src='${fb2}'}else if(f===2){this.dataset.fallback='3';this.src='${fb3}'}else{this.onerror=null;this.style.visibility='hidden'}`;
 }
 
+// -- Infinite scroll ---------------------------------------------------------
+
+function staggerNewCards(container: HTMLElement, startIndex: number): void {
+  const cards = container.querySelectorAll(".poke-card");
+  const newCards = Array.from(cards).slice(startIndex);
+  if (newCards.length === 0) return;
+
+  import("gsap").then(({ default: gsap }) => {
+    gsap.fromTo(
+      newCards,
+      { opacity: 0, y: 15 },
+      { opacity: 1, y: 0, duration: 0.25, stagger: 0.03, ease: "power2.out" },
+    );
+  });
+}
+
+async function loadNextBatch(): Promise<void> {
+  if (infiniteLoading || viewMode !== "grid") return;
+  const total = sortedFullList ? sortedFullList.length : totalCount;
+  if (offset + LIMIT >= total) return;
+
+  infiniteLoading = true;
+  offset += LIMIT;
+
+  try {
+    let items: PokemonListItem[];
+    if (sortedFullList) {
+      items = getCurrentPageItems();
+    } else if (hasFilter()) {
+      items = filteredList.slice(offset, offset + LIMIT);
+    } else {
+      const data = await ListPokemon(offset, LIMIT);
+      items = data.Results;
+    }
+    renderGrid(items, true);
+    updateScrollSentinel();
+  } catch (err: unknown) {
+    console.error("Error loading next batch:", err);
+    offset -= LIMIT;
+  } finally {
+    infiniteLoading = false;
+  }
+}
+
+function setupScrollObserver(): void {
+  if (scrollObserver) scrollObserver.disconnect();
+  scrollObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) {
+        loadNextBatch();
+      }
+    },
+    { rootMargin: "200px" },
+  );
+  scrollObserver.observe(scrollSentinel);
+}
+
+function disconnectScrollObserver(): void {
+  if (scrollObserver) {
+    scrollObserver.disconnect();
+    scrollObserver = null;
+  }
+}
+
+function updateScrollSentinel(): void {
+  const total = sortedFullList ? sortedFullList.length : totalCount;
+  const allLoaded = offset + LIMIT >= total;
+  scrollSentinel.classList.toggle("hidden", allLoaded);
+}
+
+function updatePaginationVisibility(): void {
+  if (viewMode === "grid") {
+    paginationEl.classList.add("hidden");
+    scrollSentinel.classList.remove("hidden");
+    setupScrollObserver();
+  } else {
+    paginationEl.classList.remove("hidden");
+    scrollSentinel.classList.add("hidden");
+    disconnectScrollObserver();
+  }
+}
+
+function resetInfiniteScroll(): void {
+  offset = 0;
+  grid.innerHTML = "";
+  updateScrollSentinel();
+}
+
 // -- Current page items helper -----------------------------------------------
 
 let lastRenderedItems: PokemonListItem[] = [];
@@ -1021,6 +1139,8 @@ export function initPokedex(): void {
   filterMythicalBtn = document.getElementById("filter-mythical") as HTMLButtonElement;
   filterResetBtn = document.getElementById("filter-reset") as HTMLButtonElement;
   viewToggleBtn = document.getElementById("view-toggle-btn") as HTMLButtonElement;
+  scrollSentinel = document.getElementById("scroll-sentinel") as HTMLDivElement;
+  paginationEl = document.getElementById("pagination") as HTMLDivElement;
 
   prevBtn.addEventListener("click", prevPage);
   nextBtn.addEventListener("click", nextPage);
@@ -1030,16 +1150,29 @@ export function initPokedex(): void {
     viewMode = viewMode === "grid" ? "table" : "grid";
     resetSorting();
     viewToggleBtn.textContent = viewMode === "grid" ? "⊞ Tabla" : "⊟ Tarjetas";
+    updatePaginationVisibility();
 
-    const items = getCurrentPageItems();
     if (oldMode === "grid" && viewMode === "table") {
+      // Switch to table: reset offset for table pagination, render first page
+      offset = 0;
+      const items = getCurrentPageItems();
       await morphToTable(grid, async () => {
         await renderTable(items);
       });
+      updatePagination();
     } else {
+      // Switch to grid: reset and load with infinite scroll
+      offset = 0;
       await morphToGrid(grid, () => {
-        renderGrid(items);
+        // Will be replaced by loadList below
       });
+      if (hasFilter()) {
+        renderGrid(filteredList.slice(0, LIMIT), false);
+      } else {
+        await loadList();
+        return;
+      }
+      updateScrollSentinel();
     }
   });
 
@@ -1057,7 +1190,7 @@ export function initPokedex(): void {
   filterLegendaryBtn.addEventListener("click", () => {
     filter.legendary = !filter.legendary;
     filterLegendaryBtn.classList.toggle("active", filter.legendary);
-    offset = 0;
+    resetInfiniteScroll();
     filteredList = [];
     if (hasFilter()) loadFiltered();
     else loadList();
@@ -1066,14 +1199,14 @@ export function initPokedex(): void {
   filterMythicalBtn.addEventListener("click", () => {
     filter.mythical = !filter.mythical;
     filterMythicalBtn.classList.toggle("active", filter.mythical);
-    offset = 0;
+    resetInfiniteScroll();
     filteredList = [];
     if (hasFilter()) loadFiltered();
     else loadList();
   });
 
   filterResetBtn.addEventListener("click", () => {
-    offset = 0;
+    resetInfiniteScroll();
     filter = { generations: [], types: [], legendary: false, mythical: false };
     filteredList = [];
     resetSorting();
@@ -1082,6 +1215,7 @@ export function initPokedex(): void {
   });
 
   populateFilters();
+  updatePaginationVisibility();
   loadList();
 
   // Load all pokemon names for autocomplete (non-blocking)
