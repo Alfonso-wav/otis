@@ -110,6 +110,9 @@ func (m *mockFetcher) FetchLocation(name string) (core.LocationDetail, error) {
 func (m *mockFetcher) FetchLocationArea(name string) (core.LocationArea, error) {
 	return core.LocationArea{}, nil
 }
+func (m *mockFetcher) FetchLocationEncounters(name string) ([]core.PokemonEncounter, error) {
+	return nil, nil
+}
 func (m *mockFetcher) FetchPokemonEncounters(name string) ([]core.PokemonLocationEncounter, error) {
 	return nil, nil
 }

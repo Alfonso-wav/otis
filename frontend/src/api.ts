@@ -147,6 +147,11 @@ export function GetPokemonEncounters(name: string): Promise<any[]> {
   return get(`/api/pokemon/${encodeURIComponent(name)}/encounters`);
 }
 
+export function GetLocationEncounters(name: string): Promise<{ PokemonName: string; MaxChance: number }[]> {
+  if (isWails()) return wails("GetLocationEncounters", name);
+  return get(`/api/locations/${encodeURIComponent(name)}/encounters`);
+}
+
 // --- Movimientos ---
 
 export function GetAllMoves(): Promise<core.Move[]> {

@@ -81,3 +81,22 @@ func (c *PokeAPIClient) FetchLocationArea(name string) (core.LocationArea, error
 		PokemonEncounters: encounters,
 	}, nil
 }
+
+// FetchLocationEncounters fetches all areas of a location and aggregates their encounters.
+func (c *PokeAPIClient) FetchLocationEncounters(name string) ([]core.PokemonEncounter, error) {
+	loc, err := c.FetchLocation(name)
+	if err != nil {
+		return nil, err
+	}
+
+	areas := make([]core.LocationArea, 0, len(loc.Areas))
+	for _, areaName := range loc.Areas {
+		area, err := c.FetchLocationArea(areaName)
+		if err != nil {
+			continue
+		}
+		areas = append(areas, area)
+	}
+
+	return core.AggregateEncounters(areas), nil
+}
