@@ -198,11 +198,6 @@ export function SimulateMultipleTeamBattles(team1Name: string, team2Name: string
 
 // --- Calculadoras ---
 
-export function CalculateEVs(input: core.EVCalculatorInput): Promise<core.EVCalculatorResult> {
-  if (isWails()) return wails("CalculateEVs", input);
-  return post("/api/calculator/evs", input);
-}
-
 export function CalculateStats(input: core.StatCalculatorInput): Promise<core.Stats> {
   if (isWails()) return wails("CalculateStats", input);
   return post("/api/calculator/stats", input);
