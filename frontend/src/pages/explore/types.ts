@@ -1,6 +1,6 @@
 import gsap from "gsap";
-import { ListTypes, GetType } from "../api";
-import type { PokemonListItem } from "../types";
+import { ListTypes, GetType } from "../../api";
+import type { PokemonListItem } from "../../types";
 
 const POKEMON_DISPLAY_LIMIT = 50;
 
@@ -9,9 +9,6 @@ const GAME_TYPES = new Set([
   "fighting", "poison", "ground", "flying", "psychic", "bug",
   "rock", "ghost", "dragon", "dark", "steel", "fairy",
 ]);
-
-let container: HTMLElement;
-let initialized = false;
 
 function spriteURL(name: string): string {
   const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -30,12 +27,12 @@ function typeHeaderClass(typeName: string): string {
   return GAME_TYPES.has(typeName) ? `type-header-${typeName}` : "type-header-default";
 }
 
-function renderTypeCards(types: PokemonListItem[]): void {
+function renderTypeCards(panel: HTMLElement, types: PokemonListItem[]): void {
   const filtered = types.filter((t) => GAME_TYPES.has(t.Name));
-  container.innerHTML = `
+  panel.innerHTML = `
     <div class="section-header"><h2>Tipos</h2></div>
-    <div class="types-grid" id="types-grid"></div>`;
-  const grid = document.getElementById("types-grid") as HTMLDivElement;
+    <div class="types-grid" id="explore-types-grid"></div>`;
+  const grid = panel.querySelector<HTMLDivElement>("#explore-types-grid")!;
 
   grid.innerHTML = filtered
     .map(
@@ -43,7 +40,7 @@ function renderTypeCards(types: PokemonListItem[]): void {
     <div class="type-card" data-type="${t.Name}">
       <div class="type-card__header ${typeHeaderClass(t.Name)}">
         <span class="type-card__name">${t.Name}</span>
-        <span class="type-card__chevron">▼</span>
+        <span class="type-card__chevron">&#9660;</span>
       </div>
       <div class="type-card__pokemon hidden"></div>
     </div>`,
@@ -87,7 +84,6 @@ async function toggleType(card: HTMLDivElement): Promise<void> {
 
   card.classList.add("expanded");
 
-  // Already loaded — just show
   if (pokemonPanel.innerHTML.trim() !== "") {
     pokemonPanel.classList.remove("hidden");
     gsap.fromTo(pokemonPanel, { opacity: 0 }, { opacity: 1, duration: 0.2 });
@@ -115,7 +111,7 @@ async function toggleType(card: HTMLDivElement): Promise<void> {
 
     const moreHTML =
       remaining > 0
-        ? `<div class="type-pokemon-more">+${remaining} más</div>`
+        ? `<div class="type-pokemon-more">+${remaining} m&aacute;s</div>`
         : "";
 
     pokemonPanel.innerHTML = `<div class="type-pokemon-grid">${pokemonHTML}</div>${moreHTML}`;
@@ -153,23 +149,11 @@ async function toggleType(card: HTMLDivElement): Promise<void> {
   }
 }
 
-export function initTypes(): void {
-  container = document.getElementById("tab-types") as HTMLElement;
-
-  const tabBtn = document.querySelector<HTMLButtonElement>(
-    '[data-tab="types"]',
-  );
-  if (!tabBtn) return;
-
-  tabBtn.addEventListener("click", async () => {
-    if (initialized) return;
-    initialized = true;
-    container.innerHTML = '<p class="loading">Cargando tipos...</p>';
-    try {
-      const data = await ListTypes();
-      renderTypeCards(data.Results || []);
-    } catch (err: unknown) {
-      container.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
-    }
-  });
+export function initTypes(panel: HTMLElement): void {
+  panel.innerHTML = '<p class="loading">Cargando tipos...</p>';
+  ListTypes()
+    .then((data) => renderTypeCards(panel, data.Results || []))
+    .catch((err: unknown) => {
+      panel.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
+    });
 }
