@@ -1,9 +1,13 @@
 import gsap from "gsap";
-import { ListRegions, GetRegion, GetRegionPokemonByType } from "../../api";
+import { ListRegions, GetRegion, GetRegionPokemonByType, GetLocationEncounters } from "../../api";
 import { renderTypeDistributionChart } from "../../charts/type-distribution";
 import { openTypeModal } from "../../components/pokemon-type-modal";
+import { openLocationEncounterModal } from "../../components/location-encounter-modal";
 
 let initialized = false;
+
+// Track expanded/collapsed state per region
+const expandedLocations = new Map<string, boolean>();
 
 function regionLabel(name: string): string {
   const labels: Record<string, string> = {
@@ -60,22 +64,27 @@ async function loadRegionDetail(
     const locations = region.Locations ?? [];
 
     const chartId = `chart-region-${regionName}`;
+    const limit = 20;
+    const hasMore = locations.length > limit;
+    const isExpanded = expandedLocations.get(regionName) ?? false;
+    const visibleLocations = isExpanded ? locations : locations.slice(0, limit);
+
     body.innerHTML = `
       <div class="region-detail">
         <div class="region-locations">
           <h4 class="region-section-title">Localizaciones (${locations.length})</h4>
           <div class="region-locations-grid">
-            ${
-              locations
-                .slice(0, 20)
-                .map(
-                  (l) =>
-                    `<span class="region-location-tag">${l.Name.replace(/-/g, " ")}</span>`,
-                )
-                .join("") +
-              (locations.length > 20
-                ? `<span class="region-location-more">+${locations.length - 20} más</span>`
-                : "")
+            ${visibleLocations
+              .map(
+                (l) =>
+                  `<span class="region-location-tag" data-location="${l.Name}">${l.Name.replace(/-/g, " ")}</span>`,
+              )
+              .join("")}${
+              hasMore
+                ? isExpanded
+                  ? `<span class="region-location-more region-location-toggle" data-region="${regionName}" data-action="collapse">Mostrar menos</span>`
+                  : `<span class="region-location-more region-location-toggle" data-region="${regionName}" data-action="expand">+${locations.length - limit} más</span>`
+                : ""
             }
           </div>
         </div>
@@ -93,6 +102,27 @@ async function loadRegionDetail(
       { opacity: 0, y: 8 },
       { opacity: 1, y: 0, duration: 0.2, stagger: 0.02, ease: "power2.out" },
     );
+
+    // Click on location tag → open encounter modal
+    body.querySelectorAll<HTMLElement>(".region-location-tag").forEach((tag) => {
+      tag.addEventListener("click", async () => {
+        const locName = tag.dataset.location!;
+        openLocationEncounterModal(locName);
+      });
+    });
+
+    // Click on "+X más" / "Mostrar menos" → expand/collapse
+    const toggleBtn = body.querySelector<HTMLElement>(".region-location-toggle");
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", () => {
+        const action = toggleBtn.dataset.action;
+        expandedLocations.set(regionName, action === "expand");
+        // Re-render by forcing reload
+        body.dataset.loaded = "false";
+        card.classList.remove("expanded");
+        loadRegionDetail(card, regionName);
+      });
+    }
 
     renderTypeDistributionChart(chartId, regionName, async (typeName: string) => {
       try {
