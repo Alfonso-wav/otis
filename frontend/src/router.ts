@@ -7,6 +7,7 @@ export interface Page {
 
 const pages: Page[] = [];
 let activeId: string | null = null;
+let previousId: string | null = null;
 const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
 export function registerPage(page: Page): void {
@@ -57,6 +58,35 @@ export function navigate(id: string): void {
   }
 }
 
+export function navigateSettings(): void {
+  previousId = activeId;
+  const settingsPage = document.getElementById("tab-settings");
+  const tabNav = document.getElementById("tab-nav");
+  if (!settingsPage) return;
+
+  // Hide all tab pages
+  pages.forEach((p) => p.container.classList.add("hidden"));
+  settingsPage.classList.remove("hidden");
+
+  // Hide tab nav
+  if (tabNav) tabNav.classList.add("hidden");
+}
+
+export function navigateBack(): void {
+  const settingsPage = document.getElementById("tab-settings");
+  const tabNav = document.getElementById("tab-nav");
+
+  if (settingsPage) settingsPage.classList.add("hidden");
+  if (tabNav) tabNav.classList.remove("hidden");
+
+  const target = previousId ?? "pokedex";
+  const page = pages.find((p) => p.id === target);
+  if (page) {
+    page.container.classList.remove("hidden");
+    activeId = target;
+  }
+}
+
 export function initRouter(defaultId: string): void {
   activeId = defaultId;
 
@@ -66,4 +96,11 @@ export function initRouter(defaultId: string): void {
       if (tabId) navigate(tabId);
     });
   });
+
+  document
+    .getElementById("settings-btn")
+    ?.addEventListener("click", navigateSettings);
+  document
+    .getElementById("settings-back-btn")
+    ?.addEventListener("click", navigateBack);
 }

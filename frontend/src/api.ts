@@ -121,137 +121,33 @@ export function GetMove(name: string): Promise<core.Move> {
   return get(`/api/moves/${encodeURIComponent(name)}`);
 }
 
-export function GetAbility(name: string): Promise<core.Ability> {
-  if (isWails()) return wails("GetAbility", name);
-  return get(`/api/abilities/${encodeURIComponent(name)}`);
-}
-
-export function GetEvolutionChain(id: number): Promise<core.EvolutionChain> {
-  if (isWails()) return wails("GetEvolutionChain", id);
-  return get(`/api/evolution-chain/${id}`);
-}
-
 export function GetNatures(): Promise<core.Nature[]> {
   if (isWails()) return wails("GetNatures");
   return get("/api/natures");
 }
 
-// --- Grupo A: Pokémon extendido ---
+// --- Pokémon extendido ---
 
 export function GetPokemonSpecies(name: string): Promise<core.PokemonSpecies> {
   if (isWails()) return wails("GetPokemonSpecies", name);
   return get(`/api/pokemon-species/${encodeURIComponent(name)}`);
 }
 
-export function GetPokemonForm(name: string): Promise<core.PokemonForm> {
-  if (isWails()) return wails("GetPokemonForm", name);
-  return get(`/api/pokemon-forms/${encodeURIComponent(name)}`);
-}
-
-export function ListPokemonColors(): Promise<core.NamedResource[]> {
-  if (isWails()) return wails("ListPokemonColors");
-  return get("/api/pokemon-colors");
-}
-
-export function ListPokemonShapes(): Promise<core.NamedResource[]> {
-  if (isWails()) return wails("ListPokemonShapes");
-  return get("/api/pokemon-shapes");
-}
-
-export function ListPokemonHabitats(): Promise<core.NamedResource[]> {
-  if (isWails()) return wails("ListPokemonHabitats");
-  return get("/api/pokemon-habitats");
-}
-
-// --- Grupo B: Naturalezas y cría ---
-
-export function ListNatureNames(): Promise<core.NamedResource[]> {
-  if (isWails()) return wails("ListNatureNames");
-  return get("/api/nature-names");
-}
-
-export function GetNatureDetail(name: string): Promise<core.NatureDetail> {
-  if (isWails()) return wails("GetNatureDetail", name);
-  return get(`/api/nature-detail/${encodeURIComponent(name)}`);
-}
-
-export function GetEggGroup(name: string): Promise<core.EggGroup> {
-  if (isWails()) return wails("GetEggGroup", name);
-  return get(`/api/egg-groups/${encodeURIComponent(name)}`);
-}
-
-export function GetGender(name: string): Promise<core.Gender> {
-  if (isWails()) return wails("GetGender", name);
-  return get(`/api/genders/${encodeURIComponent(name)}`);
-}
-
-export function GetGrowthRate(name: string): Promise<core.GrowthRate> {
-  if (isWails()) return wails("GetGrowthRate", name);
-  return get(`/api/growth-rates/${encodeURIComponent(name)}`);
-}
-
-// --- Grupo C: Movimientos ---
+// --- Movimientos ---
 
 export function GetAllMoves(): Promise<core.Move[]> {
   if (isWails()) return wails("GetAllMoves");
   return get("/api/moves/all");
 }
 
-export function ListMoves(offset: number, limit: number): Promise<core.MoveListResponse> {
-  if (isWails()) return wails("ListMoves", offset, limit);
-  return get(`/api/moves?offset=${offset}&limit=${limit}`);
-}
-
-export function GetMoveDamageClass(name: string): Promise<core.MoveDamageClass> {
-  if (isWails()) return wails("GetMoveDamageClass", name);
-  return get(`/api/move-damage-classes/${encodeURIComponent(name)}`);
-}
-
-export function GetMoveAilment(name: string): Promise<core.MoveAilment> {
-  if (isWails()) return wails("GetMoveAilment", name);
-  return get(`/api/move-ailments/${encodeURIComponent(name)}`);
-}
-
-export function GetMoveTarget(name: string): Promise<core.MoveTarget> {
-  if (isWails()) return wails("GetMoveTarget", name);
-  return get(`/api/move-targets/${encodeURIComponent(name)}`);
-}
-
-export function GetMachine(id: number): Promise<core.Machine> {
-  if (isWails()) return wails("GetMachine", id);
-  return get(`/api/machines/${id}`);
-}
-
-// --- Grupo D: Habilidades ---
+// --- Habilidades ---
 
 export function GetAllAbilities(): Promise<core.Ability[]> {
   if (isWails()) return wails("GetAllAbilities");
   return get("/api/abilities/all");
 }
 
-export function ListAbilities(offset: number, limit: number): Promise<core.AbilityListResponse> {
-  if (isWails()) return wails("ListAbilities", offset, limit);
-  return get(`/api/abilities?offset=${offset}&limit=${limit}`);
-}
-
-// --- Grupo F: Ubicaciones ---
-
-export function GetLocation(name: string): Promise<core.LocationDetail> {
-  if (isWails()) return wails("GetLocation", name);
-  return get(`/api/locations/${encodeURIComponent(name)}`);
-}
-
-export function GetLocationArea(name: string): Promise<core.LocationArea> {
-  if (isWails()) return wails("GetLocationArea", name);
-  return get(`/api/location-areas/${encodeURIComponent(name)}`);
-}
-
-// --- Grupo G: Stats y generaciones ---
-
-export function GetStatDetail(name: string): Promise<core.StatDetail> {
-  if (isWails()) return wails("GetStatDetail", name);
-  return get(`/api/stats/${encodeURIComponent(name)}`);
-}
+// --- Stats y generaciones ---
 
 export function ListGenerations(): Promise<core.NamedResource[]> {
   if (isWails()) return wails("ListGenerations");
@@ -261,40 +157,6 @@ export function ListGenerations(): Promise<core.NamedResource[]> {
 export function GetGeneration(name: string): Promise<core.Generation> {
   if (isWails()) return wails("GetGeneration", name);
   return get(`/api/generations/${encodeURIComponent(name)}`);
-}
-
-export function ListPokedexes(): Promise<core.NamedResource[]> {
-  if (isWails()) return wails("ListPokedexes");
-  return get("/api/pokedexes");
-}
-
-export function GetPokedex(name: string): Promise<core.Pokedex> {
-  if (isWails()) return wails("GetPokedex", name);
-  return get(`/api/pokedexes/${encodeURIComponent(name)}`);
-}
-
-export function ListVersionGroups(): Promise<core.NamedResource[]> {
-  if (isWails()) return wails("ListVersionGroups");
-  return get("/api/version-groups");
-}
-
-export function GetVersionGroup(name: string): Promise<core.VersionGroup> {
-  if (isWails()) return wails("GetVersionGroup", name);
-  return get(`/api/version-groups/${encodeURIComponent(name)}`);
-}
-
-// --- Scraper ---
-
-export function ScrapePokedex(): Promise<core.PokedexDBEntry[]> {
-  if (isWails()) return wails("ScrapePokedex");
-  return get("/api/scrape/pokedex");
-}
-
-// --- Sprites ---
-
-export function DownloadSprites(categories: string[]): Promise<core.SpriteDownloadResult> {
-  if (isWails()) return wails("DownloadSprites", categories);
-  return post("/api/sprites/download", { categories });
 }
 
 // --- Batalla ---
@@ -351,11 +213,6 @@ export function CalculateStats(input: core.StatCalculatorInput): Promise<core.St
 export function ListTeams(): Promise<core.Team[]> {
   if (isWails()) return wails("ListTeams");
   return get("/api/teams");
-}
-
-export function GetTeam(name: string): Promise<core.Team> {
-  if (isWails()) return wails("GetTeam", name);
-  return get(`/api/teams/${encodeURIComponent(name)}`);
 }
 
 export function CreateTeam(name: string): Promise<void> {

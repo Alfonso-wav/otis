@@ -1,0 +1,344 @@
+@use "variables" as *;
+
+// ─── Dark mode overrides ────────────────────────────────────────────────────
+// Bootstrap 5.3 handles most dark theming via data-bs-theme="dark".
+// These rules cover app-specific custom styles that Bootstrap doesn't touch.
+
+[data-bs-theme="dark"] {
+  // ─── Pokemon cards ──────────────────────────────────────────────────────
+  .poke-card {
+    background: #2d3748;
+    border-color: #4a5568;
+
+    &:hover {
+      border-color: #718096;
+    }
+  }
+
+  .poke-card__number {
+    color: #718096;
+  }
+
+  .poke-card__name {
+    color: #e2e8f0;
+  }
+
+  // ─── Pokemon table ────────────────────────────────────────────────────
+  .poke-table {
+    th {
+      background: #1a202c;
+      color: #a0aec0;
+      border-bottom-color: #4a5568;
+    }
+
+    td {
+      border-bottom-color: #2d3748;
+    }
+
+    tr:hover {
+      background: #2d3748;
+    }
+  }
+
+  @include tablet {
+    .poke-table {
+      th:nth-child(-n+3) { background: #1a202c; }
+      td:nth-child(-n+3) { background: #1a202c; }
+      tr:hover td:nth-child(-n+3) { background: #2d3748; }
+    }
+  }
+
+  // ─── Filters ──────────────────────────────────────────────────────────
+  .filter-bar {
+    border-bottom-color: #4a5568;
+  }
+
+  .filter-select,
+  .filter-dropdown__trigger {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+
+    &:hover {
+      border-color: #718096;
+    }
+  }
+
+  .filter-pill {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #a0aec0;
+
+    &:hover:not(.active) {
+      border-color: #718096;
+      background: #4a5568;
+    }
+  }
+
+  .filter-chip {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #a0aec0;
+
+    &:hover:not(.active) {
+      border-color: #718096;
+      background: #4a5568;
+    }
+  }
+
+  .filter-dropdown__panel {
+    background: #2d3748;
+    border-color: #4a5568;
+  }
+
+  // ─── Item card ────────────────────────────────────────────────────────
+  .item-card {
+    background: #2d3748;
+  }
+
+  // ─── Coming soon ──────────────────────────────────────────────────────
+  .coming-soon {
+    color: #a0aec0;
+
+    h2 {
+      color: #e2e8f0;
+    }
+  }
+
+  // ─── Detail view ──────────────────────────────────────────────────────
+  #back-btn {
+    border-color: $pokedex-red;
+    color: $pokedex-red;
+
+    &:hover {
+      background: rgba($pokedex-red, 0.15);
+    }
+  }
+
+  // ─── Stat bars ────────────────────────────────────────────────────────
+  .stat-bar-wrap {
+    background: #4a5568;
+  }
+
+  // ─── EV calculator ────────────────────────────────────────────────────
+  .ev-results,
+  .ev-ivs-section {
+    background: #2d3748;
+  }
+
+  .ev-summary {
+    background: #1a202c;
+  }
+
+  .ev-max-stats {
+    background: #1a202c;
+  }
+
+  .ev-bar-container {
+    background: #4a5568;
+  }
+
+  // ─── Builds ───────────────────────────────────────────────────────────
+  .build-col {
+    background: #2d3748;
+  }
+
+  .build-col-title,
+  .build-section-title,
+  .build-poke-name,
+  .build-move-name {
+    color: #e2e8f0;
+  }
+
+  .build-stat-val {
+    color: #e2e8f0;
+  }
+
+  .build-slot {
+    background: #2d3748;
+    border-color: #4a5568;
+  }
+
+  .build-search-input {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .build-move-select,
+  .sc-select,
+  .sc-input {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .build-calc-btn {
+    background: #4a5568;
+    border-color: #4a5568;
+    color: #e2e8f0;
+
+    &:hover { background: #718096; }
+  }
+
+  .build-damage-section {
+    background: #2d3748;
+  }
+
+  .sc-table {
+    th { border-bottom-color: #4a5568; }
+    td { color: #e2e8f0; }
+  }
+
+  .build-stats-config {
+    border-top-color: #4a5568;
+  }
+
+  // ─── Damage table ─────────────────────────────────────────────────────
+  .damage-table th {
+    border-bottom-color: #4a5568;
+  }
+
+  .damage-row {
+    border-bottom-color: #2d3748;
+
+    &:hover { background: #2d3748; }
+
+    &--super {
+      background: rgba(72, 187, 120, 0.12);
+      td { color: #68d391; }
+      &:hover { background: rgba(72, 187, 120, 0.18); }
+    }
+
+    &--weak {
+      background: rgba(229, 62, 62, 0.12);
+      td { color: #fc8181; }
+      &:hover { background: rgba(229, 62, 62, 0.18); }
+    }
+
+    &--no-effect {
+      background: #1a202c;
+      td { color: #718096; }
+    }
+  }
+
+  // ─── Battle section ───────────────────────────────────────────────────
+  .battle-section {
+    background: #2d3748;
+  }
+
+  // ─── Teams ────────────────────────────────────────────────────────────
+  .teams-details {
+    background: #2d3748;
+  }
+
+  .teams-summary:hover {
+    background: #4a5568;
+  }
+
+  .team-card {
+    border-color: #4a5568;
+  }
+
+  .team-card-header {
+    background: #1a202c;
+    border-bottom-color: #4a5568;
+  }
+
+  .team-card-name {
+    color: #e2e8f0;
+  }
+
+  .team-member-row {
+    border-bottom-color: #2d3748;
+  }
+
+  .team-member-name {
+    color: #e2e8f0;
+  }
+
+  // ─── Save modal ───────────────────────────────────────────────────────
+  .save-modal {
+    background: #2d3748;
+  }
+
+  .save-modal-header {
+    color: #e2e8f0;
+  }
+
+  .save-modal-team-btn {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+
+    &:hover {
+      border-color: #38a169;
+      background: rgba(56, 161, 105, 0.12);
+    }
+  }
+
+  .save-modal-new {
+    border-top-color: #4a5568;
+  }
+
+  .save-modal-input {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  // ─── Modals overlay ───────────────────────────────────────────────────
+  .save-modal-overlay {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  // ─── Bottom tab bar (mobile) ──────────────────────────────────────────
+  .tab-nav {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  // ─── Team battle ──────────────────────────────────────────────────────
+  .team-battle-select {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .team-member-edit-moves {
+    background: #1a202c;
+    border-bottom-color: #4a5568;
+  }
+
+  .team-member-move-select {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .team-member-row--editing {
+    background: rgba(49, 130, 206, 0.12);
+  }
+
+  // ─── Battle report ────────────────────────────────────────────────────
+  .battle-report {
+    background: #2d3748;
+    border-color: #4a5568;
+  }
+
+  .battle-report-title {
+    color: #e2e8f0;
+  }
+
+  .report-stat-card {
+    background: #1a202c;
+    border-color: #4a5568;
+  }
+
+  .report-stat-card-value {
+    color: #e2e8f0;
+  }
+
+  .report-stat-card-label {
+    color: #a0aec0;
+  }
+}

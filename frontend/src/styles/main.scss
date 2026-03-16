@@ -39,5 +39,11 @@
 // Builds view
 @import "builds";
 
+// Settings page
+@import "settings";
+
+// Dark mode overrides
+@import "dark";
+
 // Mobile optimizations (must be last for specificity)
 @import "mobile";

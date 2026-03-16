@@ -1,0 +1,136 @@
+@use "variables" as *;
+
+// ─── Settings page ──────────────────────────────────────────────────────────
+
+.settings-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1rem 0;
+}
+
+.settings-back-btn {
+  background: transparent;
+  border: 2px solid $pokedex-red;
+  color: $pokedex-red;
+  font-family: $font-body;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.45rem 1rem;
+  border-radius: $border-radius-pill;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: $pokedex-red;
+    color: white;
+  }
+}
+
+.settings-title {
+  font-family: $font-display;
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.5rem;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: white;
+  border-radius: $border-radius-lg;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+[data-bs-theme="dark"] .settings-row {
+  background: #2d3748;
+}
+
+.settings-label {
+  font-family: $font-body;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+// ─── Toggle switch ──────────────────────────────────────────────────────────
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  flex-shrink: 0;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #cbd5e0;
+  border-radius: 28px;
+  transition: background 0.25s;
+
+  &::before {
+    content: "";
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.25s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: $pokedex-red;
+
+  &::before {
+    transform: translateX(24px);
+  }
+}
+
+// ─── Settings button in header ──────────────────────────────────────────────
+
+.settings-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// ─── Responsive ─────────────────────────────────────────────────────────────
+
+@include mobile {
+  .settings-back-btn {
+    min-height: 44px;
+  }
+}
