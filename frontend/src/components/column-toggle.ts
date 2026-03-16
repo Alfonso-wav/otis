@@ -40,11 +40,55 @@ function updateToggleIcons(table: HTMLElement, hidden: Set<string>): void {
   });
 }
 
+function renderHiddenTags(
+  tagsContainer: HTMLElement,
+  hidden: Set<string>,
+  columns: ColumnConfig[],
+  onRestore: (key: string) => void,
+): void {
+  tagsContainer.innerHTML = "";
+  const hiddenCols = columns.filter((c) => !c.fixed && hidden.has(c.key));
+
+  if (hiddenCols.length === 0) {
+    tagsContainer.style.display = "none";
+    return;
+  }
+
+  tagsContainer.style.display = "flex";
+  for (const col of hiddenCols) {
+    const tag = document.createElement("button");
+    tag.className = "col-hidden-tag";
+    tag.type = "button";
+    tag.title = `Mostrar columna "${col.label}"`;
+    tag.innerHTML = `${col.label} <span class="col-hidden-tag__x">&times;</span>`;
+    tag.addEventListener("click", () => onRestore(col.key));
+    tagsContainer.appendChild(tag);
+  }
+}
+
 export function initColumnToggle(tableId: string, columns: ColumnConfig[]): void {
   const table = document.querySelector<HTMLElement>(`[data-table-id="${tableId}"]`);
   if (!table) return;
 
   const hidden = getHiddenColumns(tableId);
+
+  // Create hidden-tags container above the table (or its scroll wrapper)
+  const insertTarget = table.closest(".moves-table-wrap, .abilities-table-wrap, .encounters-table-wrap") || table;
+  let tagsContainer = insertTarget.parentElement?.querySelector<HTMLElement>(`.col-hidden-tags[data-for="${tableId}"]`);
+  if (!tagsContainer) {
+    tagsContainer = document.createElement("div");
+    tagsContainer.className = "col-hidden-tags";
+    tagsContainer.dataset.for = tableId;
+    insertTarget.parentElement?.insertBefore(tagsContainer, insertTarget);
+  }
+
+  const refreshTags = () => renderHiddenTags(tagsContainer!, hidden, columns, (key) => {
+    hidden.delete(key);
+    saveHiddenColumns(tableId, hidden);
+    applyVisibility(table, hidden);
+    updateToggleIcons(table, hidden);
+    refreshTags();
+  });
 
   // Inject toggle buttons into <th> elements
   columns.forEach((col) => {
@@ -70,11 +114,13 @@ export function initColumnToggle(tableId: string, columns: ColumnConfig[]): void
       saveHiddenColumns(tableId, hidden);
       applyVisibility(table, hidden);
       updateToggleIcons(table, hidden);
+      refreshTags();
     });
     th.appendChild(btn);
   });
 
   applyVisibility(table, hidden);
+  refreshTags();
 }
 
 export function reapplyColumnVisibility(tableId: string): void {

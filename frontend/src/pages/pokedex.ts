@@ -350,7 +350,7 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
         ? `<img class="poke-table__sprite" src="${p.Sprites.FrontDefault}" alt="${p.Name}" loading="lazy" />`
         : "";
       const types = (p.Types || [])
-        .map((t) => `<span class="type-badge type-${t.Name}"><img src="/src/assets/types/${t.Name}.svg" alt="" class="type-icon">${t.Name}</span>`)
+        .map((t) => `<span class="type-badge type-badge--icon-only type-${t.Name}" title="${t.Name}"><img src="/src/assets/types/${t.Name}.svg" alt="${t.Name}" class="type-icon"></span>`)
         .join(" ");
       const stats = (p.Stats || []).map((s) => s.BaseStat);
       const total = stats.reduce((a, b) => a + b, 0);
