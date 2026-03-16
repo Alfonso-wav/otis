@@ -22,6 +22,10 @@ registerPage({
   id: "builds",
   container: document.getElementById("tab-builds") as HTMLElement,
 });
+registerPage({
+  id: "settings",
+  container: document.getElementById("tab-settings") as HTMLElement,
+});
 
 initRouter("pokedex");
 

@@ -48,6 +48,12 @@
       transform: translateX(-50%) scaleX(1);
     }
   }
+
+  svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+  }
 }
 
 // Tab page containers
