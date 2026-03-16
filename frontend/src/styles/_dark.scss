@@ -562,4 +562,13 @@
       border-color: #718096;
     }
   }
+
+  // ─── Sorting overlay ──────────────────────────────────────────────────
+  .sorting-overlay {
+    background: rgba(26, 32, 44, 0.85);
+
+    &__text {
+      color: #a0aec0;
+    }
+  }
 }
