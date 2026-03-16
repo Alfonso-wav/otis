@@ -77,20 +77,6 @@ func fetchOne(c *PokeAPIClient, url string, dest interface{}) error {
 	return nil
 }
 
-// firstEnglish busca el primer texto en inglés de una lista de entradas
-// con FlavorText/Genus + Language.
-func firstEnglishFlavor(entries []struct {
-	FlavorText string `json:"flavor_text"`
-	Language   struct{ Name string `json:"name"` } `json:"language"`
-}) string {
-	for _, e := range entries {
-		if e.Language.Name == "en" {
-			return e.FlavorText
-		}
-	}
-	return ""
-}
-
 // firstEnglishDesc busca la primera descripción en inglés.
 func firstEnglishDesc(entries []struct {
 	Description string `json:"description"`

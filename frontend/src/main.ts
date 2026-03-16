@@ -4,6 +4,7 @@ import { initPokedex } from "./pages/pokedex";
 import { initTypes } from "./pages/types";
 import { initExplore } from "./pages/explore";
 import { initBuilds } from "./pages/builds";
+import { initSettings } from "./settings";
 
 registerPage({
   id: "pokedex",
@@ -24,6 +25,7 @@ registerPage({
 
 initRouter("pokedex");
 
+initSettings();
 initPokedex();
 initTypes();
 initExplore();
