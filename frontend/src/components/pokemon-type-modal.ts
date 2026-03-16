@@ -31,7 +31,7 @@ export function openTypeModal(
     : `<div class="type-modal-grid">${pokemonNames
         .map(
           (name) => `
-      <div class="type-modal-pokemon">
+      <div class="type-modal-pokemon" data-name="${name}">
         <img
           src="${spriteUrl(name)}"
           alt="${name}"
@@ -63,6 +63,29 @@ export function openTypeModal(
     if (e.target === overlay) closeTypeModal();
   });
   document.addEventListener("keydown", handleKeydown);
+
+  overlay
+    .querySelectorAll<HTMLDivElement>(".type-modal-pokemon")
+    .forEach((item) => {
+      item.addEventListener("click", () => {
+        const name = item.dataset.name;
+        if (!name) return;
+        closeTypeModal();
+        document
+          .querySelector<HTMLButtonElement>('[data-tab="pokedex"]')
+          ?.click();
+        const input = document.getElementById(
+          "search-input",
+        ) as HTMLInputElement;
+        const btn = document.getElementById(
+          "search-btn",
+        ) as HTMLButtonElement;
+        if (input && btn) {
+          input.value = name;
+          btn.click();
+        }
+      });
+    });
 }
 
 export function closeTypeModal(): void {

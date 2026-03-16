@@ -281,10 +281,12 @@
   gap: 0.25rem;
   padding: 0.5rem;
   border-radius: $border-radius;
-  transition: background 0.15s;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
 
   &:hover {
-    background: #f7fafc;
+    background: #edf2f7;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   }
 
   img {
