@@ -257,6 +257,9 @@
 // ─── Type badges ─────────────────────────────────────────────────────────────
 
 .type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   padding: 0.25rem 0.75rem;
   border-radius: $border-radius-pill;
   font-size: 0.82rem;
@@ -267,12 +270,22 @@
   background: #718096;
 }
 
+.type-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
 @each $type, $color in $type-colors {
   .type-#{$type} {
     background: $color;
 
     @if index($type-dark-text, $type) {
       color: #1a202c;
+
+      .type-icon {
+        filter: brightness(0) saturate(100%);
+      }
     }
   }
 }

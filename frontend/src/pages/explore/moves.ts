@@ -106,7 +106,7 @@ function renderTable(container: HTMLElement): void {
 
   tbody.innerHTML = moves.map((m) => `<tr>
     <td class="move-name-cell" data-col="name">${m.Name.replace(/-/g, " ")}</td>
-    <td data-col="type"><span class="type-badge" style="background:${typeColor(m.Type)}">${m.Type}</span></td>
+    <td data-col="type"><span class="type-badge" style="background:${typeColor(m.Type)}"><img src="/src/assets/types/${m.Type}.svg" alt="" class="type-icon">${m.Type}</span></td>
     <td class="move-cat-cell" data-col="category">${categoryIcon(m.Category)}</td>
     <td class="num-cell" data-col="power">${m.Power || "—"}</td>
     <td class="num-cell" data-col="accuracy">${m.Accuracy ? m.Accuracy + "%" : "—"}</td>
