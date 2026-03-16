@@ -38,6 +38,10 @@
     tr:hover {
       background: #2d3748;
     }
+
+    .poke-table__name {
+      color: #ffffff;
+    }
   }
 
   @include tablet {
