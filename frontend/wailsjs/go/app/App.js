@@ -106,6 +106,10 @@ export function GetPokemon(arg1) {
   return window['go']['app']['App']['GetPokemon'](arg1);
 }
 
+export function GetPokemonEncounters(arg1) {
+  return window['go']['app']['App']['GetPokemonEncounters'](arg1);
+}
+
 export function GetPokemonForm(arg1) {
   return window['go']['app']['App']['GetPokemonForm'](arg1);
 }

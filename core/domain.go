@@ -380,6 +380,32 @@ type SpriteDownloadResult struct {
 	Errors     []string `json:"errors"`
 }
 
+// --- Pokémon Encounter Locations ---
+
+type EncounterCondition struct {
+	Name   string
+	Values []string
+}
+
+type EncounterMethodDetail struct {
+	Method     string
+	Chance     int
+	MinLevel   int
+	MaxLevel   int
+	Conditions []EncounterCondition
+}
+
+type VersionEncounter struct {
+	Version   string
+	MaxChance int
+	Details   []EncounterMethodDetail
+}
+
+type PokemonLocationEncounter struct {
+	LocationArea string
+	Versions     []VersionEncounter
+}
+
 // --- PokemonDB Scraper ---
 
 // PokedexDBEntry representa un Pokémon extraído de la tabla de pokemondb.net/pokedex/all.

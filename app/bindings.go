@@ -332,6 +332,10 @@ func (a *App) ListAbilities(offset int, limit int) (core.AbilityListResponse, er
 
 // --- Grupo F: Ubicaciones ---
 
+func (a *App) GetPokemonEncounters(name string) ([]core.PokemonLocationEncounter, error) {
+	return a.fetcher.FetchPokemonEncounters(core.NormalizeName(name))
+}
+
 func (a *App) GetLocation(name string) (core.LocationDetail, error) {
 	return a.fetcher.FetchLocation(core.NormalizeName(name))
 }

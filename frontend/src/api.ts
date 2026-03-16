@@ -133,6 +133,13 @@ export function GetPokemonSpecies(name: string): Promise<core.PokemonSpecies> {
   return get(`/api/pokemon-species/${encodeURIComponent(name)}`);
 }
 
+// --- Encuentros ---
+
+export function GetPokemonEncounters(name: string): Promise<any[]> {
+  if (isWails()) return wails("GetPokemonEncounters", name);
+  return get(`/api/pokemon/${encodeURIComponent(name)}/encounters`);
+}
+
 // --- Movimientos ---
 
 export function GetAllMoves(): Promise<core.Move[]> {

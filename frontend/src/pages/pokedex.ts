@@ -6,6 +6,7 @@ import {
   ListTypes,
   GetType,
   GetPokemonSpecies,
+  GetPokemonEncounters,
 } from "../api";
 import type { Pokemon, PokemonListItem } from "../types";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
@@ -524,13 +525,15 @@ async function renderDetail(p: Pokemon): Promise<void> {
     <div class="types">${types}</div>
     <p class="meta">Altura: ${p.Height / 10} m &nbsp;&middot;&nbsp; Peso: ${p.Weight / 10} kg</p>
     <div id="stats-chart" style="width:100%;height:300px;"></div>
-    <div id="pokemon-lore" class="pokemon-lore"><p class="loading">Cargando lore...</p></div>`;
+    <div id="pokemon-lore" class="pokemon-lore"><p class="loading">Cargando lore...</p></div>
+    <div id="pokemon-encounters" class="pokemon-encounters"><p class="loading">Loading encounters...</p></div>`;
 
   const chartContainer = document.getElementById("stats-chart") as HTMLDivElement;
   const { renderStatsChart } = await import("../charts/stats-chart");
   renderStatsChart(chartContainer, p.Stats || []);
 
   loadLore(p.Name);
+  loadEncounters(p.Name);
 }
 
 async function loadLore(name: string): Promise<void> {
@@ -560,6 +563,81 @@ async function loadLore(name: string): Promise<void> {
   } catch {
     loreEl.innerHTML = '<p class="lore-error">Could not load lore data.</p>';
   }
+}
+
+async function loadEncounters(name: string): Promise<void> {
+  const el = document.getElementById("pokemon-encounters") as HTMLDivElement;
+  if (!el) return;
+
+  try {
+    const encounters = await GetPokemonEncounters(name);
+
+    if (!encounters || encounters.length === 0) {
+      el.innerHTML = `
+        <h3>Encounters</h3>
+        <p class="encounters-empty">This Pok\u00e9mon is not found in the wild.</p>`;
+      return;
+    }
+
+    // Group by location area
+    const rows = encounters.map((enc: any) => {
+      const versions = (enc.Versions || []).map((v: any) => {
+        const methods = (v.Details || []).map((d: any) => {
+          const conditions = (d.Conditions || [])
+            .map((c: any) => c.Name)
+            .filter(Boolean)
+            .join(", ");
+          const levelRange = d.MinLevel === d.MaxLevel
+            ? `Lv. ${d.MinLevel}`
+            : `Lv. ${d.MinLevel}-${d.MaxLevel}`;
+          return `<div class="encounter-method">
+            <span class="encounter-method-name">${formatEncounterMethod(d.Method)}</span>
+            <span class="encounter-chance">${d.Chance}%</span>
+            <span class="encounter-levels">${levelRange}</span>
+            ${conditions ? `<span class="encounter-conditions">${conditions}</span>` : ""}
+          </div>`;
+        }).join("");
+
+        return `<div class="encounter-version">
+          <span class="encounter-version-name">${capitalize(v.Version)}</span>
+          ${methods}
+        </div>`;
+      }).join("");
+
+      return `<div class="encounter-location">
+        <div class="encounter-location-name">${formatLocationName(enc.LocationArea)}</div>
+        <div class="encounter-versions">${versions}</div>
+      </div>`;
+    }).join("");
+
+    el.innerHTML = `
+      <h3>Encounters</h3>
+      <div class="encounters-list">${rows}</div>`;
+  } catch {
+    el.innerHTML = `
+      <h3>Encounters</h3>
+      <p class="encounters-error">Could not load encounter data.</p>`;
+  }
+}
+
+function formatLocationName(name: string): string {
+  return name.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatEncounterMethod(method: string): string {
+  const map: Record<string, string> = {
+    "walk": "Walking",
+    "surf": "Surfing",
+    "old-rod": "Old Rod",
+    "good-rod": "Good Rod",
+    "super-rod": "Super Rod",
+    "rock-smash": "Rock Smash",
+    "headbutt": "Headbutt",
+    "gift": "Gift",
+    "gift-egg": "Gift Egg",
+    "only-one": "Static",
+  };
+  return map[method] || method.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function cleanFlavorText(text: string): string {
