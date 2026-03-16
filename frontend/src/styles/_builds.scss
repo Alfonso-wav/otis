@@ -491,7 +491,7 @@
 .battle-auto-btn {
   display: inline-block;
   padding: 0.55rem 1.5rem;
-  background: #6b46c1;
+  background: $pokedex-red;
   color: white;
   border: none;
   border-radius: $border-radius-pill;
@@ -501,7 +501,7 @@
   cursor: pointer;
   transition: background 0.15s, transform 0.12s;
 
-  &:hover { background: darken(#6b46c1, 8%); transform: translateY(-1px); }
+  &:hover { background: darken($pokedex-red, 8%); transform: translateY(-1px); }
   &:active { transform: none; }
 }
 
@@ -1042,12 +1042,12 @@
   outline: none;
   transition: border-color 0.15s;
 
-  &:focus { border-color: #6b46c1; }
+  &:focus { border-color: $pokedex-red; }
 }
 
 .battle-batch-btn {
   padding: 0.45rem 1.2rem;
-  background: #6b46c1;
+  background: $pokedex-red;
   color: white;
   border: none;
   border-radius: $border-radius-pill;
@@ -1057,7 +1057,7 @@
   cursor: pointer;
   transition: background 0.15s, transform 0.12s;
 
-  &:hover:not(:disabled) { background: darken(#6b46c1, 8%); transform: translateY(-1px); }
+  &:hover:not(:disabled) { background: darken($pokedex-red, 8%); transform: translateY(-1px); }
   &:active:not(:disabled) { transform: none; }
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
