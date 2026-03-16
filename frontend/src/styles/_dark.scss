@@ -95,6 +95,12 @@
     border-color: #4a5568;
   }
 
+  .filter-chip--reset:hover {
+    background: rgba($navy-blue, 0.15);
+    border-color: $navy-blue;
+    color: lighten($navy-blue, 25%);
+  }
+
   // ─── Item card ────────────────────────────────────────────────────────
   .item-card {
     background: #2d3748;
