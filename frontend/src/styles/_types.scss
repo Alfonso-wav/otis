@@ -49,13 +49,26 @@
 }
 
 .type-card__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-family: $font-display;
   font-size: 1.4rem;
   letter-spacing: 0.06em;
   text-transform: capitalize;
 
+  .type-icon {
+    width: 20px;
+    height: 20px;
+  }
+
   @include mobile {
     font-size: 1.2rem;
+
+    .type-icon {
+      width: 18px;
+      height: 18px;
+    }
   }
 }
 
@@ -144,6 +157,10 @@
 
     @if index($type-dark-text, $type) {
       color: #1a202c;
+
+      .type-icon {
+        filter: brightness(0) saturate(100%);
+      }
     } @else {
       color: white;
     }
