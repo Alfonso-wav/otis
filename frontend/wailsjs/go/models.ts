@@ -278,6 +278,58 @@ export namespace core {
 	        this.Pokemon = source["Pokemon"];
 	    }
 	}
+	export class EncounterCondition {
+	    Name: string;
+	    Values: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new EncounterCondition(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.Values = source["Values"];
+	    }
+	}
+	export class EncounterMethodDetail {
+	    Method: string;
+	    Chance: number;
+	    MinLevel: number;
+	    MaxLevel: number;
+	    Conditions: EncounterCondition[];
+	
+	    static createFrom(source: any = {}) {
+	        return new EncounterMethodDetail(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Method = source["Method"];
+	        this.Chance = source["Chance"];
+	        this.MinLevel = source["MinLevel"];
+	        this.MaxLevel = source["MaxLevel"];
+	        this.Conditions = this.convertValues(source["Conditions"], EncounterCondition);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class EvolutionStage {
 	    Name: string;
 	    MinLevel: number;
@@ -973,6 +1025,72 @@ export namespace core {
 		    return a;
 		}
 	}
+	export class VersionEncounter {
+	    Version: string;
+	    MaxChance: number;
+	    Details: EncounterMethodDetail[];
+	
+	    static createFrom(source: any = {}) {
+	        return new VersionEncounter(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Version = source["Version"];
+	        this.MaxChance = source["MaxChance"];
+	        this.Details = this.convertValues(source["Details"], EncounterMethodDetail);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class PokemonLocationEncounter {
+	    LocationArea: string;
+	    Versions: VersionEncounter[];
+	
+	    static createFrom(source: any = {}) {
+	        return new PokemonLocationEncounter(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.LocationArea = source["LocationArea"];
+	        this.Versions = this.convertValues(source["Versions"], VersionEncounter);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	
 	export class PokemonVariety {
 	    IsDefault: boolean;
@@ -1476,6 +1594,7 @@ export namespace core {
 		    return a;
 		}
 	}
+	
 	
 	export class VersionGroup {
 	    Name: string;

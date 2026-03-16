@@ -65,6 +65,7 @@ type PokemonFetcher interface {
 	// --- Grupo F: Ubicaciones ---
 	FetchLocation(name string) (LocationDetail, error)
 	FetchLocationArea(name string) (LocationArea, error)
+	FetchPokemonEncounters(name string) ([]PokemonLocationEncounter, error)
 
 	// --- Grupo G: Stats y generaciones ---
 	FetchStat(name string) (StatDetail, error)

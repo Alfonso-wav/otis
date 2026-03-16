@@ -443,6 +443,11 @@
     color: $navy-blue-text;
   }
 
+  // Pokemon encounters heading
+  .pokemon-encounters h3 {
+    color: $navy-blue-text;
+  }
+
   // Settings toggle checked
   .toggle-switch input:checked + .toggle-slider {
     background: $navy-blue;

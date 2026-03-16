@@ -54,6 +54,8 @@ export function GetPokedex(arg1:string):Promise<core.Pokedex>;
 
 export function GetPokemon(arg1:string):Promise<core.Pokemon>;
 
+export function GetPokemonEncounters(arg1:string):Promise<Array<core.PokemonLocationEncounter>>;
+
 export function GetPokemonForm(arg1:string):Promise<core.PokemonForm>;
 
 export function GetPokemonSpecies(arg1:string):Promise<core.PokemonSpecies>;

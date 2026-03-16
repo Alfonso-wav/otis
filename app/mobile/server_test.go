@@ -53,6 +53,7 @@ func (m *mockFetcher) FetchAllAbilities() ([]core.Ability, error)               
 func (m *mockFetcher) FetchAbilityList(offset int, limit int) (core.AbilityListResponse, error) { return core.AbilityListResponse{}, nil }
 func (m *mockFetcher) FetchLocation(name string) (core.LocationDetail, error)        { return core.LocationDetail{}, nil }
 func (m *mockFetcher) FetchLocationArea(name string) (core.LocationArea, error)      { return core.LocationArea{}, nil }
+func (m *mockFetcher) FetchPokemonEncounters(name string) ([]core.PokemonLocationEncounter, error) { return nil, nil }
 func (m *mockFetcher) FetchStat(name string) (core.StatDetail, error)                { return core.StatDetail{}, nil }
 func (m *mockFetcher) FetchGenerations() ([]core.NamedResource, error)               { return nil, nil }
 func (m *mockFetcher) FetchGeneration(name string) (core.Generation, error)          { return core.Generation{}, nil }
