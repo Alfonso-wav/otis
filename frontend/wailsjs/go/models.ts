@@ -1217,7 +1217,6 @@ export namespace core {
 	    }
 	}
 	
-	
 	export class TeamMember {
 	    pokemonName: string;
 	    moves: string[];

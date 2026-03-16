@@ -79,7 +79,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.875rem 1.25rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   border-radius: $border-radius-lg;
   transition: border-radius 0.2s;
@@ -88,6 +88,18 @@
     border-radius: $border-radius-lg $border-radius-lg 0 0;
   }
 }
+
+// Region-specific header colors
+[data-region="kanto"] .region-card__header { background: #E53E3E; }
+[data-region="johto"] .region-card__header { background: #D69E2E; }
+[data-region="hoenn"] .region-card__header { background: #38A169; }
+[data-region="sinnoh"] .region-card__header { background: #3182CE; }
+[data-region="unova"] .region-card__header { background: #4A5568; }
+[data-region="kalos"] .region-card__header { background: #4299E1; }
+[data-region="alola"] .region-card__header { background: #ED8936; }
+[data-region="galar"] .region-card__header { background: #805AD5; }
+[data-region="hisui"] .region-card__header { background: #319795; }
+[data-region="paldea"] .region-card__header { background: #C53030; }
 
 .region-card__name {
   font-weight: 700;
