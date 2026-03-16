@@ -23,6 +23,9 @@ type PokemonFetcher interface {
 	FetchPokemon(name string) (Pokemon, error)
 	FetchPokemonList(offset int, limit int) (PokemonListResponse, error)
 
+	// --- Clasificación masiva ---
+	FetchAllSpeciesClassifications() (map[string]SpeciesClassification, error)
+
 	// --- Grupo A: Pokémon extendido ---
 	FetchPokemonSpecies(name string) (PokemonSpecies, error)
 	FetchPokemonForm(name string) (PokemonForm, error)

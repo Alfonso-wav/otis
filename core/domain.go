@@ -406,6 +406,13 @@ type PokemonLocationEncounter struct {
 	Versions     []VersionEncounter
 }
 
+// --- Species Classification ---
+
+type SpeciesClassification struct {
+	IsLegendary bool `json:"isLegendary"`
+	IsMythical  bool `json:"isMythical"`
+}
+
 // --- PokemonDB Scraper ---
 
 // PokedexDBEntry representa un Pokémon extraído de la tabla de pokemondb.net/pokedex/all.

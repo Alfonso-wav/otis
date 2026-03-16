@@ -55,6 +55,10 @@ func (m *mockFetcher) FetchEvolutionChain(id int) (core.EvolutionChain, error) {
 	return core.EvolutionChain{}, nil
 }
 
+func (m *mockFetcher) FetchAllSpeciesClassifications() (map[string]core.SpeciesClassification, error) {
+	return nil, nil
+}
+
 // --- Grupo A ---
 func (m *mockFetcher) FetchPokemonSpecies(name string) (core.PokemonSpecies, error) {
 	return core.PokemonSpecies{}, nil

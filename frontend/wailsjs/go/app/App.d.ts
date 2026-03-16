@@ -22,6 +22,8 @@ export function GetAllAbilities():Promise<Array<core.Ability>>;
 
 export function GetAllMoves():Promise<Array<core.Move>>;
 
+export function GetAllSpeciesClassifications():Promise<Record<string, core.SpeciesClassification>>;
+
 export function GetEggGroup(arg1:string):Promise<core.EggGroup>;
 
 export function GetEvolutionChain(arg1:number):Promise<core.EvolutionChain>;

@@ -33,6 +33,7 @@ func (m *mockFetcher) FetchRegion(name string) (core.Region, error)             
 func (m *mockFetcher) FetchMove(name string) (core.Move, error)                      { return core.Move{}, nil }
 func (m *mockFetcher) FetchAbility(name string) (core.Ability, error)                { return core.Ability{}, nil }
 func (m *mockFetcher) FetchEvolutionChain(id int) (core.EvolutionChain, error)       { return core.EvolutionChain{}, nil }
+func (m *mockFetcher) FetchAllSpeciesClassifications() (map[string]core.SpeciesClassification, error) { return nil, nil }
 func (m *mockFetcher) FetchPokemonSpecies(name string) (core.PokemonSpecies, error)  { return core.PokemonSpecies{}, nil }
 func (m *mockFetcher) FetchPokemonForm(name string) (core.PokemonForm, error)        { return core.PokemonForm{}, nil }
 func (m *mockFetcher) FetchPokemonColors() ([]core.NamedResource, error)             { return nil, nil }

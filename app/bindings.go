@@ -248,6 +248,12 @@ func (a *App) SimulateMultipleBattles(input core.FullBattleInput, n int) (core.B
 	}), nil
 }
 
+// --- Clasificación masiva ---
+
+func (a *App) GetAllSpeciesClassifications() (map[string]core.SpeciesClassification, error) {
+	return a.fetcher.FetchAllSpeciesClassifications()
+}
+
 // --- Grupo A: Pokémon extendido ---
 
 func (a *App) GetPokemonSpecies(name string) (core.PokemonSpecies, error) {
