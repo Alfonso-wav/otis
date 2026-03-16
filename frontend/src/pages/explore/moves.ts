@@ -3,6 +3,7 @@ import { GetAllMoves } from "../../api";
 import type { core } from "../../../wailsjs/go/models";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
 import { SortCache } from "../../utils/sort-cache";
+import { showSortingOverlay, hideSortingOverlay } from "../../components/sorting-overlay";
 
 type Category = "all" | "physical" | "special" | "status";
 type SortColumn = "name" | "type" | "category" | "power" | "accuracy" | "pp" | "priority" | null;
@@ -199,7 +200,7 @@ export async function initMoves(container: HTMLElement): Promise<void> {
 
   // Sortable headers
   container.querySelectorAll<HTMLElement>("th.sortable").forEach((th) => {
-    th.addEventListener("click", () => {
+    th.addEventListener("click", async () => {
       const col = th.dataset.col as SortColumn;
       if (state.sortColumn === col) {
         if (state.sortDirection === "asc") {
@@ -213,7 +214,11 @@ export async function initMoves(container: HTMLElement): Promise<void> {
         state.sortDirection = "asc";
       }
       updateSortIndicators(container);
+      const tableWrap = container.querySelector<HTMLElement>(".moves-table-wrap")!;
+      showSortingOverlay(tableWrap);
+      await new Promise((r) => requestAnimationFrame(r));
       renderTable(container);
+      hideSortingOverlay();
     });
   });
 

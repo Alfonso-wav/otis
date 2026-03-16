@@ -13,6 +13,7 @@ import type { Pokemon, PokemonListItem } from "../types";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../components/column-toggle";
 import { SortCache } from "../utils/sort-cache";
+import { showSortingOverlay, updateSortingOverlayText, hideSortingOverlay } from "../components/sorting-overlay";
 
 const LIMIT = 20;
 
@@ -131,7 +132,7 @@ async function ensureAllPokemonLoaded(): Promise<Pokemon[]> {
     const loaded = Math.min(i + BATCH, uncached.length);
     const total = uncached.length;
     const pct = Math.round((loaded / total) * 100);
-    grid.innerHTML = `<p class="loading">Cargando Pokémon para ordenar... ${pct}% (${loaded}/${total})</p>`;
+    updateSortingOverlayText(`Ordenando... ${pct}%`);
   }
 
   return itemsToLoad.map((item) => pokemonDataCache.get(item.Name)!);
@@ -452,14 +453,19 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
       }
 
       sortingLoading = true;
+      showSortingOverlay(grid);
       try {
         const allPokemon = await ensureAllPokemonLoaded();
+        updateSortingOverlayText("Ordenando...");
+        await new Promise((r) => requestAnimationFrame(r));
         pokemonSortCache.setData(allPokemon);
         sortedFullList = pokemonSortCache.get(currentSortColumn!, currentSortDirection as 'asc' | 'desc');
         offset = 0;
+        hideSortingOverlay();
         await renderTable(getCurrentPageItems());
         updatePagination();
       } finally {
+        hideSortingOverlay();
         sortingLoading = false;
       }
     });
