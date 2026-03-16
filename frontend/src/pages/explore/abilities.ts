@@ -4,6 +4,7 @@ import type { core } from "../../../wailsjs/go/models";
 import { openAbilityPokemonModal } from "../../components/ability-pokemon-modal";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
 import { SortCache } from "../../utils/sort-cache";
+import { showSortingOverlay, hideSortingOverlay } from "../../components/sorting-overlay";
 
 type SortColumn = "name" | "description" | "pokemon" | null;
 type SortDirection = "asc" | "desc" | null;
@@ -127,7 +128,7 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
 
   // Sortable headers
   container.querySelectorAll<HTMLElement>("th.sortable").forEach((th) => {
-    th.addEventListener("click", () => {
+    th.addEventListener("click", async () => {
       const col = th.dataset.col as SortColumn;
       if (state.sortColumn === col) {
         if (state.sortDirection === "asc") {
@@ -141,7 +142,11 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
         state.sortDirection = "asc";
       }
       updateSortIndicators(container);
+      const tableWrap = container.querySelector<HTMLElement>(".abilities-table-wrap")!;
+      showSortingOverlay(tableWrap);
+      await new Promise((r) => requestAnimationFrame(r));
       renderTable(container);
+      hideSortingOverlay();
     });
   });
 
