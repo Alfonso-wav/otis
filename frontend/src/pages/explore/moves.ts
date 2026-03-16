@@ -1,6 +1,7 @@
 import gsap from "gsap";
 import { GetAllMoves } from "../../api";
 import type { core } from "../../../wailsjs/go/models";
+import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
 
 type Category = "all" | "physical" | "special" | "status";
 type SortColumn = "name" | "type" | "category" | "power" | "accuracy" | "pp" | "priority" | null;
@@ -25,6 +26,16 @@ const state: MoveState = {
   sortDirection: null,
   loading: false,
 };
+
+const MOVES_TABLE_COLUMNS: ColumnConfig[] = [
+  { key: "name", label: "Nombre", fixed: true },
+  { key: "type", label: "Tipo" },
+  { key: "category", label: "Cat." },
+  { key: "power", label: "Poder" },
+  { key: "accuracy", label: "Prec." },
+  { key: "pp", label: "PP" },
+  { key: "priority", label: "Prio." },
+];
 
 const TYPE_COLORS: Record<string, string> = {
   normal: "#a0aec0", fire: "#f6ad55", water: "#63b3ed", grass: "#68d391",
@@ -94,15 +105,16 @@ function renderTable(container: HTMLElement): void {
   }
 
   tbody.innerHTML = moves.map((m) => `<tr>
-    <td class="move-name-cell">${m.Name.replace(/-/g, " ")}</td>
-    <td><span class="type-badge" style="background:${typeColor(m.Type)}">${m.Type}</span></td>
-    <td class="move-cat-cell">${categoryIcon(m.Category)}</td>
-    <td class="num-cell">${m.Power || "—"}</td>
-    <td class="num-cell">${m.Accuracy ? m.Accuracy + "%" : "—"}</td>
-    <td class="num-cell">${m.PP}</td>
-    <td class="num-cell">${m.Priority}</td>
+    <td class="move-name-cell" data-col="name">${m.Name.replace(/-/g, " ")}</td>
+    <td data-col="type"><span class="type-badge" style="background:${typeColor(m.Type)}">${m.Type}</span></td>
+    <td class="move-cat-cell" data-col="category">${categoryIcon(m.Category)}</td>
+    <td class="num-cell" data-col="power">${m.Power || "—"}</td>
+    <td class="num-cell" data-col="accuracy">${m.Accuracy ? m.Accuracy + "%" : "—"}</td>
+    <td class="num-cell" data-col="pp">${m.PP}</td>
+    <td class="num-cell" data-col="priority">${m.Priority}</td>
   </tr>`).join("");
 
+  reapplyColumnVisibility("moves");
   gsap.fromTo(tbody, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" });
 }
 
@@ -143,7 +155,7 @@ export async function initMoves(container: HTMLElement): Promise<void> {
     </div>
     <span id="moves-count" class="moves-count"></span>
     <div class="moves-table-wrap">
-      <table class="poke-table moves-table">
+      <table class="poke-table moves-table" data-table-id="moves">
         <thead>
           <tr>
             <th class="sortable" data-col="name">Nombre <span class="sort-indicator"></span></th>
@@ -223,4 +235,5 @@ export async function initMoves(container: HTMLElement): Promise<void> {
   typeSelect.innerHTML = buildTypeFilterOptions();
 
   renderTable(container);
+  initColumnToggle("moves", MOVES_TABLE_COLUMNS);
 }

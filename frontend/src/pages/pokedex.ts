@@ -11,6 +11,7 @@ import {
 } from "../api";
 import type { Pokemon, PokemonListItem } from "../types";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
+import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../components/column-toggle";
 
 const LIMIT = 20;
 
@@ -36,6 +37,29 @@ let currentSortColumn: SortColumn = null;
 let currentSortDirection: SortDirection = null;
 let sortedFullList: Pokemon[] | null = null;
 let sortingLoading = false;
+
+const POKEDEX_TABLE_COLUMNS: ColumnConfig[] = [
+  { key: "id", label: "#" },
+  { key: "sprite", label: "Sprite" },
+  { key: "name", label: "Nombre", fixed: true },
+  { key: "types", label: "Tipo" },
+  { key: "hp", label: "HP" },
+  { key: "atk", label: "Atk" },
+  { key: "def", label: "Def" },
+  { key: "spa", label: "SpA" },
+  { key: "spd", label: "SpD" },
+  { key: "vel", label: "Vel" },
+  { key: "total", label: "Total" },
+];
+
+const ENCOUNTER_TABLE_COLUMNS: ColumnConfig[] = [
+  { key: "location", label: "Location", fixed: true },
+  { key: "game", label: "Game" },
+  { key: "method", label: "Method" },
+  { key: "chance", label: "Chance" },
+  { key: "levels", label: "Levels" },
+  { key: "conditions", label: "Conditions" },
+];
 
 function sortPokemonData(data: Pokemon[], column: SortColumn, direction: SortDirection): Pokemon[] {
   if (!column || !direction) return data;
@@ -319,6 +343,7 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
 
   const sortedData = sortPokemonData(pokemonData, currentSortColumn, currentSortDirection);
 
+  const statColKeys = ["hp", "atk", "def", "spa", "spd", "vel"];
   const rows = sortedData
     .map((p) => {
       const sprite = p.Sprites.FrontDefault
@@ -330,16 +355,16 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
       const stats = (p.Stats || []).map((s) => s.BaseStat);
       const total = stats.reduce((a, b) => a + b, 0);
       const statCells = (p.Stats || [])
-        .map((s) => `<td class="stat-cell">${s.BaseStat}</td>`)
+        .map((s, i) => `<td class="stat-cell" data-col="${statColKeys[i]}">${s.BaseStat}</td>`)
         .join("");
 
       return `<tr class="poke-table__row" data-name="${p.Name}">
-        <td class="poke-table__id">#${String(p.ID).padStart(3, "0")}</td>
-        <td>${sprite}</td>
-        <td class="poke-table__name">${p.Name}</td>
-        <td>${types}</td>
+        <td class="poke-table__id" data-col="id">#${String(p.ID).padStart(3, "0")}</td>
+        <td data-col="sprite">${sprite}</td>
+        <td class="poke-table__name" data-col="name">${p.Name}</td>
+        <td data-col="types">${types}</td>
         ${statCells}
-        <td class="stat-cell stat-total">${total}</td>
+        <td class="stat-cell stat-total" data-col="total">${total}</td>
       </tr>`;
     })
     .join("");
@@ -352,7 +377,7 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
     .map(([label, col]) => {
       const ind = currentSortColumn === col ? (currentSortDirection === 'asc' ? 'asc' : currentSortDirection === 'desc' ? 'desc' : '') : '';
       const activeClass = currentSortColumn === col ? ' active' : '';
-      return `<th class="stat-cell sortable${activeClass}" data-sort="${col}">${label} <span class="sort-indicator ${ind}"></span></th>`;
+      return `<th class="stat-cell sortable${activeClass}" data-sort="${col}" data-col="${col}">${label} <span class="sort-indicator ${ind}"></span></th>`;
     })
     .join("");
 
@@ -360,17 +385,19 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
   const nameInd = currentSortColumn === 'name' ? (currentSortDirection === 'asc' ? 'asc' : currentSortDirection === 'desc' ? 'desc' : '') : '';
   const totalInd = currentSortColumn === 'total' ? (currentSortDirection === 'asc' ? 'asc' : currentSortDirection === 'desc' ? 'desc' : '') : '';
 
-  grid.innerHTML = `<table class="poke-table">
+  grid.innerHTML = `<table class="poke-table" data-table-id="pokedex-stats">
     <thead><tr>
-      <th class="sortable${currentSortColumn === 'id' ? ' active' : ''}" data-sort="id"># <span class="sort-indicator ${idInd}"></span></th>
-      <th></th>
-      <th class="sortable${currentSortColumn === 'name' ? ' active' : ''}" data-sort="name">Nombre <span class="sort-indicator ${nameInd}"></span></th>
-      <th>Tipo</th>
+      <th class="sortable${currentSortColumn === 'id' ? ' active' : ''}" data-sort="id" data-col="id"># <span class="sort-indicator ${idInd}"></span></th>
+      <th data-col="sprite"></th>
+      <th class="sortable${currentSortColumn === 'name' ? ' active' : ''}" data-sort="name" data-col="name">Nombre <span class="sort-indicator ${nameInd}"></span></th>
+      <th data-col="types">Tipo</th>
       ${statHeaders}
-      <th class="stat-cell sortable${currentSortColumn === 'total' ? ' active' : ''}" data-sort="total">Total <span class="sort-indicator ${totalInd}"></span></th>
+      <th class="stat-cell sortable${currentSortColumn === 'total' ? ' active' : ''}" data-sort="total" data-col="total">Total <span class="sort-indicator ${totalInd}"></span></th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
+
+  initColumnToggle("pokedex-stats", POKEDEX_TABLE_COLUMNS);
 
   grid.querySelectorAll<HTMLTableRowElement>(".poke-table__row").forEach((row) => {
     row.addEventListener("click", () => {
@@ -588,13 +615,15 @@ function renderEncounterTbody(el: HTMLElement): void {
   const tbody = el.querySelector(".encounters-table tbody");
   if (!tbody) return;
   tbody.innerHTML = sorted.map((r) => `<tr>
-            <td>${r.location}</td>
-            <td>${r.game}</td>
-            <td>${r.method}</td>
-            <td>${r.chance}%</td>
-            <td>${r.minLevel === r.maxLevel ? `Lv. ${r.minLevel}` : `Lv. ${r.minLevel}-${r.maxLevel}`}</td>
-            <td>${r.conditions}</td>
+            <td data-col="location">${r.location}</td>
+            <td data-col="game">${r.game}</td>
+            <td data-col="method">${r.method}</td>
+            <td data-col="chance">${r.chance}%</td>
+            <td data-col="levels">${r.minLevel === r.maxLevel ? `Lv. ${r.minLevel}` : `Lv. ${r.minLevel}-${r.maxLevel}`}</td>
+            <td data-col="conditions">${r.conditions}</td>
           </tr>`).join("");
+
+  reapplyColumnVisibility("encounters");
 }
 
 function updateEncounterSortIndicators(el: HTMLElement): void {
@@ -649,7 +678,7 @@ async function loadEncounters(name: string): Promise<void> {
     el.innerHTML = `
       <h3>Encounters</h3>
       <div class="encounters-table-wrap">
-        <table class="poke-table encounters-table">
+        <table class="poke-table encounters-table" data-table-id="encounters">
           <thead>
             <tr>
               <th class="sortable" data-col="location">Location <span class="sort-indicator"></span></th>
@@ -665,6 +694,7 @@ async function loadEncounters(name: string): Promise<void> {
       </div>`;
 
     renderEncounterTbody(el);
+    initColumnToggle("encounters", ENCOUNTER_TABLE_COLUMNS);
 
     el.querySelectorAll<HTMLElement>("th.sortable").forEach((th) => {
       th.addEventListener("click", () => {
