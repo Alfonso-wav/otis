@@ -22,6 +22,7 @@ import {
 } from "../api";
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
+import { initColumnToggle, type ColumnConfig } from "../components/column-toggle";
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -96,6 +97,33 @@ let state: BuildState = {
   slots: [emptySlot(), emptySlot(), emptySlot(), emptySlot()],
   defenderSlots: [emptySlot(), emptySlot(), emptySlot(), emptySlot()],
 };
+
+const SC_TABLE_ATK_COLUMNS: ColumnConfig[] = [
+  { key: "stat", label: "Stat", fixed: true },
+  { key: "iv", label: "IV" },
+  { key: "ev", label: "EV" },
+];
+const SC_TABLE_DEF_COLUMNS: ColumnConfig[] = [
+  { key: "stat", label: "Stat", fixed: true },
+  { key: "iv", label: "IV" },
+  { key: "ev", label: "EV" },
+];
+const DAMAGE_ATK_COLUMNS: ColumnConfig[] = [
+  { key: "move", label: "Movimiento", fixed: true },
+  { key: "type", label: "Tipo" },
+  { key: "cat", label: "Cat." },
+  { key: "min", label: "Mín" },
+  { key: "max", label: "Máx" },
+  { key: "eff", label: "Efectividad" },
+];
+const DAMAGE_DEF_COLUMNS: ColumnConfig[] = [
+  { key: "move", label: "Movimiento", fixed: true },
+  { key: "type", label: "Tipo" },
+  { key: "cat", label: "Cat." },
+  { key: "min", label: "Mín" },
+  { key: "max", label: "Máx" },
+  { key: "eff", label: "Efectividad" },
+];
 
 let natures: core.Nature[] = [];
 let pokemonNames: string[] = [];
@@ -286,9 +314,9 @@ function renderStatsConfig(prefix: "atk" | "def", level: number, nature: string)
     .map(
       ({ key, label }) => `
     <tr>
-      <td class="sc-label">${label}</td>
-      <td><input class="sc-input" type="number" min="0" max="31" data-prefix="${prefix}" data-stat="${key}" data-field="iv" value="${ivState[key]}" /></td>
-      <td><input class="sc-input" type="number" min="0" max="252" data-prefix="${prefix}" data-stat="${key}" data-field="ev" value="${evState[key]}" /></td>
+      <td class="sc-label" data-col="stat">${label}</td>
+      <td data-col="iv"><input class="sc-input" type="number" min="0" max="31" data-prefix="${prefix}" data-stat="${key}" data-field="iv" value="${ivState[key]}" /></td>
+      <td data-col="ev"><input class="sc-input" type="number" min="0" max="252" data-prefix="${prefix}" data-stat="${key}" data-field="ev" value="${evState[key]}" /></td>
     </tr>`,
     )
     .join("");
@@ -301,8 +329,8 @@ function renderStatsConfig(prefix: "atk" | "def", level: number, nature: string)
         <label class="sc-field-label">Naturaleza</label>
         <select class="sc-select sc-nature" data-prefix="${prefix}" data-field="nature">${natOptions}</select>
       </div>
-      <table class="sc-table">
-        <thead><tr><th>Stat</th><th>IV</th><th>EV</th></tr></thead>
+      <table class="sc-table" data-table-id="sc-${prefix}">
+        <thead><tr><th data-col="stat">Stat</th><th data-col="iv">IV</th><th data-col="ev">EV</th></tr></thead>
         <tbody>${statRows}</tbody>
       </table>
       <button class="build-calc-btn" data-prefix="${prefix}">Calcular stats</button>
@@ -358,26 +386,28 @@ async function loadDamageTable(): Promise<void> {
     .map(
       ({ slot, result }) => `
     <tr class="damage-row ${effectClass(result)}">
-      <td class="dmg-move">${slot.move!.Name} ${stabBadge(result)}</td>
-      <td>${typeBadge(slot.move!.Type)}</td>
-      <td class="dmg-cat">${categoryIcon(slot.move!.Category)}</td>
-      <td class="dmg-val">${result.min}</td>
-      <td class="dmg-val">${result.max}</td>
-      <td class="dmg-eff">${effectLabel(result)}</td>
+      <td class="dmg-move" data-col="move">${slot.move!.Name} ${stabBadge(result)}</td>
+      <td data-col="type">${typeBadge(slot.move!.Type)}</td>
+      <td class="dmg-cat" data-col="cat">${categoryIcon(slot.move!.Category)}</td>
+      <td class="dmg-val" data-col="min">${result.min}</td>
+      <td class="dmg-val" data-col="max">${result.max}</td>
+      <td class="dmg-eff" data-col="eff">${effectLabel(result)}</td>
     </tr>`,
     )
     .join("");
 
   el.innerHTML = `
-    <table class="damage-table">
+    <table class="damage-table" data-table-id="damage-atk">
       <thead>
         <tr>
-          <th>Movimiento</th><th>Tipo</th><th>Cat.</th>
-          <th>Mín</th><th>Máx</th><th>Efectividad</th>
+          <th data-col="move">Movimiento</th><th data-col="type">Tipo</th><th data-col="cat">Cat.</th>
+          <th data-col="min">Mín</th><th data-col="max">Máx</th><th data-col="eff">Efectividad</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
+
+  initColumnToggle("damage-atk", DAMAGE_ATK_COLUMNS);
 }
 
 async function loadDefenderDamageTable(): Promise<void> {
@@ -410,26 +440,28 @@ async function loadDefenderDamageTable(): Promise<void> {
     .map(
       ({ slot, result }) => `
     <tr class="damage-row ${effectClass(result)}">
-      <td class="dmg-move">${slot.move!.Name} ${stabBadge(result)}</td>
-      <td>${typeBadge(slot.move!.Type)}</td>
-      <td class="dmg-cat">${categoryIcon(slot.move!.Category)}</td>
-      <td class="dmg-val">${result.min}</td>
-      <td class="dmg-val">${result.max}</td>
-      <td class="dmg-eff">${effectLabel(result)}</td>
+      <td class="dmg-move" data-col="move">${slot.move!.Name} ${stabBadge(result)}</td>
+      <td data-col="type">${typeBadge(slot.move!.Type)}</td>
+      <td class="dmg-cat" data-col="cat">${categoryIcon(slot.move!.Category)}</td>
+      <td class="dmg-val" data-col="min">${result.min}</td>
+      <td class="dmg-val" data-col="max">${result.max}</td>
+      <td class="dmg-eff" data-col="eff">${effectLabel(result)}</td>
     </tr>`,
     )
     .join("");
 
   el.innerHTML = `
-    <table class="damage-table">
+    <table class="damage-table" data-table-id="damage-def">
       <thead>
         <tr>
-          <th>Movimiento</th><th>Tipo</th><th>Cat.</th>
-          <th>Mín</th><th>Máx</th><th>Efectividad</th>
+          <th data-col="move">Movimiento</th><th data-col="type">Tipo</th><th data-col="cat">Cat.</th>
+          <th data-col="min">Mín</th><th data-col="max">Máx</th><th data-col="eff">Efectividad</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
+
+  initColumnToggle("damage-def", DAMAGE_DEF_COLUMNS);
 }
 
 // ─── Battle ───────────────────────────────────────────────────────────────────
@@ -1524,6 +1556,9 @@ function buildLayout(): void {
   bindTeamEvents();
   bindTeamBattleEvents();
   bindSaveModalEvents();
+
+  if (state.attacker) initColumnToggle("sc-atk", SC_TABLE_ATK_COLUMNS);
+  if (state.defender) initColumnToggle("sc-def", SC_TABLE_DEF_COLUMNS);
 
   if (dmgSection) {
     loadDamageTable();
