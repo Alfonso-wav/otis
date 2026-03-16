@@ -126,6 +126,13 @@ export function GetNatures(): Promise<core.Nature[]> {
   return get("/api/natures");
 }
 
+// --- Clasificación masiva ---
+
+export function GetAllSpeciesClassifications(): Promise<Record<string, { isLegendary: boolean; isMythical: boolean }>> {
+  if (isWails()) return wails("GetAllSpeciesClassifications");
+  return get("/api/species-classifications");
+}
+
 // --- Pokémon extendido ---
 
 export function GetPokemonSpecies(name: string): Promise<core.PokemonSpecies> {

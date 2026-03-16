@@ -42,6 +42,10 @@ export function GetAllMoves() {
   return window['go']['app']['App']['GetAllMoves']();
 }
 
+export function GetAllSpeciesClassifications() {
+  return window['go']['app']['App']['GetAllSpeciesClassifications']();
+}
+
 export function GetEggGroup(arg1) {
   return window['go']['app']['App']['GetEggGroup'](arg1);
 }

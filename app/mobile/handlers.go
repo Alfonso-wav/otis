@@ -236,6 +236,17 @@ func RegisterRoutes(mux *http.ServeMux, a *app.App) {
 		jsonResponse(w, a.GetNatures())
 	})
 
+	// --- Clasificación masiva ---
+
+	mux.HandleFunc("GET /api/species-classifications", func(w http.ResponseWriter, r *http.Request) {
+		result, err := a.GetAllSpeciesClassifications()
+		if err != nil {
+			jsonError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		jsonResponse(w, result)
+	})
+
 	// --- Grupo A: Pokémon extendido ---
 
 	mux.HandleFunc("GET /api/pokemon-species/{name}", func(w http.ResponseWriter, r *http.Request) {

@@ -7,6 +7,7 @@ import {
   GetType,
   GetPokemonSpecies,
   GetPokemonEncounters,
+  GetAllSpeciesClassifications,
 } from "../api";
 import type { Pokemon, PokemonListItem } from "../types";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
@@ -95,8 +96,8 @@ async function ensureAllPokemonLoaded(): Promise<Pokemon[]> {
   return itemsToLoad.map((item) => pokemonDataCache.get(item.Name)!);
 }
 
-// Cache para evitar llamadas repetidas a GetPokemonSpecies
-const legendaryCache = new Map<string, { isLegendary: boolean; isMythical: boolean }>();
+// Cache para clasificaciones species (legendary/mythical) — se carga una sola vez desde el backend
+let classificationsCache: Record<string, { isLegendary: boolean; isMythical: boolean }> | null = null;
 
 // Cache para datos completos de Pokémon (tabla)
 const pokemonDataCache = new Map<string, Pokemon>();
@@ -234,37 +235,21 @@ async function loadAllPokemonList(): Promise<PokemonListItem[]> {
 }
 
 async function filterByLegendary(list: PokemonListItem[]): Promise<PokemonListItem[]> {
-  const BATCH = 10;
+  if (!classificationsCache) {
+    grid.innerHTML = '<p class="loading">Cargando clasificaciones...</p>';
+    classificationsCache = await GetAllSpeciesClassifications();
+  }
+
   const results: PokemonListItem[] = [];
-
-  for (let i = 0; i < list.length; i += BATCH) {
-    const batch = list.slice(i, i + BATCH);
-    await Promise.allSettled(
-      batch.map(async (item) => {
-        if (!legendaryCache.has(item.Name)) {
-          try {
-            const species = await GetPokemonSpecies(item.Name);
-            legendaryCache.set(item.Name, {
-              isLegendary: species.IsLegendary,
-              isMythical: species.IsMythical,
-            });
-          } catch {
-            legendaryCache.set(item.Name, { isLegendary: false, isMythical: false });
-          }
-        }
-      })
-    );
-
-    for (const item of batch) {
-      const data = legendaryCache.get(item.Name);
-      if (!data) continue;
-      if (filter.legendary && filter.mythical) {
-        if (data.isLegendary || data.isMythical) results.push(item);
-      } else if (filter.legendary) {
-        if (data.isLegendary) results.push(item);
-      } else if (filter.mythical) {
-        if (data.isMythical) results.push(item);
-      }
+  for (const item of list) {
+    const data = classificationsCache[item.Name];
+    if (!data) continue;
+    if (filter.legendary && filter.mythical) {
+      if (data.isLegendary || data.isMythical) results.push(item);
+    } else if (filter.legendary) {
+      if (data.isLegendary) results.push(item);
+    } else if (filter.mythical) {
+      if (data.isMythical) results.push(item);
     }
   }
 
