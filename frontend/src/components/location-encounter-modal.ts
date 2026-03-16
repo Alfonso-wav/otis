@@ -88,7 +88,7 @@ export async function openLocationEncounterModal(locationName: string): Promise<
         ${encounters
           .map(
             (enc) => `
-          <div class="type-modal-pokemon encounter-pokemon-item">
+          <div class="type-modal-pokemon encounter-pokemon-item" data-name="${enc.PokemonName}">
             <img
               src="${spriteUrl(enc.PokemonName)}"
               alt="${enc.PokemonName}"
@@ -103,12 +103,33 @@ export async function openLocationEncounterModal(locationName: string): Promise<
           .join("")}
       </div>`;
 
-    const items = bodyEl.querySelectorAll(".encounter-pokemon-item");
+    const items = bodyEl.querySelectorAll<HTMLDivElement>(".encounter-pokemon-item");
     gsap.fromTo(
       items,
       { opacity: 0, y: 8 },
       { opacity: 1, y: 0, duration: 0.2, stagger: 0.02, ease: "power2.out" },
     );
+
+    items.forEach((item) => {
+      item.addEventListener("click", () => {
+        const name = item.dataset.name;
+        if (!name) return;
+        closeModal();
+        document
+          .querySelector<HTMLButtonElement>('[data-tab="pokedex"]')
+          ?.click();
+        const input = document.getElementById(
+          "search-input",
+        ) as HTMLInputElement;
+        const btn = document.getElementById(
+          "search-btn",
+        ) as HTMLButtonElement;
+        if (input && btn) {
+          input.value = name;
+          btn.click();
+        }
+      });
+    });
   } catch {
     const bodyEl = overlay.querySelector(".type-modal-body");
     if (bodyEl) {
