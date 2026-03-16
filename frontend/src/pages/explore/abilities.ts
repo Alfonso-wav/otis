@@ -2,6 +2,7 @@ import gsap from "gsap";
 import { GetAllAbilities } from "../../api";
 import type { core } from "../../../wailsjs/go/models";
 import { openAbilityPokemonModal } from "../../components/ability-pokemon-modal";
+import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
 
 type SortColumn = "name" | "description" | "pokemon" | null;
 type SortDirection = "asc" | "desc" | null;
@@ -13,6 +14,12 @@ interface AbilityState {
   sortDirection: SortDirection;
   loading: boolean;
 }
+
+const ABILITIES_TABLE_COLUMNS: ColumnConfig[] = [
+  { key: "name", label: "Nombre", fixed: true },
+  { key: "description", label: "Descripción" },
+  { key: "pokemon", label: "Pokémon" },
+];
 
 const state: AbilityState = {
   allAbilities: [],
@@ -65,12 +72,13 @@ function renderTable(container: HTMLElement): void {
       ? `<span class="ability-pokemon-count" data-ability="${a.Name}">${count}</span>`
       : `${count}`;
     return `<tr>
-    <td class="ability-name-cell">${a.Name.replace(/-/g, " ")}</td>
-    <td class="ability-desc-cell">${desc}</td>
-    <td class="num-cell">${countHtml}</td>
+    <td class="ability-name-cell" data-col="name">${a.Name.replace(/-/g, " ")}</td>
+    <td class="ability-desc-cell" data-col="description">${desc}</td>
+    <td class="num-cell" data-col="pokemon">${countHtml}</td>
   </tr>`;
   }).join("");
 
+  reapplyColumnVisibility("abilities");
   gsap.fromTo(tbody, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" });
 }
 
@@ -96,7 +104,7 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
     </div>
     <span id="abilities-count" class="abilities-count"></span>
     <div class="abilities-table-wrap">
-      <table class="poke-table abilities-table">
+      <table class="poke-table abilities-table" data-table-id="abilities">
         <thead>
           <tr>
             <th class="sortable" data-col="name">Nombre <span class="sort-indicator"></span></th>
@@ -164,4 +172,5 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
   }
 
   renderTable(container);
+  initColumnToggle("abilities", ABILITIES_TABLE_COLUMNS);
 }
