@@ -68,6 +68,7 @@ interface BattleUIState {
 let battleUI: BattleUIState = { battleState: null, phase: "idle" };
 let batchReport: core.BattleReport | null = null;
 let batchRunning = false;
+let lastBatchN = 100;
 
 // Team battle state
 let teamBattleTeam1: string | null = null;
@@ -75,6 +76,7 @@ let teamBattleTeam2: string | null = null;
 let teamBattleResult: core.TeamBattleState | null = null;
 let teamBattleReport: core.TeamBattleReport | null = null;
 let teamBattleRunning = false;
+let lastTeamBatchN = 100;
 
 let state: BuildState = {
   attacker: null,
@@ -500,7 +502,7 @@ function renderBattleSection(): string {
         ${canAutoSimulate ? `
         <div class="battle-batch-row">
           <label class="battle-batch-label">Simulaciones masivas:</label>
-          <input type="number" id="batch-n-input" class="battle-batch-input" min="1" max="10000" value="100" />
+          <input type="number" id="batch-n-input" class="battle-batch-input" min="1" max="10000" value="${lastBatchN}" />
           <button class="battle-batch-btn" id="batch-btn" ${batchRunning ? "disabled" : ""}>
             ${batchRunning ? "Simulando..." : "Simular N batallas"}
           </button>
@@ -698,6 +700,7 @@ async function simulateBatchBattles(): Promise<void> {
     alert("El número de simulaciones debe estar entre 1 y 10000.");
     return;
   }
+  lastBatchN = n;
 
   const attackerStats = state.attackerStats ?? statsFromPokemon(state.attacker);
   const defenderStats = state.defenderStats ?? statsFromPokemon(state.defender);
@@ -1153,7 +1156,7 @@ function renderTeamBattleSection(): string {
         <div class="tb-actions">
           <button class="battle-auto-btn" id="tb-simulate-btn" ${!canBattle ? "disabled" : ""}>Simular batalla de equipos</button>
           <div class="battle-batch-row">
-            <input type="number" id="tb-batch-n" class="battle-batch-input" min="1" max="10000" value="100" />
+            <input type="number" id="tb-batch-n" class="battle-batch-input" min="1" max="10000" value="${lastTeamBatchN}" />
             <button class="battle-batch-btn" id="tb-batch-btn" ${!canBattle || teamBattleRunning ? "disabled" : ""}>
               ${teamBattleRunning ? "Simulando..." : "Simular N batallas"}
             </button>
@@ -1566,6 +1569,7 @@ function bindTeamBattleEvents(): void {
     const nInput = container.querySelector<HTMLInputElement>("#tb-batch-n");
     const n = parseInt(nInput?.value ?? "100");
     if (isNaN(n) || n < 1) return;
+    lastTeamBatchN = n;
     teamBattleRunning = true;
     buildLayout();
     try {
