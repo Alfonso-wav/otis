@@ -142,8 +142,7 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
         state.sortDirection = "asc";
       }
       updateSortIndicators(container);
-      const tableWrap = container.querySelector<HTMLElement>(".abilities-table-wrap")!;
-      showSortingOverlay(tableWrap);
+      showSortingOverlay();
       await new Promise((r) => requestAnimationFrame(r));
       renderTable(container);
       hideSortingOverlay();
