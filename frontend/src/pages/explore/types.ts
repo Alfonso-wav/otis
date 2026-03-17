@@ -39,7 +39,7 @@ function renderTypeCards(panel: HTMLElement, types: PokemonListItem[]): void {
       (t) => `
     <div class="type-card" data-type="${t.Name}">
       <div class="type-card__header ${typeHeaderClass(t.Name)}">
-        <span class="type-card__name"><img src="/src/assets/types/${t.Name}.svg" alt="" class="type-icon">${t.Name}</span>
+        <span class="type-card__name"><img src="/assets/types/${t.Name}.svg" alt="" class="type-icon">${t.Name}</span>
         <span class="type-card__chevron">&#9660;</span>
       </div>
       <div class="type-card__pokemon hidden"></div>
