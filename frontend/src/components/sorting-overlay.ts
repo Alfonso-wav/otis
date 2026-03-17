@@ -16,14 +16,13 @@ function create(): HTMLDivElement {
   return el;
 }
 
-export function showSortingOverlay(container: HTMLElement, text?: string): void {
+export function showSortingOverlay(text?: string): void {
   hideSortingOverlay();
   overlayEl = create();
   if (text) {
     overlayEl.querySelector<HTMLParagraphElement>(".sorting-overlay__text")!.textContent = text;
   }
-  container.style.position = "relative";
-  container.appendChild(overlayEl);
+  document.body.appendChild(overlayEl);
 
   const img = overlayEl.querySelector<HTMLImageElement>(".sorting-overlay__img")!;
   tween = gsap.to(img, {

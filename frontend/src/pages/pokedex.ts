@@ -484,7 +484,7 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
       }
 
       sortingLoading = true;
-      showSortingOverlay(grid);
+      showSortingOverlay();
       try {
         const allPokemon = await ensureAllPokemonLoaded();
         updateSortingOverlayText("Ordenando...");

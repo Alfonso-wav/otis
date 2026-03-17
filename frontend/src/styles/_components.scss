@@ -313,14 +313,13 @@
 // ─── Sorting overlay (Mr. Mime thinking) ────────────────────────────────────
 
 .sorting-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.85);
-  border-radius: $border-radius-lg;
 
   &__content {
     display: flex;
