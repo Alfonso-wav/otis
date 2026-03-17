@@ -107,7 +107,7 @@ function renderTable(container: HTMLElement): void {
 
   tbody.innerHTML = moves.map((m) => `<tr>
     <td class="move-name-cell" data-col="name">${m.Name.replace(/-/g, " ")}</td>
-    <td data-col="type"><span class="type-badge type-badge--icon-only" style="background:${typeColor(m.Type)}" title="${m.Type}"><img src="/src/assets/types/${m.Type}.svg" alt="${m.Type}" class="type-icon"></span></td>
+    <td data-col="type"><span class="type-badge type-badge--icon-only" style="background:${typeColor(m.Type)}" title="${m.Type}"><img src="/assets/types/${m.Type}.svg" alt="${m.Type}" class="type-icon"></span></td>
     <td class="move-cat-cell" data-col="category">${categoryIcon(m.Category)}</td>
     <td class="num-cell" data-col="power">${m.Power || "—"}</td>
     <td class="num-cell" data-col="accuracy">${m.Accuracy ? m.Accuracy + "%" : "—"}</td>
@@ -214,8 +214,7 @@ export async function initMoves(container: HTMLElement): Promise<void> {
         state.sortDirection = "asc";
       }
       updateSortIndicators(container);
-      const tableWrap = container.querySelector<HTMLElement>(".moves-table-wrap")!;
-      showSortingOverlay(tableWrap);
+      showSortingOverlay();
       await new Promise((r) => requestAnimationFrame(r));
       renderTable(container);
       hideSortingOverlay();
