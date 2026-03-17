@@ -169,11 +169,11 @@ function battleSpriteFallbackCDN(name: string, type: "battle-back" | "battle-fro
 }
 
 function typeBadge(type: string): string {
-  return `<span class="type-badge type-${type}"><img src="/src/assets/types/${type}.svg" alt="" class="type-icon">${type}</span>`;
+  return `<span class="type-badge type-${type}"><img src="/assets/types/${type}.svg" alt="" class="type-icon">${type}</span>`;
 }
 
 function typeBadgeIcon(type: string): string {
-  return `<span class="type-badge type-badge--icon-only type-${type}" title="${type}"><img src="/src/assets/types/${type}.svg" alt="${type}" class="type-icon"></span>`;
+  return `<span class="type-badge type-badge--icon-only type-${type}" title="${type}"><img src="/assets/types/${type}.svg" alt="${type}" class="type-icon"></span>`;
 }
 
 function typeBadges(types: Array<{ Name: string }>): string {
