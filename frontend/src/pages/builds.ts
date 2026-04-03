@@ -1,4 +1,5 @@
 import gsap from "gsap";
+import { t } from "../i18n";
 import {
   GetPokemon,
   GetMove,
@@ -98,32 +99,40 @@ let state: BuildState = {
   defenderSlots: [emptySlot(), emptySlot(), emptySlot(), emptySlot()],
 };
 
-const SC_TABLE_ATK_COLUMNS: ColumnConfig[] = [
-  { key: "stat", label: "Stat", fixed: true },
-  { key: "iv", label: "IV" },
-  { key: "ev", label: "EV" },
-];
-const SC_TABLE_DEF_COLUMNS: ColumnConfig[] = [
-  { key: "stat", label: "Stat", fixed: true },
-  { key: "iv", label: "IV" },
-  { key: "ev", label: "EV" },
-];
-const DAMAGE_ATK_COLUMNS: ColumnConfig[] = [
-  { key: "move", label: "Movimiento", fixed: true },
-  { key: "type", label: "Tipo" },
-  { key: "cat", label: "Cat." },
-  { key: "min", label: "Mín" },
-  { key: "max", label: "Máx" },
-  { key: "eff", label: "Efectividad" },
-];
-const DAMAGE_DEF_COLUMNS: ColumnConfig[] = [
-  { key: "move", label: "Movimiento", fixed: true },
-  { key: "type", label: "Tipo" },
-  { key: "cat", label: "Cat." },
-  { key: "min", label: "Mín" },
-  { key: "max", label: "Máx" },
-  { key: "eff", label: "Efectividad" },
-];
+function scTableAtkColumns(): ColumnConfig[] {
+  return [
+    { key: "stat", label: t("builds.stat"), fixed: true },
+    { key: "iv", label: "IV" },
+    { key: "ev", label: "EV" },
+  ];
+}
+function scTableDefColumns(): ColumnConfig[] {
+  return [
+    { key: "stat", label: t("builds.stat"), fixed: true },
+    { key: "iv", label: "IV" },
+    { key: "ev", label: "EV" },
+  ];
+}
+function damageAtkColumns(): ColumnConfig[] {
+  return [
+    { key: "move", label: t("builds.move"), fixed: true },
+    { key: "type", label: t("builds.type") },
+    { key: "cat", label: t("builds.cat") },
+    { key: "min", label: t("builds.min") },
+    { key: "max", label: t("builds.max") },
+    { key: "eff", label: t("builds.effectiveness") },
+  ];
+}
+function damageDefColumns(): ColumnConfig[] {
+  return [
+    { key: "move", label: t("builds.move"), fixed: true },
+    { key: "type", label: t("builds.type") },
+    { key: "cat", label: t("builds.cat") },
+    { key: "min", label: t("builds.min") },
+    { key: "max", label: t("builds.max") },
+    { key: "eff", label: t("builds.effectiveness") },
+  ];
+}
 
 let natures: core.Nature[] = [];
 let pokemonNames: string[] = [];
@@ -177,7 +186,7 @@ function typeBadgeIcon(type: string): string {
 }
 
 function typeBadges(types: Array<{ Name: string }>): string {
-  return types.map((t) => typeBadge(t.Name)).join(" ");
+  return types.map((tp) => typeBadge(tp.Name)).join(" ");
 }
 
 function categoryIcon(cat: string): string {
@@ -192,10 +201,10 @@ function categoryIcon(cat: string): string {
 }
 
 function effectLabel(result: core.DamageResult): string {
-  if (result.hasNoEffect) return "Sin efecto";
+  if (result.hasNoEffect) return t("builds.noEffect");
   const combined = result.multiplier * (result.hasSTAB ? result.stabMultiplier : 1);
-  if (result.isSuperEffective) return `¡Super eficaz! ×${combined}`;
-  if (result.isNotVeryEffective) return `Poco eficaz ×${combined}`;
+  if (result.isSuperEffective) return t("builds.superEffective", { mult: combined });
+  if (result.isNotVeryEffective) return t("builds.notVeryEffective", { mult: combined });
   return `×${combined}`;
 }
 
@@ -266,7 +275,7 @@ function renderMoveSlots(moves: core.PokemonMoveEntry[], prefix: "atk" | "def"):
       (slot, i) => `
     <div class="build-slot ${slot.move ? "type-" + slot.move.Type : ""}" data-slot="${i}" data-prefix="${prefix}">
       <div class="build-slot-header">
-        <span class="build-slot-num">Slot ${i + 1}</span>
+        <span class="build-slot-num">${t("builds.slot", { n: i + 1 })}</span>
         ${slot.move ? `<button class="build-slot-clear" data-slot="${i}" data-prefix="${prefix}">✕</button>` : ""}
       </div>
       ${
@@ -276,16 +285,16 @@ function renderMoveSlots(moves: core.PokemonMoveEntry[], prefix: "atk" | "def"):
           <div class="build-move-meta">
             ${typeBadge(slot.move.Type)}
             <span class="build-move-cat">${categoryIcon(slot.move.Category)} ${slot.move.Category}</span>
-            <span class="build-move-power">Pwr: ${slot.move.Power || "—"}</span>
-            <span class="build-move-acc">Acc: ${slot.move.Accuracy || "—"}</span>
+            <span class="build-move-power">${t("builds.power")} ${slot.move.Power || "—"}</span>
+            <span class="build-move-acc">${t("builds.accuracy")} ${slot.move.Accuracy || "—"}</span>
           </div>
           ${prefix === "atk" ? `<label class="build-crit-toggle">
             <input type="checkbox" class="build-crit-cb" data-slot="${i}" ${slot.isCritical ? "checked" : ""} />
-            Crítico
+            ${t("builds.critical")}
           </label>` : ""}
         </div>`
           : `<select class="build-move-select" data-slot="${i}" data-prefix="${prefix}">
-          <option value="">— Elegir movimiento —</option>
+          <option value="">${t("builds.chooseMove")}</option>
           ${moveOptions}
         </select>`
       }
@@ -328,16 +337,16 @@ function renderStatsConfig(prefix: "atk" | "def", level: number, nature: string)
   return `
     <div class="build-stats-config">
       <div class="build-stats-config-row">
-        <label class="sc-field-label">Nivel</label>
+        <label class="sc-field-label">${t("builds.level")}</label>
         <input class="sc-input sc-level" type="number" min="1" max="100" data-prefix="${prefix}" data-field="level" value="${level}" />
-        <label class="sc-field-label">Naturaleza</label>
+        <label class="sc-field-label">${t("builds.nature")}</label>
         <select class="sc-select sc-nature" data-prefix="${prefix}" data-field="nature">${natOptions}</select>
       </div>
       <table class="sc-table" data-table-id="sc-${prefix}">
-        <thead><tr><th data-col="stat">Stat</th><th data-col="iv">IV</th><th data-col="ev">EV</th></tr></thead>
+        <thead><tr><th data-col="stat">${t("builds.stat")}</th><th data-col="iv">IV</th><th data-col="ev">EV</th></tr></thead>
         <tbody>${statRows}</tbody>
       </table>
-      <button class="build-calc-btn" data-prefix="${prefix}">Calcular stats</button>
+      <button class="build-calc-btn" data-prefix="${prefix}">${t("builds.calcStats")}</button>
     </div>`;
 }
 
@@ -347,15 +356,15 @@ function renderDamageSection(): string {
 
   const filledDefSlots = state.defenderSlots.filter((s) => s.move !== null);
   const defenderTable = filledDefSlots.length > 0
-    ? `<h4 class="build-subsection-title">Daño del Defensor</h4>
-       <div id="defender-damage-table-content"><p class="loading">Calculando...</p></div>`
+    ? `<h4 class="build-subsection-title">${t("builds.defenderDamage")}</h4>
+       <div id="defender-damage-table-content"><p class="loading">${t("builds.calculating")}</p></div>`
     : "";
 
   return `
     <div class="build-damage-section">
-      <h3 class="build-section-title">Simulación de daño</h3>
-      <h4 class="build-subsection-title">Daño del Atacante</h4>
-      <div id="damage-table-content"><p class="loading">Calculando...</p></div>
+      <h3 class="build-section-title">${t("builds.damageSimulation")}</h3>
+      <h4 class="build-subsection-title">${t("builds.attackerDamage")}</h4>
+      <div id="damage-table-content"><p class="loading">${t("builds.calculating")}</p></div>
       ${defenderTable}
     </div>`;
 }
@@ -404,14 +413,14 @@ async function loadDamageTable(): Promise<void> {
     <table class="damage-table" data-table-id="damage-atk">
       <thead>
         <tr>
-          <th data-col="move">Movimiento</th><th data-col="type">Tipo</th><th data-col="cat">Cat.</th>
-          <th data-col="min">Mín</th><th data-col="max">Máx</th><th data-col="eff">Efectividad</th>
+          <th data-col="move">${t("builds.move")}</th><th data-col="type">${t("builds.type")}</th><th data-col="cat">${t("builds.cat")}</th>
+          <th data-col="min">${t("builds.min")}</th><th data-col="max">${t("builds.max")}</th><th data-col="eff">${t("builds.effectiveness")}</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
 
-  initColumnToggle("damage-atk", DAMAGE_ATK_COLUMNS);
+  initColumnToggle("damage-atk", damageAtkColumns());
 }
 
 async function loadDefenderDamageTable(): Promise<void> {
@@ -458,14 +467,14 @@ async function loadDefenderDamageTable(): Promise<void> {
     <table class="damage-table" data-table-id="damage-def">
       <thead>
         <tr>
-          <th data-col="move">Movimiento</th><th data-col="type">Tipo</th><th data-col="cat">Cat.</th>
-          <th data-col="min">Mín</th><th data-col="max">Máx</th><th data-col="eff">Efectividad</th>
+          <th data-col="move">${t("builds.move")}</th><th data-col="type">${t("builds.type")}</th><th data-col="cat">${t("builds.cat")}</th>
+          <th data-col="min">${t("builds.min")}</th><th data-col="max">${t("builds.max")}</th><th data-col="eff">${t("builds.effectiveness")}</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
 
-  initColumnToggle("damage-def", DAMAGE_DEF_COLUMNS);
+  initColumnToggle("damage-def", damageDefColumns());
 }
 
 // ─── Battle ───────────────────────────────────────────────────────────────────
@@ -520,7 +529,7 @@ function renderBattleSection(): string {
   if (phase === "idle" || !bs) {
     return `
       <div class="battle-section" id="battle-section">
-        <h3 class="build-section-title">Simulación de batalla</h3>
+        <h3 class="build-section-title">${t("builds.battleSimulation")}</h3>
         <div class="battle-arena">
           <div class="battle-arena-top">
             ${renderHPBar(state.defender.Name, state.defenderLevel, 0, 0, false)}
@@ -532,15 +541,15 @@ function renderBattleSection(): string {
           </div>
         </div>
         <div class="battle-idle-btns">
-          <button class="battle-start-btn" id="battle-start-btn">Iniciar batalla turno a turno</button>
-          ${canAutoSimulate ? `<button class="battle-auto-btn" id="battle-auto-btn">Simular batalla completa</button>` : ""}
+          <button class="battle-start-btn" id="battle-start-btn">${t("builds.startBattle")}</button>
+          ${canAutoSimulate ? `<button class="battle-auto-btn" id="battle-auto-btn">${t("builds.simulateFull")}</button>` : ""}
         </div>
         ${canAutoSimulate ? `
         <div class="battle-batch-row">
-          <label class="battle-batch-label">Simulaciones masivas:</label>
+          <label class="battle-batch-label">${t("builds.batchLabel")}</label>
           <input type="number" id="batch-n-input" class="battle-batch-input" min="1" max="10000" value="${lastBatchN}" />
           <button class="battle-batch-btn" id="batch-btn" ${batchRunning ? "disabled" : ""}>
-            ${batchRunning ? "Simulando..." : "Simular N batallas"}
+            ${batchRunning ? t("builds.simulating") : t("builds.simulateN")}
           </button>
         </div>` : ""}
         ${renderBatchReport()}
@@ -550,14 +559,14 @@ function renderBattleSection(): string {
   const atkName = state.attacker.Name;
   const defName = state.defender.Name;
 
-  const winnerName = bs.winner === "attacker" ? atkName : bs.winner === "defender" ? defName : "Empate";
+  const winnerName = bs.winner === "attacker" ? atkName : bs.winner === "defender" ? defName : "";
   const winnerBanner = bs.isOver
-    ? `<div class="battle-winner-banner">${bs.winner === "draw" ? "¡Empate!" : winnerName + " gana la batalla!"}</div>`
+    ? `<div class="battle-winner-banner">${bs.winner === "draw" ? t("builds.draw") : t("builds.winsTheBattle", { name: winnerName })}</div>`
     : "";
 
   const turnLabel = bs.isOver
     ? ""
-    : `<div class="battle-turn-label">Turno ${bs.turnCount + 1} — Elige movimiento de <strong>${atkName}</strong></div>`;
+    : `<div class="battle-turn-label">${t("builds.turnChoose", { turn: bs.turnCount + 1 })} <strong>${atkName}</strong></div>`;
 
   const moveBtns = state.slots
     .map((slot, i) => {
@@ -576,7 +585,7 @@ function renderBattleSection(): string {
 
   return `
     <div class="battle-section" id="battle-section">
-      <h3 class="build-section-title">Simulación de batalla — Turno ${bs.turnCount}</h3>
+      <h3 class="build-section-title">${t("builds.battleTurn", { turn: bs.turnCount })}</h3>
       ${winnerBanner}
       <div class="battle-arena">
         <div class="battle-arena-top">
@@ -592,8 +601,8 @@ function renderBattleSection(): string {
       ${!bs.isOver ? `<div class="battle-move-btns" id="battle-move-btns">${moveBtns}</div>` : ""}
       <div class="battle-log" id="battle-log">${logHTML}</div>
       <div class="battle-idle-btns">
-        <button class="battle-reset-btn" id="battle-reset-btn">Reiniciar</button>
-        ${canAutoSimulate && !bs.isOver ? `<button class="battle-auto-btn" id="battle-auto-btn">Simular batalla completa</button>` : ""}
+        <button class="battle-reset-btn" id="battle-reset-btn">${t("builds.reset")}</button>
+        ${canAutoSimulate && !bs.isOver ? `<button class="battle-auto-btn" id="battle-auto-btn">${t("builds.simulateFull")}</button>` : ""}
       </div>
     </div>`;
 }
@@ -603,7 +612,7 @@ async function startBattle(): Promise<void> {
 
   const defenderHasMoves = state.defenderSlots.some((s) => s.move !== null);
   if (!defenderHasMoves) {
-    alert("El defensor necesita al menos un movimiento configurado para iniciar la batalla.");
+    alert(t("builds.defenderNeedsMoves"));
     return;
   }
 
@@ -699,7 +708,7 @@ async function simulateFullBattle(): Promise<void> {
   const defMoves = state.defenderSlots.filter((s) => s.move !== null).map((s) => s.move!);
 
   if (atkMoves.length === 0 || defMoves.length === 0) {
-    alert("Ambos lados necesitan al menos un movimiento para simular la batalla completa.");
+    alert(t("builds.bothNeedMoves"));
     return;
   }
 
@@ -733,7 +742,7 @@ async function simulateBatchBattles(): Promise<void> {
   const nInput = container.querySelector<HTMLInputElement>("#batch-n-input");
   const n = nInput ? parseInt(nInput.value) : 100;
   if (isNaN(n) || n < 1 || n > 10000) {
-    alert("El número de simulaciones debe estar entre 1 y 10000.");
+    alert(t("builds.simRangeError"));
     return;
   }
   lastBatchN = n;
@@ -758,7 +767,7 @@ async function simulateBatchBattles(): Promise<void> {
       defenderName: state.defender.Name,
     } as core.FullBattleInput, n);
   } catch (err) {
-    alert("Error al simular: " + err);
+    alert(t("builds.errorSimulating") + err);
   } finally {
     batchRunning = false;
     renderBattleInPlace();
@@ -768,8 +777,8 @@ async function simulateBatchBattles(): Promise<void> {
 function renderBatchReport(): string {
   if (!batchReport || batchReport.totalSimulations === 0) return "";
   const r = batchReport;
-  const atkName = state.attacker?.Name ?? "Atacante";
-  const defName = state.defender?.Name ?? "Defensor";
+  const atkName = state.attacker?.Name ?? t("builds.attacker");
+  const defName = state.defender?.Name ?? t("builds.defender");
 
   const atkPct = r.attackerWinPct.toFixed(1);
   const defPct = r.defenderWinPct.toFixed(1);
@@ -777,15 +786,15 @@ function renderBatchReport(): string {
 
   return `
     <div class="battle-report" id="battle-report">
-      <h4 class="battle-report-title">Resultados de ${r.totalSimulations} simulaciones</h4>
+      <h4 class="battle-report-title">${t("builds.resultsOf", { count: r.totalSimulations })}</h4>
       <div class="report-win-bar">
         <div class="report-win-bar-segment report-win-bar--atk" style="width:${atkPct}%" title="${atkName}: ${atkPct}%"></div>
-        <div class="report-win-bar-segment report-win-bar--draw" style="width:${drawPct}%" title="Empate: ${drawPct}%"></div>
+        <div class="report-win-bar-segment report-win-bar--draw" style="width:${drawPct}%" title="${t("builds.draws")}: ${drawPct}%"></div>
         <div class="report-win-bar-segment report-win-bar--def" style="width:${defPct}%" title="${defName}: ${defPct}%"></div>
       </div>
       <div class="report-win-bar-labels">
         <span class="report-win-label report-win-label--atk">${atkName} ${atkPct}%</span>
-        ${parseFloat(drawPct) > 0 ? `<span class="report-win-label report-win-label--draw">Empate ${drawPct}%</span>` : ""}
+        ${parseFloat(drawPct) > 0 ? `<span class="report-win-label report-win-label--draw">${t("builds.draws")} ${drawPct}%</span>` : ""}
         <span class="report-win-label report-win-label--def">${defName} ${defPct}%</span>
       </div>
       <div class="report-stat-cards">
@@ -799,28 +808,28 @@ function renderBatchReport(): string {
         </div>
         <div class="report-stat-card">
           <div class="report-stat-card-value">${r.draws}</div>
-          <div class="report-stat-card-label">Empates</div>
+          <div class="report-stat-card-label">${t("builds.draws")}</div>
         </div>
       </div>
       <div class="report-stat-cards">
         <div class="report-stat-card">
           <div class="report-stat-card-value">${r.avgTurns.toFixed(1)}</div>
-          <div class="report-stat-card-label">Media turnos</div>
+          <div class="report-stat-card-label">${t("builds.avgTurns")}</div>
         </div>
         <div class="report-stat-card">
           <div class="report-stat-card-value">${r.medianTurns}</div>
-          <div class="report-stat-card-label">Mediana turnos</div>
+          <div class="report-stat-card-label">${t("builds.medianTurns")}</div>
         </div>
         <div class="report-stat-card">
           <div class="report-stat-card-value">${r.minTurns} — ${r.maxTurns}</div>
-          <div class="report-stat-card-label">Min — Max turnos</div>
+          <div class="report-stat-card-label">${t("builds.minMaxTurns")}</div>
         </div>
       </div>
       ${r.avgWinnerHP > 0 ? `
       <div class="report-stat-cards">
         <div class="report-stat-card">
           <div class="report-stat-card-value">${r.avgWinnerHP.toFixed(1)}</div>
-          <div class="report-stat-card-label">HP media del ganador</div>
+          <div class="report-stat-card-label">${t("builds.avgWinnerHP")}</div>
         </div>
       </div>` : ""}
     </div>`;
@@ -904,11 +913,11 @@ function renderSaveModal(): string {
   const pokemon = saveModalPrefix === "atk" ? state.attacker : state.defender;
   if (!pokemon) return "";
 
-  const availableTeams = cachedTeams.filter((t) => t.members.length < 6);
+  const availableTeams = cachedTeams.filter((tm) => tm.members.length < 6);
   const teamOptions = availableTeams
     .map(
-      (t) =>
-        `<button class="save-modal-team-btn" data-team="${t.name}">${t.name} (${t.members.length}/6)</button>`,
+      (tm) =>
+        `<button class="save-modal-team-btn" data-team="${tm.name}">${tm.name} (${tm.members.length}/6)</button>`,
     )
     .join("");
 
@@ -916,13 +925,13 @@ function renderSaveModal(): string {
     <div class="save-modal-overlay" id="save-modal-overlay">
       <div class="save-modal">
         <div class="save-modal-header">
-          <span>Guardar ${pokemon.Name} en equipo</span>
+          <span>${t("builds.savePokemon", { name: pokemon.Name })}</span>
           <button class="save-modal-close" id="save-modal-close">✕</button>
         </div>
         ${teamOptions ? `<div class="save-modal-teams">${teamOptions}</div>` : ""}
         <div class="save-modal-new">
-          <input id="save-modal-new-name" class="save-modal-input" type="text" placeholder="Nombre del nuevo equipo..." />
-          <button class="save-modal-create-btn" id="save-modal-create-btn">Crear equipo</button>
+          <input id="save-modal-new-name" class="save-modal-input" type="text" placeholder="${t("builds.newTeamPlaceholder")}" />
+          <button class="save-modal-create-btn" id="save-modal-create-btn">${t("builds.createTeam")}</button>
         </div>
       </div>
     </div>`;
@@ -1037,7 +1046,7 @@ async function importFromTeam(prefix: "atk" | "def", member: core.TeamMember): P
 let isDeletingTeam = false;
 async function handleDeleteTeam(name: string): Promise<void> {
   if (isDeletingTeam) return;
-  if (!confirm(`Eliminar equipo "${name}"?`)) return;
+  if (!confirm(t("teams.confirmDeleteTeam", { name }))) return;
   isDeletingTeam = true;
   try {
     await DeleteTeam(name);
@@ -1052,7 +1061,7 @@ async function handleDeleteTeam(name: string): Promise<void> {
 }
 
 async function handleDeleteTeamMember(teamName: string, index: number): Promise<void> {
-  if (!confirm("Eliminar este miembro del equipo?")) return;
+  if (!confirm(t("teams.confirmDeleteMember"))) return;
   try {
     await DeleteTeamMember(teamName, index);
     teamsDetailsOpen = true;
@@ -1064,21 +1073,21 @@ async function handleDeleteTeamMember(teamName: string, index: number): Promise<
 }
 
 function renderTeamBattleSection(): string {
-  const validTeams = cachedTeams.filter((t) => t.members.length > 0);
+  const validTeams = cachedTeams.filter((tm) => tm.members.length > 0);
   if (validTeams.length < 2) return "";
 
   const options = validTeams
-    .map((t) => `<option value="${t.name}">${t.name} (${t.members.length})</option>`)
+    .map((tm) => `<option value="${tm.name}">${tm.name} (${tm.members.length})</option>`)
     .join("");
 
-  const team1Select = `<select class="team-battle-select" id="tb-team1"><option value="">Seleccionar equipo 1</option>${options}</select>`;
-  const team2Select = `<select class="team-battle-select" id="tb-team2"><option value="">Seleccionar equipo 2</option>${options}</select>`;
+  const team1Select = `<select class="team-battle-select" id="tb-team1"><option value="">${t("teams.selectTeam1")}</option>${options}</select>`;
+  const team2Select = `<select class="team-battle-select" id="tb-team2"><option value="">${t("teams.selectTeam2")}</option>${options}</select>`;
 
   const canBattle = teamBattleTeam1 && teamBattleTeam2 && teamBattleTeam1 !== teamBattleTeam2;
 
   // Preview sprites
-  const t1 = cachedTeams.find((t) => t.name === teamBattleTeam1);
-  const t2 = cachedTeams.find((t) => t.name === teamBattleTeam2);
+  const t1 = cachedTeams.find((tm) => tm.name === teamBattleTeam1);
+  const t2 = cachedTeams.find((tm) => tm.name === teamBattleTeam2);
 
   const previewHTML = (t1 && t2) ? `
     <div class="tb-preview">
@@ -1091,7 +1100,7 @@ function renderTeamBattleSection(): string {
           return `<img class="tb-sprite ${fainted ? "tb-fainted" : ""}" src="${spriteURL(m.pokemonName)}" data-fallback="0" onerror="${spriteOnerror(m.pokemonName)}" alt="${m.pokemonName}" title="${m.pokemonName}" />`;
         }).join("")}</div>
       </div>
-      <span class="tb-vs">VS</span>
+      <span class="tb-vs">${t("teamBattle.vs")}</span>
       <div class="tb-preview-team">
         <strong>${t2.name}</strong>
         <div class="tb-sprites">${t2.members.map((m, i) => {
@@ -1106,7 +1115,7 @@ function renderTeamBattleSection(): string {
   // Result section
   let resultHTML = "";
   if (teamBattleResult && teamBattleResult.isOver) {
-    const winnerName = teamBattleResult.winner === "team1" ? teamBattleTeam1 : teamBattleTeam2;
+    const winnerName = (teamBattleResult.winner === "team1" ? teamBattleTeam1 : teamBattleTeam2) ?? "";
     const logEntries = (teamBattleResult.log ?? [])
       .map((entry) => {
         let cls = "battle-log-entry";
@@ -1117,12 +1126,12 @@ function renderTeamBattleSection(): string {
       }).join("");
     resultHTML = `
       <div class="tb-result">
-        <div class="battle-winner-banner">${winnerName} gana la batalla de equipos!</div>
+        <div class="battle-winner-banner">${t("teamBattle.winsTeamBattle", { name: winnerName })}</div>
         <div class="tb-stats">
-          <span>Rondas: ${teamBattleResult.rounds?.length ?? 0}</span>
-          <span>Turnos totales: ${teamBattleResult.totalTurns}</span>
-          <span>${teamBattleTeam1}: ${teamBattleResult.team1Remaining} restantes</span>
-          <span>${teamBattleTeam2}: ${teamBattleResult.team2Remaining} restantes</span>
+          <span>${t("teamBattle.rounds", { count: teamBattleResult.rounds?.length ?? 0 })}</span>
+          <span>${t("teamBattle.totalTurns", { count: teamBattleResult.totalTurns })}</span>
+          <span>${t("teamBattle.remaining", { name: teamBattleTeam1!, count: teamBattleResult.team1Remaining })}</span>
+          <span>${t("teamBattle.remaining", { name: teamBattleTeam2!, count: teamBattleResult.team2Remaining })}</span>
         </div>
         <div class="battle-log">${logEntries}</div>
       </div>`;
@@ -1137,15 +1146,15 @@ function renderTeamBattleSection(): string {
     const drawPct = r.drawPct.toFixed(1);
     batchHTML = `
       <div class="battle-report" id="tb-report">
-        <h4 class="battle-report-title">Resultados de ${r.totalSimulations} simulaciones</h4>
+        <h4 class="battle-report-title">${t("builds.resultsOf", { count: r.totalSimulations })}</h4>
         <div class="report-win-bar">
           <div class="report-win-bar-segment report-win-bar--atk" style="width:${t1Pct}%" title="${teamBattleTeam1}: ${t1Pct}%"></div>
-          <div class="report-win-bar-segment report-win-bar--draw" style="width:${drawPct}%" title="Empate: ${drawPct}%"></div>
+          <div class="report-win-bar-segment report-win-bar--draw" style="width:${drawPct}%" title="${t("builds.draws")}: ${drawPct}%"></div>
           <div class="report-win-bar-segment report-win-bar--def" style="width:${t2Pct}%" title="${teamBattleTeam2}: ${t2Pct}%"></div>
         </div>
         <div class="report-win-bar-labels">
           <span class="report-win-label report-win-label--atk">${teamBattleTeam1} ${t1Pct}%</span>
-          ${parseFloat(drawPct) > 0 ? `<span class="report-win-label report-win-label--draw">Empate ${drawPct}%</span>` : ""}
+          ${parseFloat(drawPct) > 0 ? `<span class="report-win-label report-win-label--draw">${t("builds.draws")} ${drawPct}%</span>` : ""}
           <span class="report-win-label report-win-label--def">${teamBattleTeam2} ${t2Pct}%</span>
         </div>
         <div class="report-stat-cards">
@@ -1159,21 +1168,21 @@ function renderTeamBattleSection(): string {
           </div>
           <div class="report-stat-card">
             <div class="report-stat-card-value">${r.draws}</div>
-            <div class="report-stat-card-label">Empates</div>
+            <div class="report-stat-card-label">${t("builds.draws")}</div>
           </div>
         </div>
         <div class="report-stat-cards">
           <div class="report-stat-card">
             <div class="report-stat-card-value">${r.avgTotalTurns.toFixed(1)}</div>
-            <div class="report-stat-card-label">Media turnos</div>
+            <div class="report-stat-card-label">${t("builds.avgTurns")}</div>
           </div>
           <div class="report-stat-card">
             <div class="report-stat-card-value">${r.avgTeam1Remaining.toFixed(1)}</div>
-            <div class="report-stat-card-label">${teamBattleTeam1} restantes (media)</div>
+            <div class="report-stat-card-label">${t("teamBattle.remainingAvg", { name: teamBattleTeam1! })}</div>
           </div>
           <div class="report-stat-card">
             <div class="report-stat-card-value">${r.avgTeam2Remaining.toFixed(1)}</div>
-            <div class="report-stat-card-label">${teamBattleTeam2} restantes (media)</div>
+            <div class="report-stat-card-label">${t("teamBattle.remainingAvg", { name: teamBattleTeam2! })}</div>
           </div>
         </div>
       </div>`;
@@ -1182,19 +1191,19 @@ function renderTeamBattleSection(): string {
   return `
     <div class="team-battle-section">
       <details class="teams-details" open>
-        <summary class="build-section-title teams-summary">Batalla de equipos</summary>
+        <summary class="build-section-title teams-summary">${t("teamBattle.title")}</summary>
         <div class="tb-selectors">
           ${team1Select}
-          <span class="tb-vs-label">VS</span>
+          <span class="tb-vs-label">${t("teamBattle.vs")}</span>
           ${team2Select}
         </div>
         ${previewHTML}
         <div class="tb-actions">
-          <button class="battle-auto-btn" id="tb-simulate-btn" ${!canBattle ? "disabled" : ""}>Simular batalla de equipos</button>
+          <button class="battle-auto-btn" id="tb-simulate-btn" ${!canBattle ? "disabled" : ""}>${t("teamBattle.simulate")}</button>
           <div class="battle-batch-row">
             <input type="number" id="tb-batch-n" class="battle-batch-input" min="1" max="10000" value="${lastTeamBatchN}" />
             <button class="battle-batch-btn" id="tb-batch-btn" ${!canBattle || teamBattleRunning ? "disabled" : ""}>
-              ${teamBattleRunning ? "Simulando..." : "Simular N batallas"}
+              ${teamBattleRunning ? t("builds.simulating") : t("builds.simulateN")}
             </button>
           </div>
         </div>
@@ -1213,18 +1222,18 @@ function isMemberFainted(result: core.TeamBattleState, team: "team1" | "team2", 
 function renderTeamsSection(): string {
   const createTeamHTML = creatingTeam
     ? `<div class="team-create-form">
-        <input class="team-create-input build-search-input" type="text" placeholder="Nombre del equipo..." />
-        <button class="team-create-confirm-btn">Crear</button>
-        <button class="team-create-cancel-btn">Cancelar</button>
+        <input class="team-create-input build-search-input" type="text" placeholder="${t("teams.teamNamePlaceholder")}" />
+        <button class="team-create-confirm-btn">${t("teams.create")}</button>
+        <button class="team-create-cancel-btn">${t("teams.cancel")}</button>
       </div>`
-    : `<button class="team-create-btn">+ Crear equipo</button>`;
+    : `<button class="team-create-btn">${t("teams.createBtn")}</button>`;
 
   const teamsHTML = cachedTeams.map((team) => {
     const membersHTML = team.members
       .map((m, i) => {
         const memberKey = `${team.name}:${i}`;
         const isEditing = editingMemberKey === memberKey;
-        const movesDisplay = m.moves.length > 0 ? m.moves.join(", ") : "Sin movimientos";
+        const movesDisplay = m.moves.length > 0 ? m.moves.join(", ") : t("teams.noMoves");
         const moveSelectors = isEditing
           ? `<div class="team-member-edit-moves">
               ${[0, 1, 2, 3].map((slotIdx) => {
@@ -1233,7 +1242,7 @@ function renderTeamsSection(): string {
                   `<option value="${mv}" ${mv === current ? "selected" : ""}>${mv}</option>`
                 ).join("");
                 return `<select class="team-member-move-select team-battle-select" data-team="${team.name}" data-idx="${i}" data-slot="${slotIdx}">
-                  <option value="">— Vacío —</option>
+                  <option value="">${t("teams.empty")}</option>
                   ${options}
                 </select>`;
               }).join("")}
@@ -1245,10 +1254,10 @@ function renderTeamsSection(): string {
           <span class="team-member-name">${m.pokemonName}</span>
           <span class="team-member-detail">Lv.${m.level} ${m.nature}</span>
           <span class="team-member-moves">${movesDisplay}</span>
-          <button class="team-member-edit-btn" data-team="${team.name}" data-idx="${i}" title="Editar movimientos">${isEditing ? "✓" : "✎"}</button>
-          <button class="team-import-btn" data-team="${team.name}" data-idx="${i}" data-prefix="atk" title="Importar como atacante">Atk</button>
-          <button class="team-import-btn" data-team="${team.name}" data-idx="${i}" data-prefix="def" title="Importar como defensor">Def</button>
-          <button class="team-member-delete-btn" data-team="${team.name}" data-idx="${i}" title="Eliminar miembro">✕</button>
+          <button class="team-member-edit-btn" data-team="${team.name}" data-idx="${i}" title="${t("teams.editMoves")}">${isEditing ? "✓" : "✎"}</button>
+          <button class="team-import-btn" data-team="${team.name}" data-idx="${i}" data-prefix="atk" title="${t("teams.importAttacker")}">Atk</button>
+          <button class="team-import-btn" data-team="${team.name}" data-idx="${i}" data-prefix="def" title="${t("teams.importDefender")}">Def</button>
+          <button class="team-member-delete-btn" data-team="${team.name}" data-idx="${i}" title="${t("teams.deleteMember")}">✕</button>
         </div>
         ${moveSelectors}`;
       })
@@ -1261,31 +1270,31 @@ function renderTeamsSection(): string {
       ? isAddingToThis
         ? `<div class="team-add-member-panel">
             <div class="team-add-search-row">
-              <input class="team-add-search-input build-search-input" data-team="${team.name}" type="text" placeholder="Buscar Pokémon..." />
+              <input class="team-add-search-input build-search-input" data-team="${team.name}" type="text" placeholder="${t("teams.searchPokemon")}" />
             </div>
-            ${state.attacker ? `<button class="team-add-from-build-btn" data-team="${team.name}" data-prefix="atk">Añadir ${state.attacker.Name} (atacante actual)</button>` : ""}
-            ${state.defender ? `<button class="team-add-from-build-btn" data-team="${team.name}" data-prefix="def">Añadir ${state.defender.Name} (defensor actual)</button>` : ""}
-            <button class="team-add-cancel-btn" data-team="${team.name}">Cancelar</button>
+            ${state.attacker ? `<button class="team-add-from-build-btn" data-team="${team.name}" data-prefix="atk">${t("teams.addFromBuildAtk", { name: state.attacker.Name })}</button>` : ""}
+            ${state.defender ? `<button class="team-add-from-build-btn" data-team="${team.name}" data-prefix="def">${t("teams.addFromBuildDef", { name: state.defender.Name })}</button>` : ""}
+            <button class="team-add-cancel-btn" data-team="${team.name}">${t("teams.cancel")}</button>
           </div>`
-        : `<button class="team-add-member-btn" data-team="${team.name}">+ Añadir Pokémon</button>`
+        : `<button class="team-add-member-btn" data-team="${team.name}">${t("teams.addPokemon")}</button>`
       : "";
 
     return `
       <div class="team-card">
         <div class="team-card-header">
           <span class="team-card-name">${team.name} (${team.members.length}/6)</span>
-          <button class="team-delete-btn" data-team="${team.name}">Eliminar equipo</button>
+          <button class="team-delete-btn" data-team="${team.name}">${t("teams.deleteTeam")}</button>
         </div>
         <div class="team-members-list">${membersHTML}</div>
         ${addMemberHTML}
-        ${canAdd ? `<button class="team-random-fill-btn" data-team="${team.name}">Rellenar aleatorio</button>` : ""}
+        ${canAdd ? `<button class="team-random-fill-btn" data-team="${team.name}">${t("teams.fillRandom")}</button>` : ""}
       </div>`;
   }).join("");
 
   return `
     <div class="teams-section">
       <details class="teams-details" ${teamsDetailsOpen ? "open" : ""}>
-        <summary class="build-section-title teams-summary">Mis equipos (${cachedTeams.length})</summary>
+        <summary class="build-section-title teams-summary">${t("teams.myTeams", { count: cachedTeams.length })}</summary>
         ${createTeamHTML}
         <div class="teams-list">${teamsHTML}</div>
       </details>
@@ -1305,7 +1314,7 @@ function bindTeamEvents(): void {
       const teamName = btn.dataset.team!;
       const idx = parseInt(btn.dataset.idx!);
       const prefix = btn.dataset.prefix as "atk" | "def";
-      const team = cachedTeams.find((t) => t.name === teamName);
+      const team = cachedTeams.find((tm) => tm.name === teamName);
       if (team && team.members[idx]) {
         importFromTeam(prefix, team.members[idx]);
       }
@@ -1348,7 +1357,7 @@ function bindTeamEvents(): void {
         editingMemberMoves = [];
       } else {
         // Open editing — fetch pokemon moves
-        const team = cachedTeams.find((t) => t.name === teamName);
+        const team = cachedTeams.find((tm) => tm.name === teamName);
         if (team && team.members[idx]) {
           try {
             const pokemon = await GetPokemon(team.members[idx].pokemonName);
@@ -1370,7 +1379,7 @@ function bindTeamEvents(): void {
     sel.addEventListener("change", async () => {
       const teamName = sel.dataset.team!;
       const idx = parseInt(sel.dataset.idx!);
-      const team = cachedTeams.find((t) => t.name === teamName);
+      const team = cachedTeams.find((tm) => tm.name === teamName);
       if (!team || !team.members[idx]) return;
       const member = { ...team.members[idx] };
       // Gather all 4 selects for this member
@@ -1478,11 +1487,11 @@ function bindTeamEvents(): void {
 function buildLayout(): void {
   const atkCard = state.attacker
     ? renderPokemonCard(state.attacker, state.attackerStats)
-    : `<div class="build-poke-card build-poke-card--empty"><p>Selecciona un Pokémon atacante</p></div>`;
+    : `<div class="build-poke-card build-poke-card--empty"><p>${t("builds.selectAttacker")}</p></div>`;
 
   const defCard = state.defender
     ? renderPokemonCard(state.defender, state.defenderStats)
-    : `<div class="build-poke-card build-poke-card--empty"><p>Selecciona un Pokémon defensor</p></div>`;
+    : `<div class="build-poke-card build-poke-card--empty"><p>${t("builds.selectDefender")}</p></div>`;
 
   const atkConfig = state.attacker
     ? renderStatsConfig("atk", state.attackerLevel, state.attackerNature)
@@ -1495,8 +1504,8 @@ function buildLayout(): void {
   const movesSection = state.attacker
     ? `<div class="build-moves-section">
         <div class="build-moves-header">
-          <h3 class="build-section-title">Movimientos atacante (máx. 4)</h3>
-          <button class="battle-random-fill-btn" id="atk-random-fill-btn">Rellenar aleatoriamente</button>
+          <h3 class="build-section-title">${t("builds.attackerMoves")}</h3>
+          <button class="battle-random-fill-btn" id="atk-random-fill-btn">${t("builds.fillRandom")}</button>
         </div>
         <div class="build-slots">${renderMoveSlots(state.attacker.Moves ?? [], "atk")}</div>
       </div>`
@@ -1505,8 +1514,8 @@ function buildLayout(): void {
   const defenderMovesSection = state.defender
     ? `<div class="build-moves-section defender-moves-section">
         <div class="build-moves-header">
-          <h3 class="build-section-title">Movimientos defensor (máx. 4)</h3>
-          <button class="battle-random-fill-btn" id="def-random-fill-btn">Rellenar aleatoriamente</button>
+          <h3 class="build-section-title">${t("builds.defenderMoves")}</h3>
+          <button class="battle-random-fill-btn" id="def-random-fill-btn">${t("builds.fillRandom")}</button>
         </div>
         <div class="build-slots">${renderMoveSlots(state.defender.Moves ?? [], "def")}</div>
       </div>`
@@ -1519,31 +1528,31 @@ function buildLayout(): void {
   const saveModal = renderSaveModal();
 
   container.innerHTML = `
-    <div class="section-header"><h2>Builds & Simulador</h2></div>
+    <div class="section-header"><h2>${t("builds.title")}</h2></div>
 
     ${teamsSection}
 
     <div class="build-layout">
       <div class="build-col build-col--attacker">
-        <h3 class="build-col-title">Atacante</h3>
+        <h3 class="build-col-title">${t("builds.attacker")}</h3>
         <div class="build-search-row">
-          <input id="atk-input" class="build-search-input" type="text" placeholder="Nombre del Pokémon..." />
-          <button id="atk-btn" class="build-search-btn">Buscar</button>
+          <input id="atk-input" class="build-search-input" type="text" placeholder="${t("builds.pokemonPlaceholder")}" />
+          <button id="atk-btn" class="build-search-btn">${t("builds.search")}</button>
         </div>
         ${atkCard}
         ${atkConfig}
-        ${state.attacker ? `<button class="team-save-btn" data-prefix="atk">Guardar en equipo</button>` : ""}
+        ${state.attacker ? `<button class="team-save-btn" data-prefix="atk">${t("builds.saveToTeam")}</button>` : ""}
       </div>
 
       <div class="build-col build-col--defender">
-        <h3 class="build-col-title">Defensor</h3>
+        <h3 class="build-col-title">${t("builds.defender")}</h3>
         <div class="build-search-row">
-          <input id="def-input" class="build-search-input" type="text" placeholder="Nombre del Pokémon..." />
-          <button id="def-btn" class="build-search-btn">Buscar</button>
+          <input id="def-input" class="build-search-input" type="text" placeholder="${t("builds.pokemonPlaceholder")}" />
+          <button id="def-btn" class="build-search-btn">${t("builds.search")}</button>
         </div>
         ${defCard}
         ${defConfig}
-        ${state.defender ? `<button class="team-save-btn" data-prefix="def">Guardar en equipo</button>` : ""}
+        ${state.defender ? `<button class="team-save-btn" data-prefix="def">${t("builds.saveToTeam")}</button>` : ""}
       </div>
     </div>
 
@@ -1561,8 +1570,8 @@ function buildLayout(): void {
   bindTeamBattleEvents();
   bindSaveModalEvents();
 
-  if (state.attacker) initColumnToggle("sc-atk", SC_TABLE_ATK_COLUMNS);
-  if (state.defender) initColumnToggle("sc-def", SC_TABLE_DEF_COLUMNS);
+  if (state.attacker) initColumnToggle("sc-atk", scTableAtkColumns());
+  if (state.defender) initColumnToggle("sc-def", scTableDefColumns());
 
   if (dmgSection) {
     loadDamageTable();

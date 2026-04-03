@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import { GetLocationEncounters } from "../api";
+import { t } from "../i18n";
 
 let overlayEl: HTMLDivElement | null = null;
 
@@ -50,7 +51,7 @@ export async function openLocationEncounterModal(locationName: string): Promise<
       <div class="type-modal-body">
         <div class="encounter-loading">
           <div class="encounter-spinner"></div>
-          <p>Cargando encounters...</p>
+          <p>${t("modals.locationLoading")}</p>
         </div>
       </div>
     </div>`;
@@ -76,7 +77,7 @@ export async function openLocationEncounterModal(locationName: string): Promise<
     const bodyEl = overlay.querySelector(".type-modal-body")!;
 
     if (!encounters || encounters.length === 0) {
-      bodyEl.innerHTML = `<p class="type-modal-empty">No se encontraron Pokémon en esta localización.</p>`;
+      bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.locationEmpty")}</p>`;
       return;
     }
 
@@ -133,7 +134,7 @@ export async function openLocationEncounterModal(locationName: string): Promise<
   } catch {
     const bodyEl = overlay.querySelector(".type-modal-body");
     if (bodyEl) {
-      bodyEl.innerHTML = `<p class="type-modal-empty">Error al cargar los encounters.</p>`;
+      bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.locationError")}</p>`;
     }
   }
 }

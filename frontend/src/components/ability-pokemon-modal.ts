@@ -1,3 +1,5 @@
+import { t } from "../i18n";
+
 const SPRITE_BASE = "/assets/sprites";
 const CDN_FALLBACK = "https://img.pokemondb.net/sprites/home/normal";
 
@@ -29,7 +31,7 @@ export function openAbilityPokemonModal(
 
   const isEmpty = pokemonNames.length === 0;
   const gridHtml = isEmpty
-    ? `<p class="type-modal-empty">No se encontraron Pokémon con la habilidad <strong>${capitalized}</strong>.</p>`
+    ? `<p class="type-modal-empty">${t("modals.abilityEmpty", { name: capitalized })}</p>`
     : `<div class="type-modal-grid">${pokemonNames
         .map(
           (name) => `
