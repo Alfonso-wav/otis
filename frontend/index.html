@@ -16,21 +16,21 @@
       <span>Z</span>
     </div>
     <img class="splash-snorlax" src="/src/assets/snorlax-splash.svg" alt="Snorlax" />
-    <p class="splash-text">Snorlax est&aacute; despertando...</p>
+    <p class="splash-text" data-i18n="splash.text">Snorlax est&aacute; despertando...</p>
   </div>
 
   <header class="pokedex-header">
     <div class="header-brand px-4 py-3 d-flex align-items-center gap-3">
       <h1 class="mb-0">Pokédex</h1>
       <div class="ms-auto d-flex gap-2" id="search-bar">
-        <input id="search-input" type="text" class="form-control" placeholder="Buscar por nombre o número..." />
-        <button id="search-btn" class="btn btn-light">Buscar</button>
+        <input id="search-input" type="text" class="form-control" placeholder="Buscar por nombre o número..." data-i18n-placeholder="common.searchPlaceholder" />
+        <button id="search-btn" class="btn btn-light" data-i18n="common.search">Buscar</button>
       </div>
     </div>
     <nav class="tab-nav px-4" id="tab-nav">
-      <button class="tab-btn active" data-tab="pokedex">Pokédex</button>
-      <button class="tab-btn" data-tab="explore">Explorar</button>
-      <button class="tab-btn" data-tab="builds">Builds</button>
+      <button class="tab-btn active" data-tab="pokedex" data-i18n="tabs.pokedex">Pokédex</button>
+      <button class="tab-btn" data-tab="explore" data-i18n="tabs.explore">Explorar</button>
+      <button class="tab-btn" data-tab="builds" data-i18n="tabs.builds">Builds</button>
       <button class="tab-btn" data-tab="settings">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
           <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
@@ -44,31 +44,31 @@
       <section id="list-view">
         <div id="filter-bar" class="filter-bar">
           <div class="filter-dropdown" id="dropdown-gen">
-            <button class="filter-dropdown__trigger" type="button">Generación</button>
+            <button class="filter-dropdown__trigger" type="button" data-i18n="filters.generation">Generación</button>
             <div class="filter-dropdown__panel" id="filter-gen"></div>
           </div>
           <div class="filter-dropdown" id="dropdown-type">
-            <button class="filter-dropdown__trigger" type="button">Tipo</button>
+            <button class="filter-dropdown__trigger" type="button" data-i18n="filters.type">Tipo</button>
             <div class="filter-dropdown__panel" id="filter-type"></div>
           </div>
-          <button id="filter-legendary" class="filter-pill" title="Mostrar solo legendarios">⭐ Legendario</button>
-          <button id="filter-mythical" class="filter-pill" title="Mostrar solo míticos">✨ Mítico</button>
-          <button id="filter-reset" class="filter-reset-btn">✕ Todos</button>
-          <button id="view-toggle-btn" class="filter-pill" title="Cambiar vista">⊞ Tabla</button>
+          <button id="filter-legendary" class="filter-pill" data-i18n="filters.legendary">⭐ Legendario</button>
+          <button id="filter-mythical" class="filter-pill" data-i18n="filters.mythical">✨ Mítico</button>
+          <button id="filter-reset" class="filter-reset-btn" data-i18n="filters.resetAll">✕ Todos</button>
+          <button id="view-toggle-btn" class="filter-pill" data-i18n="filters.tableView">⊞ Tabla</button>
         </div>
         <div id="pokemon-grid"></div>
         <div id="scroll-sentinel" class="scroll-sentinel">
-          <span class="scroll-sentinel__text">Cargando...</span>
+          <span class="scroll-sentinel__text" data-i18n="common.loading">Cargando...</span>
         </div>
         <div id="pagination" class="d-flex align-items-center justify-content-center gap-3 mt-4">
-          <button id="prev-btn" class="btn btn-primary" disabled>&larr; Anterior</button>
+          <button id="prev-btn" class="btn btn-primary" disabled>&larr; <span data-i18n="common.previous">Anterior</span></button>
           <span id="page-info"></span>
-          <button id="next-btn" class="btn btn-primary">Siguiente &rarr;</button>
+          <button id="next-btn" class="btn btn-primary"><span data-i18n="common.next">Siguiente</span> &rarr;</button>
         </div>
       </section>
 
       <section id="detail-view" class="hidden">
-        <button id="back-btn" class="btn mb-3">&larr; Volver</button>
+        <button id="back-btn" class="btn mb-3">&larr; <span data-i18n="common.back">Volver</span></button>
         <div id="pokemon-detail" class="card p-4 shadow-sm text-center"></div>
       </section>
     </div>
@@ -78,20 +78,27 @@
     <div id="tab-explore" class="tab-page hidden">
       <div class="coming-soon">
         <div class="coming-soon__icon">🗺️</div>
-        <h2>Explorar</h2>
-        <p>Próximamente — regiones, movimientos y datos detallados</p>
+        <h2 data-i18n="explore.title">Explorar</h2>
+        <p data-i18n="explore.comingSoon">Próximamente — regiones, movimientos y datos detallados</p>
       </div>
     </div>
 
     <div id="tab-settings" class="tab-page hidden">
       <div class="settings-page">
-        <h2 class="settings-title">Settings</h2>
+        <h2 class="settings-title" data-i18n="settings.title">Settings</h2>
         <div class="settings-row">
-          <span class="settings-label">Dark Mode</span>
+          <span class="settings-label" data-i18n="settings.darkMode">Dark Mode</span>
           <label class="toggle-switch">
             <input type="checkbox" id="dark-mode-toggle" />
             <span class="toggle-slider"></span>
           </label>
+        </div>
+        <div class="settings-row">
+          <span class="settings-label" data-i18n="settings.language">Idioma</span>
+          <select id="language-select" class="form-select form-select-sm" style="width: auto;">
+            <option value="es">Espa&#241;ol</option>
+            <option value="en">English</option>
+          </select>
         </div>
       </div>
     </div>

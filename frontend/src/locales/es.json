@@ -1,0 +1,36 @@
+{
+  "settings": {
+    "title": "Configuraci\u00f3n",
+    "darkMode": "Modo Oscuro",
+    "language": "Idioma"
+  },
+  "tabs": {
+    "pokedex": "Pok\u00e9dex",
+    "explore": "Explorar",
+    "builds": "Builds",
+    "settings": "Configuraci\u00f3n"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "search": "Buscar",
+    "searchPlaceholder": "Buscar por nombre o n\u00famero...",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior"
+  },
+  "splash": {
+    "text": "Snorlax est\u00e1 despertando..."
+  },
+  "filters": {
+    "generation": "Generaci\u00f3n",
+    "type": "Tipo",
+    "legendary": "\u2b50 Legendario",
+    "mythical": "\u2728 M\u00edtico",
+    "resetAll": "\u2715 Todos",
+    "tableView": "\u229e Tabla"
+  },
+  "explore": {
+    "title": "Explorar",
+    "comingSoon": "Pr\u00f3ximamente \u2014 regiones, movimientos y datos detallados"
+  }
+}
