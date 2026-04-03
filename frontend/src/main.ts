@@ -4,6 +4,7 @@ import { initPokedex } from "./pages/pokedex";
 import { initExplore } from "./pages/explore";
 import { initBuilds } from "./pages/builds";
 import { initSettings } from "./settings";
+import { initI18n } from "./i18n";
 import { ListGenerations } from "./api";
 
 function dismissSplash(): void {
@@ -37,6 +38,7 @@ registerPage({
 
 initRouter("pokedex");
 
+initI18n();
 initSettings();
 initPokedex();
 initExplore();

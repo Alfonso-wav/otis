@@ -1,0 +1,36 @@
+{
+  "settings": {
+    "title": "Settings",
+    "darkMode": "Dark Mode",
+    "language": "Language"
+  },
+  "tabs": {
+    "pokedex": "Pok\u00e9dex",
+    "explore": "Explore",
+    "builds": "Builds",
+    "settings": "Settings"
+  },
+  "common": {
+    "loading": "Loading...",
+    "search": "Search",
+    "searchPlaceholder": "Search by name or number...",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "splash": {
+    "text": "Snorlax is waking up..."
+  },
+  "filters": {
+    "generation": "Generation",
+    "type": "Type",
+    "legendary": "\u2b50 Legendary",
+    "mythical": "\u2728 Mythical",
+    "resetAll": "\u2715 All",
+    "tableView": "\u229e Table"
+  },
+  "explore": {
+    "title": "Explore",
+    "comingSoon": "Coming soon \u2014 regions, moves and detailed data"
+  }
+}
