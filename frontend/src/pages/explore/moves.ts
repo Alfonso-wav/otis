@@ -4,6 +4,7 @@ import type { core } from "../../../wailsjs/go/models";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
 import { SortCache } from "../../utils/sort-cache";
 import { showSortingOverlay, hideSortingOverlay } from "../../components/sorting-overlay";
+import { t } from "../../i18n";
 
 type Category = "all" | "physical" | "special" | "status";
 type SortColumn = "name" | "type" | "category" | "power" | "accuracy" | "pp" | "priority" | null;
@@ -39,15 +40,17 @@ const movesSortCache = new SortCache<core.Move>([
   { key: "priority", compare: (a, b) => a.Priority - b.Priority },
 ]);
 
-const MOVES_TABLE_COLUMNS: ColumnConfig[] = [
-  { key: "name", label: "Nombre", fixed: true },
-  { key: "type", label: "Tipo" },
-  { key: "category", label: "Cat." },
-  { key: "power", label: "Poder" },
-  { key: "accuracy", label: "Prec." },
-  { key: "pp", label: "PP" },
-  { key: "priority", label: "Prio." },
-];
+function movesTableColumns(): ColumnConfig[] {
+  return [
+    { key: "name", label: t("moves.columns.name"), fixed: true },
+    { key: "type", label: t("moves.columns.type") },
+    { key: "category", label: t("moves.columns.category") },
+    { key: "power", label: t("moves.columns.power") },
+    { key: "accuracy", label: t("moves.columns.accuracy") },
+    { key: "pp", label: t("moves.columns.pp") },
+    { key: "priority", label: t("moves.columns.priority") },
+  ];
+}
 
 const TYPE_COLORS: Record<string, string> = {
   normal: "#a0aec0", fire: "#f6ad55", water: "#63b3ed", grass: "#68d391",
@@ -98,10 +101,10 @@ function renderTable(container: HTMLElement): void {
 
   const moves = filteredMoves();
   const countEl = container.querySelector<HTMLElement>("#moves-count");
-  if (countEl) countEl.textContent = `${moves.length} movimientos`;
+  if (countEl) countEl.textContent = t("moves.count", { count: moves.length });
 
   if (moves.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="loading">No se encontraron movimientos.</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="7" class="loading">${t("moves.noResults")}</td></tr>`;
     return;
   }
 
@@ -135,22 +138,22 @@ function updateSortIndicators(container: HTMLElement): void {
 
 function buildTypeFilterOptions(): string {
   const types = [...new Set(state.allMoves.map((m) => m.Type))].sort();
-  return `<option value="all">Todos los tipos</option>` +
+  return `<option value="all">${t("moves.allTypes")}</option>` +
     types.map((t) => `<option value="${t}">${t}</option>`).join("");
 }
 
 export async function initMoves(container: HTMLElement): Promise<void> {
   container.innerHTML = `
-    <div class="section-header"><h2>Movimientos</h2></div>
+    <div class="section-header"><h2>${t("moves.title")}</h2></div>
     <div class="moves-controls">
-      <input type="text" id="moves-search" class="explore-input" placeholder="Buscar movimiento..." />
+      <input type="text" id="moves-search" class="explore-input" placeholder="${t("moves.searchPlaceholder")}" />
       <div class="moves-filters">
-        <button class="filter-btn active" data-cat="all">Todos</button>
-        <button class="filter-btn" data-cat="physical"><img src="https://img.pokemondb.net/images/icons/move-physical.png" class="move-cat-icon" alt="Physical"> Fisico</button>
-        <button class="filter-btn" data-cat="special"><img src="https://img.pokemondb.net/images/icons/move-special.png" class="move-cat-icon" alt="Special"> Especial</button>
-        <button class="filter-btn" data-cat="status"><img src="https://img.pokemondb.net/images/icons/move-status.png" class="move-cat-icon" alt="Status"> Estado</button>
+        <button class="filter-btn active" data-cat="all">${t("moves.categories.all")}</button>
+        <button class="filter-btn" data-cat="physical"><img src="https://img.pokemondb.net/images/icons/move-physical.png" class="move-cat-icon" alt="Physical"> ${t("moves.categories.physical")}</button>
+        <button class="filter-btn" data-cat="special"><img src="https://img.pokemondb.net/images/icons/move-special.png" class="move-cat-icon" alt="Special"> ${t("moves.categories.special")}</button>
+        <button class="filter-btn" data-cat="status"><img src="https://img.pokemondb.net/images/icons/move-status.png" class="move-cat-icon" alt="Status"> ${t("moves.categories.status")}</button>
         <select id="moves-type-filter" class="explore-input moves-type-select">
-          <option value="all">Todos los tipos</option>
+          <option value="all">${t("moves.allTypes")}</option>
         </select>
       </div>
     </div>
@@ -159,17 +162,17 @@ export async function initMoves(container: HTMLElement): Promise<void> {
       <table class="poke-table moves-table" data-table-id="moves">
         <thead>
           <tr>
-            <th class="sortable" data-col="name">Nombre <span class="sort-indicator"></span></th>
-            <th class="sortable" data-col="type">Tipo <span class="sort-indicator"></span></th>
-            <th class="sortable" data-col="category">Cat. <span class="sort-indicator"></span></th>
-            <th class="sortable" data-col="power">Poder <span class="sort-indicator"></span></th>
-            <th class="sortable" data-col="accuracy">Prec. <span class="sort-indicator"></span></th>
-            <th class="sortable" data-col="pp">PP <span class="sort-indicator"></span></th>
-            <th class="sortable" data-col="priority">Prio. <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="name">${t("moves.columns.name")} <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="type">${t("moves.columns.type")} <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="category">${t("moves.columns.category")} <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="power">${t("moves.columns.power")} <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="accuracy">${t("moves.columns.accuracy")} <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="pp">${t("moves.columns.pp")} <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="priority">${t("moves.columns.priority")} <span class="sort-indicator"></span></th>
           </tr>
         </thead>
         <tbody id="moves-tbody">
-          <tr><td colspan="7" class="loading">Cargando movimientos...</td></tr>
+          <tr><td colspan="7" class="loading">${t("moves.loading")}</td></tr>
         </tbody>
       </table>
     </div>`;
@@ -228,7 +231,7 @@ export async function initMoves(container: HTMLElement): Promise<void> {
       state.allMoves = await GetAllMoves();
     } catch (err) {
       const tbody = container.querySelector<HTMLElement>("#moves-tbody");
-      if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="loading">Error al cargar movimientos.</td></tr>';
+      if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="loading">${t("moves.error")}</td></tr>`;
       return;
     } finally {
       state.loading = false;
@@ -239,5 +242,5 @@ export async function initMoves(container: HTMLElement): Promise<void> {
   typeSelect.innerHTML = buildTypeFilterOptions();
 
   renderTable(container);
-  initColumnToggle("moves", MOVES_TABLE_COLUMNS);
+  initColumnToggle("moves", movesTableColumns());
 }

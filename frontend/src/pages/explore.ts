@@ -1,4 +1,5 @@
 import gsap from "gsap";
+import { t } from "../i18n";
 import { initTypes } from "./explore/types";
 import { initRegions } from "./explore/regions";
 import { initMoves } from "./explore/moves";
@@ -14,12 +15,12 @@ const ICON_MAP = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0
 const ICON_BOLT = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="ui-icon" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" /></svg>`;
 const ICON_SPARKLES = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="ui-icon" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" /></svg>`;
 
-const tabLabels: Record<ExploreTab, string> = {
-  types: `${ICON_SHIELD} Tipos`,
-  regions: `${ICON_MAP} Regiones`,
-  moves: `${ICON_BOLT} Movimientos`,
-  abilities: `${ICON_SPARKLES} Habilidades`,
-};
+function tabLabel(tab: ExploreTab): string {
+  const icons: Record<ExploreTab, string> = { types: ICON_SHIELD, regions: ICON_MAP, moves: ICON_BOLT, abilities: ICON_SPARKLES };
+  return `${icons[tab]} ${t(`explore.tabs.${tab}`)}`;
+}
+
+const TAB_KEYS: ExploreTab[] = ["types", "regions", "moves", "abilities"];
 
 const tabInited: Record<ExploreTab, boolean> = {
   types: false,
@@ -71,20 +72,20 @@ function initPanel(tab: ExploreTab, panel: HTMLElement): void {
 function buildLayout(container: HTMLElement): void {
   container.innerHTML = `
     <div class="explore-nav">
-      ${(Object.keys(tabLabels) as ExploreTab[])
+      ${TAB_KEYS
         .map(
-          (t) =>
-            `<button class="explore-tab-btn${t === activeTab ? " active" : ""}" data-explore-tab="${t}">
-              ${tabLabels[t]}
+          (tab) =>
+            `<button class="explore-tab-btn${tab === activeTab ? " active" : ""}" data-explore-tab="${tab}">
+              ${tabLabel(tab)}
             </button>`,
         )
         .join("")}
     </div>
     <div class="explore-content">
-      ${(Object.keys(tabLabels) as ExploreTab[])
+      ${TAB_KEYS
         .map(
-          (t) =>
-            `<div class="explore-panel${t !== activeTab ? " hidden" : ""}" data-panel="${t}"></div>`,
+          (tab) =>
+            `<div class="explore-panel${tab !== activeTab ? " hidden" : ""}" data-panel="${tab}"></div>`,
         )
         .join("")}
     </div>`;
@@ -119,5 +120,13 @@ export function initExplore(): void {
       { opacity: 0, y: -10 },
       { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" },
     );
+  });
+
+  document.addEventListener("locale-changed", () => {
+    if (!initialized) return;
+    container.querySelectorAll<HTMLButtonElement>(".explore-tab-btn").forEach((btn) => {
+      const tab = btn.dataset.exploreTab as ExploreTab;
+      if (tab) btn.innerHTML = tabLabel(tab);
+    });
   });
 }

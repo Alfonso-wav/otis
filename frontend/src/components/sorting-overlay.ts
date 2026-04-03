@@ -1,4 +1,5 @@
 import gsap from "gsap";
+import { t } from "../i18n";
 
 const MRMIME_SPRITE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/122.png";
 
@@ -11,7 +12,7 @@ function create(): HTMLDivElement {
   el.innerHTML = `
     <div class="sorting-overlay__content">
       <img class="sorting-overlay__img" src="${MRMIME_SPRITE}" alt="Mr. Mime thinking..." />
-      <p class="sorting-overlay__text">Ordenando...</p>
+      <p class="sorting-overlay__text">${t("sorting.sorting")}</p>
     </div>`;
   return el;
 }
