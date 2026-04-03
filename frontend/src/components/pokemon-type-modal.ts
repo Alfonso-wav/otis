@@ -1,3 +1,5 @@
+import { t } from "../i18n";
+
 let overlayEl: HTMLDivElement | null = null;
 
 function spriteUrl(name: string): string {
@@ -27,7 +29,7 @@ export function openTypeModal(
 
   const isEmpty = pokemonNames.length === 0;
   const gridHtml = isEmpty
-    ? `<p class="type-modal-empty">No se encontraron Pokémon de tipo <strong>${typeName}</strong> en ${regionName}.</p>`
+    ? `<p class="type-modal-empty">${t("modals.typeRegionEmpty", { type: typeName, region: regionName })}</p>`
     : `<div class="type-modal-grid">${pokemonNames
         .map(
           (name) => `
@@ -47,7 +49,7 @@ export function openTypeModal(
   overlay.innerHTML = `
     <div class="type-modal">
       <div class="type-modal-header">
-        <span>${typeName.charAt(0).toUpperCase() + typeName.slice(1)} en ${regionName.charAt(0).toUpperCase() + regionName.slice(1)}</span>
+        <span>${t("modals.typeInRegion", { type: typeName.charAt(0).toUpperCase() + typeName.slice(1), region: regionName.charAt(0).toUpperCase() + regionName.slice(1) })}</span>
         <button class="type-modal-close" id="type-modal-close">&times;</button>
       </div>
       <div class="type-modal-body">
