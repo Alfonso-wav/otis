@@ -10,6 +10,7 @@ import {
   GetAllSpeciesClassifications,
 } from "../api";
 import type { Pokemon, PokemonListItem } from "../types";
+import { t } from "../i18n";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../components/column-toggle";
 import { SortCache } from "../utils/sort-cache";
@@ -61,28 +62,32 @@ const pokemonSortCache = new SortCache<Pokemon>([
   }},
 ]);
 
-const POKEDEX_TABLE_COLUMNS: ColumnConfig[] = [
-  { key: "id", label: "#" },
-  { key: "sprite", label: "Sprite" },
-  { key: "name", label: "Nombre", fixed: true },
-  { key: "types", label: "Tipo" },
-  { key: "hp", label: "HP" },
-  { key: "atk", label: "Atk" },
-  { key: "def", label: "Def" },
-  { key: "spa", label: "SpA" },
-  { key: "spd", label: "SpD" },
-  { key: "vel", label: "Vel" },
-  { key: "total", label: "Total" },
-];
+function pokedexTableColumns(): ColumnConfig[] {
+  return [
+    { key: "id", label: t("pokedex.columns.id") },
+    { key: "sprite", label: t("pokedex.columns.sprite") },
+    { key: "name", label: t("pokedex.columns.name"), fixed: true },
+    { key: "types", label: t("pokedex.columns.types") },
+    { key: "hp", label: t("pokedex.columns.hp") },
+    { key: "atk", label: t("pokedex.columns.atk") },
+    { key: "def", label: t("pokedex.columns.def") },
+    { key: "spa", label: t("pokedex.columns.spa") },
+    { key: "spd", label: t("pokedex.columns.spd") },
+    { key: "vel", label: t("pokedex.columns.vel") },
+    { key: "total", label: t("pokedex.columns.total") },
+  ];
+}
 
-const ENCOUNTER_TABLE_COLUMNS: ColumnConfig[] = [
-  { key: "location", label: "Location", fixed: true },
-  { key: "game", label: "Game" },
-  { key: "method", label: "Method" },
-  { key: "chance", label: "Chance" },
-  { key: "levels", label: "Levels" },
-  { key: "conditions", label: "Conditions" },
-];
+function encounterTableColumns(): ColumnConfig[] {
+  return [
+    { key: "location", label: t("encounters.columns.location"), fixed: true },
+    { key: "game", label: t("encounters.columns.game") },
+    { key: "method", label: t("encounters.columns.method") },
+    { key: "chance", label: t("encounters.columns.chance") },
+    { key: "levels", label: t("encounters.columns.levels") },
+    { key: "conditions", label: t("encounters.columns.conditions") },
+  ];
+}
 
 function sortPokemonData(data: Pokemon[], column: SortColumn, direction: SortDirection): Pokemon[] {
   if (!column || !direction) return data;
@@ -137,7 +142,7 @@ async function ensureAllPokemonLoaded(): Promise<Pokemon[]> {
     const loaded = Math.min(i + BATCH, uncached.length);
     const total = uncached.length;
     const pct = Math.round((loaded / total) * 100);
-    updateSortingOverlayText(`Ordenando... ${pct}%`);
+    updateSortingOverlayText(t("pokedex.sortingPct", { pct }));
   }
 
   return itemsToLoad.map((item) => pokemonDataCache.get(item.Name)!);
@@ -179,7 +184,7 @@ function hasFilter(): boolean {
 // -- Lista sin filtro --------------------------------------------------------
 
 async function loadList(): Promise<void> {
-  grid.innerHTML = '<p class="loading">Cargando...</p>';
+  grid.innerHTML = `<p class="loading">${t("common.loading")}</p>`;
   try {
     const data = await ListPokemon(offset, LIMIT);
     totalCount = data.Count;
@@ -199,7 +204,7 @@ async function loadList(): Promise<void> {
 
 async function loadFiltered(): Promise<void> {
   resetSorting();
-  grid.innerHTML = '<p class="loading">Aplicando filtros...</p>';
+  grid.innerHTML = `<p class="loading">${t("pokedex.applyingFilters")}</p>`;
   try {
     let base: PokemonListItem[] = [];
     const hasGens = filter.generations.length > 0;
@@ -282,7 +287,7 @@ async function loadAllPokemonList(): Promise<PokemonListItem[]> {
 
   while (currentOffset < total) {
     const pct = Math.round((currentOffset / total) * 100);
-    grid.innerHTML = `<p class="loading">Cargando lista completa... ${pct}% (${currentOffset}/${total})</p>`;
+    grid.innerHTML = `<p class="loading">${t("pokedex.loadingFullList", { pct, current: currentOffset, total })}</p>`;
     const batch = await ListPokemon(currentOffset, BATCH_SIZE);
     all.push(...batch.Results);
     currentOffset += BATCH_SIZE;
@@ -293,7 +298,7 @@ async function loadAllPokemonList(): Promise<PokemonListItem[]> {
 
 async function filterByLegendary(list: PokemonListItem[]): Promise<PokemonListItem[]> {
   if (!classificationsCache) {
-    grid.innerHTML = '<p class="loading">Cargando clasificaciones...</p>';
+    grid.innerHTML = `<p class="loading">${t("pokedex.loadingClassifications")}</p>`;
     classificationsCache = await GetAllSpeciesClassifications();
   }
 
@@ -318,7 +323,7 @@ async function filterByLegendary(list: PokemonListItem[]): Promise<PokemonListIt
 function renderGrid(items: PokemonListItem[], append = false): void {
   lastRenderedItems = items;
   if (!items || items.length === 0) {
-    if (!append) grid.innerHTML = '<p class="loading">No se encontraron Pokémon.</p>';
+    if (!append) grid.innerHTML = `<p class="loading">${t("pokedex.noResults")}</p>`;
     return;
   }
 
@@ -373,11 +378,11 @@ async function renderCurrentView(items: PokemonListItem[]): Promise<void> {
 
 async function renderTable(items: PokemonListItem[]): Promise<void> {
   if (!items || items.length === 0) {
-    grid.innerHTML = '<p class="loading">No se encontraron Pokémon.</p>';
+    grid.innerHTML = `<p class="loading">${t("pokedex.noResults")}</p>`;
     return;
   }
 
-  grid.innerHTML = '<p class="loading">Cargando datos...</p>';
+  grid.innerHTML = `<p class="loading">${t("pokedex.loadingData")}</p>`;
 
   const pokemonData: Pokemon[] = await Promise.all(
     items.map(async (item) => {
@@ -421,8 +426,8 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
     .join("");
 
   const sortableStats: [string, SortColumn][] = [
-    ["HP", "hp"], ["Atk", "atk"], ["Def", "def"],
-    ["SpA", "spa"], ["SpD", "spd"], ["Vel", "vel"],
+    [t("pokedex.columns.hp"), "hp"], [t("pokedex.columns.atk"), "atk"], [t("pokedex.columns.def"), "def"],
+    [t("pokedex.columns.spa"), "spa"], [t("pokedex.columns.spd"), "spd"], [t("pokedex.columns.vel"), "vel"],
   ];
   const statHeaders = sortableStats
     .map(([label, col]) => {
@@ -438,17 +443,17 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
 
   grid.innerHTML = `<table class="poke-table" data-table-id="pokedex-stats">
     <thead><tr>
-      <th class="sortable${currentSortColumn === 'id' ? ' active' : ''}" data-sort="id" data-col="id"># <span class="sort-indicator ${idInd}"></span></th>
+      <th class="sortable${currentSortColumn === 'id' ? ' active' : ''}" data-sort="id" data-col="id">${t("pokedex.columns.id")} <span class="sort-indicator ${idInd}"></span></th>
       <th data-col="sprite"></th>
-      <th class="sortable${currentSortColumn === 'name' ? ' active' : ''}" data-sort="name" data-col="name">Nombre <span class="sort-indicator ${nameInd}"></span></th>
-      <th data-col="types">Tipo</th>
+      <th class="sortable${currentSortColumn === 'name' ? ' active' : ''}" data-sort="name" data-col="name">${t("pokedex.columns.name")} <span class="sort-indicator ${nameInd}"></span></th>
+      <th data-col="types">${t("pokedex.columns.types")}</th>
       ${statHeaders}
-      <th class="stat-cell sortable${currentSortColumn === 'total' ? ' active' : ''}" data-sort="total" data-col="total">Total <span class="sort-indicator ${totalInd}"></span></th>
+      <th class="stat-cell sortable${currentSortColumn === 'total' ? ' active' : ''}" data-sort="total" data-col="total">${t("pokedex.columns.total")} <span class="sort-indicator ${totalInd}"></span></th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 
-  initColumnToggle("pokedex-stats", POKEDEX_TABLE_COLUMNS);
+  initColumnToggle("pokedex-stats", pokedexTableColumns());
 
   grid.querySelectorAll<HTMLTableRowElement>(".poke-table__row").forEach((row) => {
     row.addEventListener("click", () => {
@@ -487,7 +492,7 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
       showSortingOverlay();
       try {
         const allPokemon = await ensureAllPokemonLoaded();
-        updateSortingOverlayText("Ordenando...");
+        updateSortingOverlayText(t("pokedex.sorting"));
         await new Promise((r) => requestAnimationFrame(r));
         pokemonSortCache.setData(allPokemon);
         sortedFullList = pokemonSortCache.get(currentSortColumn!, currentSortDirection as 'asc' | 'desc');
@@ -522,7 +527,7 @@ function updatePagination(): void {
   const total = sortedFullList ? sortedFullList.length : totalCount;
   const page = Math.floor(offset / LIMIT) + 1;
   const pages = Math.ceil(total / LIMIT) || 1;
-  pageInfo.textContent = `Pág. ${page} / ${pages}`;
+  pageInfo.textContent = t("pokedex.page", { page, pages });
   prevBtn.disabled = offset === 0;
   nextBtn.disabled = offset + LIMIT >= total;
 }
@@ -569,7 +574,7 @@ async function nextPage(): Promise<void> {
 
 async function showDetail(name: string): Promise<void> {
   await showView(detailView, listView);
-  detailEl.innerHTML = '<p class="loading">Cargando...</p>';
+  detailEl.innerHTML = `<p class="loading">${t("common.loading")}</p>`;
   try {
     const p = await GetPokemon(name);
     renderDetail(p);
@@ -585,18 +590,18 @@ async function renderDetail(p: Pokemon): Promise<void> {
 
   const sprites = `
     <div class="sprites">
-      ${p.Sprites.FrontDefault ? `<div><img src="${p.Sprites.FrontDefault}" alt="default"/><span>Normal</span></div>` : ""}
-      ${p.Sprites.FrontShiny ? `<div><img src="${p.Sprites.FrontShiny}" alt="shiny"/><span>Shiny</span></div>` : ""}
+      ${p.Sprites.FrontDefault ? `<div><img src="${p.Sprites.FrontDefault}" alt="default"/><span>${t("detail.normal")}</span></div>` : ""}
+      ${p.Sprites.FrontShiny ? `<div><img src="${p.Sprites.FrontShiny}" alt="shiny"/><span>${t("detail.shiny")}</span></div>` : ""}
     </div>`;
 
   detailEl.innerHTML = `
     <h2>#${p.ID} ${p.Name}</h2>
     ${sprites}
     <div class="types">${types}</div>
-    <p class="meta">Altura: ${p.Height / 10} m &nbsp;&middot;&nbsp; Peso: ${p.Weight / 10} kg</p>
+    <p class="meta">${t("pokedex.height")}: ${p.Height / 10} m &nbsp;&middot;&nbsp; ${t("pokedex.weight")}: ${p.Weight / 10} kg</p>
     <div id="stats-chart" style="width:100%;height:300px;"></div>
-    <div id="pokemon-lore" class="pokemon-lore"><p class="loading">Cargando lore...</p></div>
-    <div id="pokemon-encounters" class="pokemon-encounters"><p class="loading">Loading encounters...</p></div>`;
+    <div id="pokemon-lore" class="pokemon-lore"><p class="loading">${t("detail.loadingLore")}</p></div>
+    <div id="pokemon-encounters" class="pokemon-encounters"><p class="loading">${t("encounters.loading")}</p></div>`;
 
   const chartContainer = document.getElementById("stats-chart") as HTMLDivElement;
   const { renderStatsChart } = await import("../charts/stats-chart");
@@ -615,23 +620,23 @@ async function loadLore(name: string): Promise<void> {
 
     const flavorText = cleanFlavorText(species.FlavorText);
     const badges: string[] = [];
-    if (species.IsLegendary) badges.push('<span class="lore-badge lore-badge--legendary">Legendary</span>');
-    if (species.IsMythical) badges.push('<span class="lore-badge lore-badge--mythical">Mythical</span>');
+    if (species.IsLegendary) badges.push(`<span class="lore-badge lore-badge--legendary">${t("detail.legendary")}</span>`);
+    if (species.IsMythical) badges.push(`<span class="lore-badge lore-badge--mythical">${t("detail.mythical")}</span>`);
 
     const infoRows: string[] = [];
-    if (species.Genus) infoRows.push(`<div class="lore-info-row"><span class="lore-label">Category</span><span class="lore-value">${species.Genus}</span></div>`);
-    if (species.Habitat) infoRows.push(`<div class="lore-info-row"><span class="lore-label">Habitat</span><span class="lore-value">${capitalize(species.Habitat)}</span></div>`);
-    if (species.Color) infoRows.push(`<div class="lore-info-row"><span class="lore-label">Color</span><span class="lore-value">${capitalize(species.Color)}</span></div>`);
-    if (species.Shape) infoRows.push(`<div class="lore-info-row"><span class="lore-label">Shape</span><span class="lore-value">${capitalize(species.Shape)}</span></div>`);
+    if (species.Genus) infoRows.push(`<div class="lore-info-row"><span class="lore-label">${t("detail.category")}</span><span class="lore-value">${species.Genus}</span></div>`);
+    if (species.Habitat) infoRows.push(`<div class="lore-info-row"><span class="lore-label">${t("detail.habitat")}</span><span class="lore-value">${capitalize(species.Habitat)}</span></div>`);
+    if (species.Color) infoRows.push(`<div class="lore-info-row"><span class="lore-label">${t("detail.color")}</span><span class="lore-value">${capitalize(species.Color)}</span></div>`);
+    if (species.Shape) infoRows.push(`<div class="lore-info-row"><span class="lore-label">${t("detail.shape")}</span><span class="lore-value">${capitalize(species.Shape)}</span></div>`);
 
     loreEl.innerHTML = `
-      <h3>Lore</h3>
+      <h3>${t("detail.lore")}</h3>
       ${badges.length > 0 ? `<div class="lore-badges">${badges.join("")}</div>` : ""}
       ${flavorText ? `<p class="lore-flavor-text">${flavorText}</p>` : ""}
       ${infoRows.length > 0 ? `<div class="lore-info">${infoRows.join("")}</div>` : ""}
     `;
   } catch {
-    loreEl.innerHTML = '<p class="lore-error">Could not load lore data.</p>';
+    loreEl.innerHTML = `<p class="lore-error">${t("detail.loreError")}</p>`;
   }
 }
 
@@ -715,8 +720,8 @@ async function loadEncounters(name: string): Promise<void> {
 
     if (!encounters || encounters.length === 0) {
       el.innerHTML = `
-        <h3>Encounters</h3>
-        <p class="encounters-empty">This Pok\u00e9mon is not found in the wild.</p>`;
+        <h3>${t("encounters.title")}</h3>
+        <p class="encounters-empty">${t("encounters.empty")}</p>`;
       return;
     }
 
@@ -741,10 +746,10 @@ async function loadEncounters(name: string): Promise<void> {
     const availableGames = [...new Set(encounterRows.map((r) => r.game))].sort();
 
     el.innerHTML = `
-      <h3>Encounters</h3>
+      <h3>${t("encounters.title")}</h3>
       <div class="encounters-filter-bar">
         <div class="filter-dropdown" id="dropdown-encounter-game">
-          <button class="filter-dropdown__trigger" type="button">Game</button>
+          <button class="filter-dropdown__trigger" type="button">${t("encounters.columns.game")}</button>
           <div class="filter-dropdown__panel" id="filter-encounter-game"></div>
         </div>
       </div>
@@ -752,12 +757,12 @@ async function loadEncounters(name: string): Promise<void> {
         <table class="poke-table encounters-table" data-table-id="encounters">
           <thead>
             <tr>
-              <th class="sortable" data-col="location">Location <span class="sort-indicator"></span></th>
-              <th class="sortable" data-col="game">Game <span class="sort-indicator"></span></th>
-              <th class="sortable" data-col="method">Method <span class="sort-indicator"></span></th>
-              <th class="sortable" data-col="chance">Chance <span class="sort-indicator"></span></th>
-              <th class="sortable" data-col="levels">Levels <span class="sort-indicator"></span></th>
-              <th class="sortable" data-col="conditions">Conditions <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="location">${t("encounters.columns.location")} <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="game">${t("encounters.columns.game")} <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="method">${t("encounters.columns.method")} <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="chance">${t("encounters.columns.chance")} <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="levels">${t("encounters.columns.levels")} <span class="sort-indicator"></span></th>
+              <th class="sortable" data-col="conditions">${t("encounters.columns.conditions")} <span class="sort-indicator"></span></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -784,7 +789,7 @@ async function loadEncounters(name: string): Promise<void> {
         } else {
           selectedGames = selectedGames.filter((g) => g !== game);
         }
-        updateDropdownTrigger("dropdown-encounter-game", "Game", selectedGames.length);
+        updateDropdownTrigger("dropdown-encounter-game", t("encounters.columns.game"), selectedGames.length);
         renderEncounterTbody(el);
       });
       gamePanel.appendChild(chip);
@@ -793,17 +798,17 @@ async function loadEncounters(name: string): Promise<void> {
     // Reset button
     const resetBtn = document.createElement("button");
     resetBtn.className = "filter-chip filter-chip--reset";
-    resetBtn.textContent = "✕ Reset";
+    resetBtn.textContent = t("encounters.reset");
     resetBtn.addEventListener("click", () => {
       selectedGames = [];
       gamePanel.querySelectorAll(".filter-chip.active").forEach((c) => c.classList.remove("active"));
-      updateDropdownTrigger("dropdown-encounter-game", "Game", 0);
+      updateDropdownTrigger("dropdown-encounter-game", t("encounters.columns.game"), 0);
       renderEncounterTbody(el);
     });
     gamePanel.insertBefore(resetBtn, gamePanel.firstChild);
 
     renderEncounterTbody(el);
-    initColumnToggle("encounters", ENCOUNTER_TABLE_COLUMNS);
+    initColumnToggle("encounters", encounterTableColumns());
 
     el.querySelectorAll<HTMLElement>("th.sortable").forEach((th) => {
       th.addEventListener("click", () => {
@@ -825,8 +830,8 @@ async function loadEncounters(name: string): Promise<void> {
     });
   } catch {
     el.innerHTML = `
-      <h3>Encounters</h3>
-      <p class="encounters-error">Could not load encounter data.</p>`;
+      <h3>${t("encounters.title")}</h3>
+      <p class="encounters-error">${t("encounters.error")}</p>`;
   }
 }
 
@@ -835,19 +840,10 @@ function formatLocationName(name: string): string {
 }
 
 function formatEncounterMethod(method: string): string {
-  const map: Record<string, string> = {
-    "walk": "Walking",
-    "surf": "Surfing",
-    "old-rod": "Old Rod",
-    "good-rod": "Good Rod",
-    "super-rod": "Super Rod",
-    "rock-smash": "Rock Smash",
-    "headbutt": "Headbutt",
-    "gift": "Gift",
-    "gift-egg": "Gift Egg",
-    "only-one": "Static",
-  };
-  return map[method] || method.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const key = `encounters.methods.${method}`;
+  const translated = t(key);
+  if (translated !== key) return translated;
+  return method.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function cleanFlavorText(text: string): string {
@@ -935,32 +931,32 @@ async function populateFilters(): Promise<void> {
         } else {
           filter.generations = filter.generations.filter((v) => v !== g.Name);
         }
-        updateDropdownTrigger("dropdown-gen", "Generación", filter.generations.length);
+        updateDropdownTrigger("dropdown-gen", t("filters.generation"), filter.generations.length);
         applyFilters();
       });
       filterGenContainer.appendChild(chip);
     });
 
-    types.Results.forEach((t) => {
-      if (t.Name === "shadow" || t.Name === "unknown") return;
+    types.Results.forEach((tp) => {
+      if (tp.Name === "shadow" || tp.Name === "unknown") return;
       const chip = document.createElement("button");
       chip.className = "filter-chip";
-      chip.dataset.value = t.Name;
-      chip.textContent = t.Name.charAt(0).toUpperCase() + t.Name.slice(1);
+      chip.dataset.value = tp.Name;
+      chip.textContent = tp.Name.charAt(0).toUpperCase() + tp.Name.slice(1);
       chip.addEventListener("click", () => {
         chip.classList.toggle("active");
         if (chip.classList.contains("active")) {
-          filter.types.push(t.Name);
+          filter.types.push(tp.Name);
         } else {
-          filter.types = filter.types.filter((v) => v !== t.Name);
+          filter.types = filter.types.filter((v) => v !== tp.Name);
         }
-        updateDropdownTrigger("dropdown-type", "Tipo", filter.types.length);
+        updateDropdownTrigger("dropdown-type", t("filters.type"), filter.types.length);
         applyFilters();
       });
       filterTypeContainer.appendChild(chip);
     });
   } catch (err) {
-    console.error("Error cargando filtros:", err);
+    console.error(t("pokedex.errorLoadingFilters"), err);
   }
 }
 
@@ -996,8 +992,8 @@ function resetFilterUI(): void {
   filterLegendaryBtn.classList.remove("active");
   filterMythicalBtn.classList.remove("active");
   closeAllDropdowns();
-  updateDropdownTrigger("dropdown-gen", "Generación", 0);
-  updateDropdownTrigger("dropdown-type", "Tipo", 0);
+  updateDropdownTrigger("dropdown-gen", t("filters.generation"), 0);
+  updateDropdownTrigger("dropdown-type", t("filters.type"), 0);
 }
 
 // -- Helpers -----------------------------------------------------------------
@@ -1149,7 +1145,7 @@ export function initPokedex(): void {
     const oldMode = viewMode;
     viewMode = viewMode === "grid" ? "table" : "grid";
     resetSorting();
-    viewToggleBtn.textContent = viewMode === "grid" ? "⊞ Tabla" : "⊟ Tarjetas";
+    viewToggleBtn.textContent = viewMode === "grid" ? t("filters.tableView") : t("filters.cardView");
     updatePaginationVisibility();
 
     if (oldMode === "grid" && viewMode === "table") {
@@ -1225,5 +1221,15 @@ export function initPokedex(): void {
       searchInput.value = name;
       showDetail(name);
     });
+  });
+
+  document.addEventListener("locale-changed", () => {
+    viewToggleBtn.textContent = viewMode === "grid" ? t("filters.tableView") : t("filters.cardView");
+    updateDropdownTrigger("dropdown-gen", t("filters.generation"), filter.generations.length);
+    updateDropdownTrigger("dropdown-type", t("filters.type"), filter.types.length);
+    if (viewMode === "table") {
+      renderCurrentView(getCurrentPageItems());
+    }
+    updatePagination();
   });
 }

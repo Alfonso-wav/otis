@@ -5,6 +5,7 @@ import { openAbilityPokemonModal } from "../../components/ability-pokemon-modal"
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
 import { SortCache } from "../../utils/sort-cache";
 import { showSortingOverlay, hideSortingOverlay } from "../../components/sorting-overlay";
+import { t } from "../../i18n";
 
 type SortColumn = "name" | "description" | "pokemon" | null;
 type SortDirection = "asc" | "desc" | null;
@@ -17,11 +18,13 @@ interface AbilityState {
   loading: boolean;
 }
 
-const ABILITIES_TABLE_COLUMNS: ColumnConfig[] = [
-  { key: "name", label: "Nombre", fixed: true },
-  { key: "description", label: "Descripción" },
-  { key: "pokemon", label: "Pokémon" },
-];
+function abilitiesTableColumns(): ColumnConfig[] {
+  return [
+    { key: "name", label: t("abilities.columns.name"), fixed: true },
+    { key: "description", label: t("abilities.columns.description") },
+    { key: "pokemon", label: t("abilities.columns.pokemon") },
+  ];
+}
 
 const state: AbilityState = {
   allAbilities: [],
@@ -58,10 +61,10 @@ function renderTable(container: HTMLElement): void {
 
   const abilities = filteredAbilities();
   const countEl = container.querySelector<HTMLElement>("#abilities-count");
-  if (countEl) countEl.textContent = `${abilities.length} habilidades`;
+  if (countEl) countEl.textContent = t("abilities.count", { count: abilities.length });
 
   if (abilities.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" class="loading">No se encontraron habilidades.</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="3" class="loading">${t("abilities.noResults")}</td></tr>`;
     return;
   }
 
@@ -99,22 +102,22 @@ function updateSortIndicators(container: HTMLElement): void {
 
 export async function initAbilities(container: HTMLElement): Promise<void> {
   container.innerHTML = `
-    <div class="section-header"><h2>Habilidades</h2></div>
+    <div class="section-header"><h2>${t("abilities.title")}</h2></div>
     <div class="abilities-controls">
-      <input type="text" id="abilities-search" class="explore-input" placeholder="Buscar habilidad..." />
+      <input type="text" id="abilities-search" class="explore-input" placeholder="${t("abilities.searchPlaceholder")}" />
     </div>
     <span id="abilities-count" class="abilities-count"></span>
     <div class="abilities-table-wrap">
       <table class="poke-table abilities-table" data-table-id="abilities">
         <thead>
           <tr>
-            <th class="sortable" data-col="name">Nombre <span class="sort-indicator"></span></th>
-            <th class="sortable" data-col="description">Descripción <span class="sort-indicator"></span></th>
-            <th class="sortable" data-col="pokemon">Pokémon <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="name">${t("abilities.columns.name")} <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="description">${t("abilities.columns.description")} <span class="sort-indicator"></span></th>
+            <th class="sortable" data-col="pokemon">${t("abilities.columns.pokemon")} <span class="sort-indicator"></span></th>
           </tr>
         </thead>
         <tbody id="abilities-tbody">
-          <tr><td colspan="3" class="loading">Cargando habilidades...</td></tr>
+          <tr><td colspan="3" class="loading">${t("abilities.loading")}</td></tr>
         </tbody>
       </table>
     </div>`;
@@ -168,7 +171,7 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
       state.allAbilities = await GetAllAbilities();
     } catch {
       const tbody = container.querySelector<HTMLElement>("#abilities-tbody");
-      if (tbody) tbody.innerHTML = '<tr><td colspan="3" class="loading">Error al cargar habilidades.</td></tr>';
+      if (tbody) tbody.innerHTML = `<tr><td colspan="3" class="loading">${t("abilities.error")}</td></tr>`;
       return;
     } finally {
       state.loading = false;
@@ -176,5 +179,5 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
   }
 
   renderTable(container);
-  initColumnToggle("abilities", ABILITIES_TABLE_COLUMNS);
+  initColumnToggle("abilities", abilitiesTableColumns());
 }

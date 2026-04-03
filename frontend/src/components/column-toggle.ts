@@ -1,5 +1,7 @@
 // ─── Column visibility toggle ─────────────────────────────────────────────────
 
+import { t } from "../i18n";
+
 export interface ColumnConfig {
   key: string;
   label: string;
@@ -36,7 +38,7 @@ function updateToggleIcons(table: HTMLElement, hidden: Set<string>): void {
     const isHidden = hidden.has(col);
     btn.innerHTML = isHidden ? ICON_EYE_OFF : ICON_EYE;
     btn.classList.toggle("col-toggle-btn--hidden", isHidden);
-    btn.title = isHidden ? "Mostrar columna" : "Ocultar columna";
+    btn.title = isHidden ? t("columnToggle.show") : t("columnToggle.hide");
   });
 }
 
@@ -59,7 +61,7 @@ function renderHiddenTags(
     const tag = document.createElement("button");
     tag.className = "col-hidden-tag";
     tag.type = "button";
-    tag.title = `Mostrar columna "${col.label}"`;
+    tag.title = t("columnToggle.showNamed", { name: col.label });
     tag.innerHTML = `${col.label} <span class="col-hidden-tag__x">&times;</span>`;
     tag.addEventListener("click", () => onRestore(col.key));
     tagsContainer.appendChild(tag);
@@ -102,7 +104,7 @@ export function initColumnToggle(tableId: string, columns: ColumnConfig[]): void
     btn.className = "col-toggle-btn" + (hidden.has(col.key) ? " col-toggle-btn--hidden" : "");
     btn.dataset.toggleCol = col.key;
     btn.type = "button";
-    btn.title = hidden.has(col.key) ? "Mostrar columna" : "Ocultar columna";
+    btn.title = hidden.has(col.key) ? t("columnToggle.show") : t("columnToggle.hide");
     btn.innerHTML = hidden.has(col.key) ? ICON_EYE_OFF : ICON_EYE;
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
