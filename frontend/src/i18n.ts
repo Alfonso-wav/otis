@@ -20,8 +20,14 @@ function resolve(key: string, data: Translations): string {
   return typeof node === "string" ? node : key;
 }
 
-export function t(key: string): string {
-  return resolve(key, locales[current] ?? locales[DEFAULT_LOCALE]);
+export function t(key: string, params?: Record<string, string | number>): string {
+  let value = resolve(key, locales[current] ?? locales[DEFAULT_LOCALE]);
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      value = value.replaceAll(`{${k}}`, String(v));
+    }
+  }
+  return value;
 }
 
 export function getLocale(): string {
