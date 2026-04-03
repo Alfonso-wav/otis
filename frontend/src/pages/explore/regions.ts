@@ -1,8 +1,9 @@
 import gsap from "gsap";
-import { ListRegions, GetRegion, GetRegionPokemonByType, GetLocationEncounters } from "../../api";
+import { ListRegions, GetRegion, GetRegionPokemonByType } from "../../api";
 import { renderTypeDistributionChart } from "../../charts/type-distribution";
 import { openTypeModal } from "../../components/pokemon-type-modal";
 import { openLocationEncounterModal } from "../../components/location-encounter-modal";
+import { t } from "../../i18n";
 
 let initialized = false;
 
@@ -56,7 +57,7 @@ async function loadRegionDetail(
     return;
   }
 
-  body.innerHTML = '<p class="loading">Cargando región...</p>';
+  body.innerHTML = `<p class="loading">${t("regions.loadingDetail")}</p>`;
   body.classList.remove("hidden");
 
   try {
@@ -72,7 +73,7 @@ async function loadRegionDetail(
     body.innerHTML = `
       <div class="region-detail">
         <div class="region-locations">
-          <h4 class="region-section-title">Localizaciones (${locations.length})</h4>
+          <h4 class="region-section-title">${t("regions.locations", { count: locations.length })}</h4>
           <div class="region-locations-grid">
             ${visibleLocations
               .map(
@@ -82,14 +83,14 @@ async function loadRegionDetail(
               .join("")}${
               hasMore
                 ? isExpanded
-                  ? `<span class="region-location-more region-location-toggle" data-region="${regionName}" data-action="collapse">Mostrar menos</span>`
-                  : `<span class="region-location-more region-location-toggle" data-region="${regionName}" data-action="expand">+${locations.length - limit} más</span>`
+                  ? `<span class="region-location-more region-location-toggle" data-region="${regionName}" data-action="collapse">${t("regions.showLess")}</span>`
+                  : `<span class="region-location-more region-location-toggle" data-region="${regionName}" data-action="expand">${t("regions.showMore", { count: locations.length - limit })}</span>`
                 : ""
             }
           </div>
         </div>
         <div class="region-chart-container">
-          <h4 class="region-section-title">Distribución de tipos</h4>
+          <h4 class="region-section-title">${t("regions.typeDistribution")}</h4>
           <div id="${chartId}" class="region-chart"></div>
         </div>
       </div>`;
@@ -141,13 +142,13 @@ export async function initRegions(container: HTMLElement): Promise<void> {
   if (initialized) return;
   initialized = true;
 
-  container.innerHTML = '<p class="loading">Cargando regiones...</p>';
+  container.innerHTML = `<p class="loading">${t("regions.loading")}</p>`;
 
   try {
     const regions = await ListRegions();
 
     container.innerHTML = `
-      <div class="section-header"><h2>Regiones</h2></div>
+      <div class="section-header"><h2>${t("regions.title")}</h2></div>
       <div class="regions-grid" id="regions-grid"></div>`;
     const grid = document.getElementById("regions-grid") as HTMLDivElement;
 

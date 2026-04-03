@@ -1,36 +1,169 @@
 {
   "settings": {
-    "title": "Configuraci\u00f3n",
+    "title": "Configuración",
     "darkMode": "Modo Oscuro",
     "language": "Idioma"
   },
   "tabs": {
-    "pokedex": "Pok\u00e9dex",
+    "pokedex": "Pokédex",
     "explore": "Explorar",
     "builds": "Builds",
-    "settings": "Configuraci\u00f3n"
+    "settings": "Configuración"
   },
   "common": {
     "loading": "Cargando...",
     "search": "Buscar",
-    "searchPlaceholder": "Buscar por nombre o n\u00famero...",
+    "searchPlaceholder": "Buscar por nombre o número...",
     "back": "Volver",
     "next": "Siguiente",
     "previous": "Anterior"
   },
   "splash": {
-    "text": "Snorlax est\u00e1 despertando..."
+    "text": "Snorlax está despertando..."
   },
   "filters": {
-    "generation": "Generaci\u00f3n",
+    "generation": "Generación",
     "type": "Tipo",
-    "legendary": "\u2b50 Legendario",
-    "mythical": "\u2728 M\u00edtico",
-    "resetAll": "\u2715 Todos",
-    "tableView": "\u229e Tabla"
+    "legendary": "⭐ Legendario",
+    "mythical": "✨ Mítico",
+    "resetAll": "✕ Todos",
+    "tableView": "⊞ Tabla",
+    "cardView": "⊟ Tarjetas"
+  },
+  "pokedex": {
+    "columns": {
+      "id": "#",
+      "sprite": "Sprite",
+      "name": "Nombre",
+      "types": "Tipo",
+      "hp": "HP",
+      "atk": "Atk",
+      "def": "Def",
+      "spa": "SpA",
+      "spd": "SpD",
+      "vel": "Vel",
+      "total": "Total"
+    },
+    "applyingFilters": "Aplicando filtros...",
+    "loadingFullList": "Cargando lista completa... {pct}% ({current}/{total})",
+    "loadingClassifications": "Cargando clasificaciones...",
+    "loadingData": "Cargando datos...",
+    "noResults": "No se encontraron Pokémon.",
+    "page": "Pág. {page} / {pages}",
+    "sorting": "Ordenando...",
+    "sortingPct": "Ordenando... {pct}%",
+    "errorLoadingFilters": "Error cargando filtros:",
+    "height": "Altura",
+    "weight": "Peso"
+  },
+  "detail": {
+    "lore": "Lore",
+    "legendary": "Legendary",
+    "mythical": "Mythical",
+    "category": "Category",
+    "habitat": "Habitat",
+    "color": "Color",
+    "shape": "Shape",
+    "loreError": "Could not load lore data.",
+    "loadingLore": "Cargando lore...",
+    "normal": "Normal",
+    "shiny": "Shiny"
+  },
+  "encounters": {
+    "title": "Encounters",
+    "empty": "This Pokémon is not found in the wild.",
+    "error": "Could not load encounter data.",
+    "loading": "Loading encounters...",
+    "columns": {
+      "location": "Location",
+      "game": "Game",
+      "method": "Method",
+      "chance": "Chance",
+      "levels": "Levels",
+      "conditions": "Conditions"
+    },
+    "reset": "✕ Reset",
+    "methods": {
+      "walk": "Walking",
+      "surf": "Surfing",
+      "old-rod": "Old Rod",
+      "good-rod": "Good Rod",
+      "super-rod": "Super Rod",
+      "rock-smash": "Rock Smash",
+      "headbutt": "Headbutt",
+      "gift": "Gift",
+      "gift-egg": "Gift Egg",
+      "only-one": "Static"
+    }
   },
   "explore": {
     "title": "Explorar",
-    "comingSoon": "Pr\u00f3ximamente \u2014 regiones, movimientos y datos detallados"
+    "comingSoon": "Próximamente — regiones, movimientos y datos detallados",
+    "tabs": {
+      "types": "Tipos",
+      "regions": "Regiones",
+      "moves": "Movimientos",
+      "abilities": "Habilidades"
+    }
+  },
+  "types": {
+    "title": "Tipos",
+    "loading": "Cargando tipos...",
+    "loadingExpand": "Cargando...",
+    "more": "+{count} más"
+  },
+  "regions": {
+    "title": "Regiones",
+    "loading": "Cargando regiones...",
+    "loadingDetail": "Cargando región...",
+    "locations": "Localizaciones ({count})",
+    "typeDistribution": "Distribución de tipos",
+    "showLess": "Mostrar menos",
+    "showMore": "+{count} más"
+  },
+  "moves": {
+    "title": "Movimientos",
+    "loading": "Cargando movimientos...",
+    "searchPlaceholder": "Buscar movimiento...",
+    "noResults": "No se encontraron movimientos.",
+    "error": "Error al cargar movimientos.",
+    "count": "{count} movimientos",
+    "allTypes": "Todos los tipos",
+    "columns": {
+      "name": "Nombre",
+      "type": "Tipo",
+      "category": "Cat.",
+      "power": "Poder",
+      "accuracy": "Prec.",
+      "pp": "PP",
+      "priority": "Prio."
+    },
+    "categories": {
+      "all": "Todos",
+      "physical": "Físico",
+      "special": "Especial",
+      "status": "Estado"
+    }
+  },
+  "abilities": {
+    "title": "Habilidades",
+    "loading": "Cargando habilidades...",
+    "searchPlaceholder": "Buscar habilidad...",
+    "noResults": "No se encontraron habilidades.",
+    "error": "Error al cargar habilidades.",
+    "count": "{count} habilidades",
+    "columns": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "pokemon": "Pokémon"
+    }
+  },
+  "columnToggle": {
+    "show": "Mostrar columna",
+    "hide": "Ocultar columna",
+    "showNamed": "Mostrar columna \"{name}\""
+  },
+  "sorting": {
+    "sorting": "Ordenando..."
   }
 }
