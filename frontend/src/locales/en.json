@@ -2,7 +2,8 @@
   "settings": {
     "title": "Settings",
     "darkMode": "Dark Mode",
-    "language": "Language"
+    "language": "Language",
+    "apply": "Apply"
   },
   "tabs": {
     "pokedex": "Pokédex",

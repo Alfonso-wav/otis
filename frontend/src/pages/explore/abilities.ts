@@ -180,4 +180,9 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
 
   renderTable(container);
   initColumnToggle("abilities", abilitiesTableColumns());
+
+  document.addEventListener("locale-changed", () => {
+    if (state.allAbilities.length === 0) return;
+    initAbilities(container);
+  });
 }

@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { t } from "../i18n";
+import { t, applyTranslations } from "../i18n";
 import {
   GetPokemon,
   GetMove,
@@ -1865,5 +1865,10 @@ export async function initBuilds(): Promise<void> {
       { opacity: 0, y: -8 },
       { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" },
     );
+
+    document.addEventListener("locale-changed", () => {
+      buildLayout();
+      applyTranslations();
+    });
   });
 }

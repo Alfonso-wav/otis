@@ -4,6 +4,8 @@ import type { PokemonListItem } from "../../types";
 import { t } from "../../i18n";
 
 const POKEMON_DISPLAY_LIMIT = 50;
+let cachedTypes: PokemonListItem[] = [];
+let lastPanel: HTMLElement | null = null;
 
 const GAME_TYPES = new Set([
   "normal", "fire", "water", "electric", "grass", "ice",
@@ -151,10 +153,25 @@ async function toggleType(card: HTMLDivElement): Promise<void> {
 }
 
 export function initTypes(panel: HTMLElement): void {
+  lastPanel = panel;
+
+  if (cachedTypes.length > 0) {
+    renderTypeCards(panel, cachedTypes);
+    return;
+  }
+
   panel.innerHTML = `<p class="loading">${t("types.loading")}</p>`;
   ListTypes()
-    .then((data) => renderTypeCards(panel, data.Results || []))
+    .then((data) => {
+      cachedTypes = data.Results || [];
+      renderTypeCards(panel, cachedTypes);
+    })
     .catch((err: unknown) => {
       panel.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
     });
 }
+
+document.addEventListener("locale-changed", () => {
+  if (!lastPanel || cachedTypes.length === 0) return;
+  renderTypeCards(lastPanel, cachedTypes);
+});
