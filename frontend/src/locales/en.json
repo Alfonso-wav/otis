@@ -259,6 +259,26 @@
     "remaining": "{name}: {count} remaining",
     "remainingAvg": "{name} remaining (avg)"
   },
+  "typeNames": {
+    "normal": "Normal",
+    "fire": "Fire",
+    "water": "Water",
+    "grass": "Grass",
+    "electric": "Electric",
+    "ice": "Ice",
+    "fighting": "Fighting",
+    "poison": "Poison",
+    "ground": "Ground",
+    "flying": "Flying",
+    "psychic": "Psychic",
+    "bug": "Bug",
+    "rock": "Rock",
+    "ghost": "Ghost",
+    "dragon": "Dragon",
+    "dark": "Dark",
+    "steel": "Steel",
+    "fairy": "Fairy"
+  },
   "modals": {
     "abilityEmpty": "No Pokémon found with the ability {name}.",
     "typeRegionEmpty": "No Pokémon of type {type} found in {region}.",

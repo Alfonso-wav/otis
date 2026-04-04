@@ -30,6 +30,10 @@ export function t(key: string, params?: Record<string, string | number>): string
   return value;
 }
 
+export function typeName(apiName: string): string {
+  return t(`typeNames.${apiName.toLowerCase()}`);
+}
+
 export function getLocale(): string {
   return current;
 }
