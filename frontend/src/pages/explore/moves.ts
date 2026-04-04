@@ -3,8 +3,8 @@ import { GetAllMoves } from "../../api";
 import type { core } from "../../../wailsjs/go/models";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
 import { SortCache } from "../../utils/sort-cache";
-import { showSortingOverlay, hideSortingOverlay } from "../../components/sorting-overlay";
-import { t, typeName } from "../../i18n";
+import { showSortingOverlay, hideSortingOverlay, showLoadingOverlay } from "../../components/sorting-overlay";
+import { t, typeName, getLocale } from "../../i18n";
 
 type Category = "all" | "physical" | "special" | "status";
 type SortColumn = "name" | "type" | "category" | "power" | "accuracy" | "pp" | "priority" | null;
@@ -78,7 +78,11 @@ function filteredMoves(): core.Move[] {
   let moves = state.allMoves;
 
   if (state.searchQuery !== "") {
-    moves = moves.filter((m) => m.Name.includes(state.searchQuery));
+    const q = state.searchQuery;
+    moves = moves.filter((m) =>
+      m.Name.includes(q) ||
+      (m.NameEs && m.NameEs.toLowerCase().includes(q.replace(/-/g, " ")))
+    );
   }
   if (state.selectedCategory !== "all") {
     moves = moves.filter((m) => m.Category === state.selectedCategory);
@@ -108,15 +112,19 @@ function renderTable(container: HTMLElement): void {
     return;
   }
 
-  tbody.innerHTML = moves.map((m) => `<tr>
-    <td class="move-name-cell" data-col="name">${m.Name.replace(/-/g, " ")}</td>
+  const isEs = getLocale() === "es";
+  tbody.innerHTML = moves.map((m) => {
+    const displayName = isEs && m.NameEs ? m.NameEs : m.Name.replace(/-/g, " ");
+    return `<tr>
+    <td class="move-name-cell" data-col="name">${displayName}</td>
     <td data-col="type"><span class="type-badge type-badge--icon-only" style="background:${typeColor(m.Type)}" title="${typeName(m.Type)}"><img src="/assets/types/${m.Type}.svg" alt="${typeName(m.Type)}" class="type-icon"></span></td>
     <td class="move-cat-cell" data-col="category">${categoryIcon(m.Category)}</td>
     <td class="num-cell" data-col="power">${m.Power || "—"}</td>
     <td class="num-cell" data-col="accuracy">${m.Accuracy ? m.Accuracy + "%" : "—"}</td>
     <td class="num-cell" data-col="pp">${m.PP}</td>
     <td class="num-cell" data-col="priority">${m.Priority}</td>
-  </tr>`).join("");
+  </tr>`;
+  }).join("");
 
   reapplyColumnVisibility("moves");
   gsap.fromTo(tbody, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" });
@@ -227,6 +235,7 @@ export async function initMoves(container: HTMLElement): Promise<void> {
   // Load all moves
   if (state.allMoves.length === 0) {
     state.loading = true;
+    showLoadingOverlay(t("moves.loading"));
     try {
       state.allMoves = await GetAllMoves();
     } catch (err) {
@@ -235,6 +244,7 @@ export async function initMoves(container: HTMLElement): Promise<void> {
       return;
     } finally {
       state.loading = false;
+      hideSortingOverlay();
     }
   }
 
