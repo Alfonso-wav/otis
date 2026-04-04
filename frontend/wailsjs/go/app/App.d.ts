@@ -38,6 +38,8 @@ export function GetLocation(arg1:string):Promise<core.LocationDetail>;
 
 export function GetLocationArea(arg1:string):Promise<core.LocationArea>;
 
+export function GetLocationEncounters(arg1:string):Promise<Array<core.PokemonEncounter>>;
+
 export function GetMachine(arg1:number):Promise<core.Machine>;
 
 export function GetMove(arg1:string):Promise<core.Move>;

@@ -163,6 +163,9 @@ let limitDecreaseBtn: HTMLButtonElement;
 let limitIncreaseBtn: HTMLButtonElement;
 let limitDisplay: HTMLSpanElement;
 let rowLimitControl: HTMLDivElement;
+let pagePrevBtn: HTMLButtonElement;
+let pageNextBtn: HTMLButtonElement;
+let pageIndicator: HTMLSpanElement;
 let searchInput: HTMLInputElement;
 let searchBtn: HTMLButtonElement;
 let backBtn: HTMLButtonElement;
@@ -527,6 +530,20 @@ function staggerTableRows(container: HTMLElement): void {
 function updateRowLimitControl(): void {
   limitDisplay.textContent = String(rowLimit);
   limitDecreaseBtn.disabled = rowLimit <= LIMIT_STEP;
+
+  const total = getTotalItemCount();
+  const totalPages = Math.max(1, Math.ceil(total / rowLimit));
+  const currentPage = Math.floor(offset / rowLimit) + 1;
+
+  pageIndicator.textContent = t("pokedex.page", { page: String(currentPage), pages: String(totalPages) });
+  pagePrevBtn.disabled = currentPage <= 1;
+  pageNextBtn.disabled = currentPage >= totalPages;
+}
+
+function getTotalItemCount(): number {
+  if (sortedFullList) return sortedFullList.length;
+  if (hasFilter() && filteredList.length > 0) return filteredList.length;
+  return totalCount;
 }
 
 // -- Paginación --------------------------------------------------------------
@@ -552,6 +569,30 @@ async function changeRowLimit(delta: number): Promise<void> {
     await renderCurrentView(filteredList.slice(0, rowLimit));
   } else {
     await loadList();
+  }
+}
+
+async function goToPrevPage(): Promise<void> {
+  if (offset <= 0) return;
+  offset -= rowLimit;
+  if (offset < 0) offset = 0;
+  updateRowLimitControl();
+  await renderCurrentView(getCurrentPageItems());
+}
+
+async function goToNextPage(): Promise<void> {
+  const total = getTotalItemCount();
+  if (offset + rowLimit >= total) return;
+  offset += rowLimit;
+  updateRowLimitControl();
+
+  const items = getCurrentPageItems();
+  if (items.length > 0) {
+    await renderCurrentView(items);
+  } else {
+    // Need to fetch from API (no sorted/filtered list available)
+    const data = await ListPokemon(offset, rowLimit);
+    await renderCurrentView(data.Results);
   }
 }
 
@@ -1098,6 +1139,9 @@ function getCurrentPageItems(): PokemonListItem[] {
     const pageItems = sortedFullList.slice(offset, offset + rowLimit);
     return pageItems.map((p) => ({ Name: p.Name, URL: "" }));
   }
+  if (hasFilter() && filteredList.length > 0) {
+    return filteredList.slice(offset, offset + rowLimit);
+  }
   return lastRenderedItems;
 }
 
@@ -1112,6 +1156,9 @@ export function initPokedex(): void {
   limitIncreaseBtn = document.getElementById("limit-increase") as HTMLButtonElement;
   limitDisplay = document.getElementById("limit-display") as HTMLSpanElement;
   rowLimitControl = document.getElementById("row-limit-control") as HTMLDivElement;
+  pagePrevBtn = document.getElementById("page-prev") as HTMLButtonElement;
+  pageNextBtn = document.getElementById("page-next") as HTMLButtonElement;
+  pageIndicator = document.getElementById("page-indicator") as HTMLSpanElement;
   searchInput = document.getElementById("search-input") as HTMLInputElement;
   searchBtn = document.getElementById("search-btn") as HTMLButtonElement;
   backBtn = document.getElementById("back-btn") as HTMLButtonElement;
@@ -1125,6 +1172,8 @@ export function initPokedex(): void {
 
   limitDecreaseBtn.addEventListener("click", () => changeRowLimit(-LIMIT_STEP));
   limitIncreaseBtn.addEventListener("click", () => changeRowLimit(LIMIT_STEP));
+  pagePrevBtn.addEventListener("click", () => goToPrevPage());
+  pageNextBtn.addEventListener("click", () => goToNextPage());
 
   viewToggleBtn.addEventListener("click", async () => {
     const oldMode = viewMode;
