@@ -4,7 +4,7 @@ import type { core } from "../../../wailsjs/go/models";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
 import { SortCache } from "../../utils/sort-cache";
 import { showSortingOverlay, hideSortingOverlay } from "../../components/sorting-overlay";
-import { t } from "../../i18n";
+import { t, typeName } from "../../i18n";
 
 type Category = "all" | "physical" | "special" | "status";
 type SortColumn = "name" | "type" | "category" | "power" | "accuracy" | "pp" | "priority" | null;
@@ -110,7 +110,7 @@ function renderTable(container: HTMLElement): void {
 
   tbody.innerHTML = moves.map((m) => `<tr>
     <td class="move-name-cell" data-col="name">${m.Name.replace(/-/g, " ")}</td>
-    <td data-col="type"><span class="type-badge type-badge--icon-only" style="background:${typeColor(m.Type)}" title="${m.Type}"><img src="/assets/types/${m.Type}.svg" alt="${m.Type}" class="type-icon"></span></td>
+    <td data-col="type"><span class="type-badge type-badge--icon-only" style="background:${typeColor(m.Type)}" title="${typeName(m.Type)}"><img src="/assets/types/${m.Type}.svg" alt="${typeName(m.Type)}" class="type-icon"></span></td>
     <td class="move-cat-cell" data-col="category">${categoryIcon(m.Category)}</td>
     <td class="num-cell" data-col="power">${m.Power || "—"}</td>
     <td class="num-cell" data-col="accuracy">${m.Accuracy ? m.Accuracy + "%" : "—"}</td>
@@ -139,7 +139,7 @@ function updateSortIndicators(container: HTMLElement): void {
 function buildTypeFilterOptions(): string {
   const types = [...new Set(state.allMoves.map((m) => m.Type))].sort();
   return `<option value="all">${t("moves.allTypes")}</option>` +
-    types.map((t) => `<option value="${t}">${t}</option>`).join("");
+    types.map((tp) => `<option value="${tp}">${typeName(tp)}</option>`).join("");
 }
 
 export async function initMoves(container: HTMLElement): Promise<void> {

@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { t, applyTranslations } from "../i18n";
+import { t, typeName, applyTranslations } from "../i18n";
 import {
   GetPokemon,
   GetMove,
@@ -178,11 +178,11 @@ function battleSpriteFallbackCDN(name: string, type: "battle-back" | "battle-fro
 }
 
 function typeBadge(type: string): string {
-  return `<span class="type-badge type-${type}"><img src="/assets/types/${type}.svg" alt="" class="type-icon">${type}</span>`;
+  return `<span class="type-badge type-${type}"><img src="/assets/types/${type}.svg" alt="" class="type-icon">${typeName(type)}</span>`;
 }
 
 function typeBadgeIcon(type: string): string {
-  return `<span class="type-badge type-badge--icon-only type-${type}" title="${type}"><img src="/assets/types/${type}.svg" alt="${type}" class="type-icon"></span>`;
+  return `<span class="type-badge type-badge--icon-only type-${type}" title="${typeName(type)}"><img src="/assets/types/${type}.svg" alt="${typeName(type)}" class="type-icon"></span>`;
 }
 
 function typeBadges(types: Array<{ Name: string }>): string {
