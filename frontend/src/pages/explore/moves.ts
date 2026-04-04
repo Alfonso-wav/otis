@@ -243,4 +243,9 @@ export async function initMoves(container: HTMLElement): Promise<void> {
 
   renderTable(container);
   initColumnToggle("moves", movesTableColumns());
+
+  document.addEventListener("locale-changed", () => {
+    if (state.allMoves.length === 0) return;
+    initMoves(container);
+  });
 }
