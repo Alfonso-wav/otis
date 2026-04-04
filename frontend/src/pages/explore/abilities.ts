@@ -4,8 +4,8 @@ import type { core } from "../../../wailsjs/go/models";
 import { openAbilityPokemonModal } from "../../components/ability-pokemon-modal";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../../components/column-toggle";
 import { SortCache } from "../../utils/sort-cache";
-import { showSortingOverlay, hideSortingOverlay } from "../../components/sorting-overlay";
-import { t } from "../../i18n";
+import { showSortingOverlay, hideSortingOverlay, showLoadingOverlay } from "../../components/sorting-overlay";
+import { t, getLocale } from "../../i18n";
 
 type SortColumn = "name" | "description" | "pokemon" | null;
 type SortDirection = "asc" | "desc" | null;
@@ -44,7 +44,11 @@ function filteredAbilities(): core.Ability[] {
   let abilities = state.allAbilities;
 
   if (state.searchQuery !== "") {
-    abilities = abilities.filter((a) => a.Name.includes(state.searchQuery));
+    const q = state.searchQuery;
+    abilities = abilities.filter((a) =>
+      a.Name.includes(q) ||
+      (a.NameEs && a.NameEs.toLowerCase().includes(q.replace(/-/g, " ")))
+    );
   }
 
   if (state.sortColumn && state.sortDirection) {
@@ -68,15 +72,18 @@ function renderTable(container: HTMLElement): void {
     return;
   }
 
+  const isEs = getLocale() === "es";
   tbody.innerHTML = abilities.map((a) => {
-    const desc = a.Description ? a.Description.replace(/\n/g, " ") : "—";
+    const displayName = isEs && a.NameEs ? a.NameEs : a.Name.replace(/-/g, " ");
+    const rawDesc = isEs && a.DescriptionEs ? a.DescriptionEs : a.Description;
+    const desc = rawDesc ? rawDesc.replace(/\n/g, " ") : "—";
     const pokemonList = a.Pokemon ?? [];
     const count = pokemonList.length;
     const countHtml = count > 0
       ? `<span class="ability-pokemon-count" data-ability="${a.Name}">${count}</span>`
       : `${count}`;
     return `<tr>
-    <td class="ability-name-cell" data-col="name">${a.Name.replace(/-/g, " ")}</td>
+    <td class="ability-name-cell" data-col="name">${displayName}</td>
     <td class="ability-desc-cell" data-col="description">${desc}</td>
     <td class="num-cell" data-col="pokemon">${countHtml}</td>
   </tr>`;
@@ -167,6 +174,7 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
   // Load all abilities
   if (state.allAbilities.length === 0) {
     state.loading = true;
+    showLoadingOverlay(t("abilities.loading"));
     try {
       state.allAbilities = await GetAllAbilities();
     } catch {
@@ -175,6 +183,7 @@ export async function initAbilities(container: HTMLElement): Promise<void> {
       return;
     } finally {
       state.loading = false;
+      hideSortingOverlay();
     }
   }
 

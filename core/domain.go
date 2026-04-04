@@ -11,20 +11,24 @@ type Location struct {
 }
 
 type Move struct {
-	Name        string
-	Type        string
-	Power       int
-	Accuracy    int
-	PP          int
-	Priority    int
-	Category    string
-	Description string
+	Name          string
+	NameEs        string
+	Type          string
+	Power         int
+	Accuracy      int
+	PP            int
+	Priority      int
+	Category      string
+	Description   string
+	DescriptionEs string
 }
 
 type Ability struct {
-	Name        string
-	Description string
-	Pokemon     []string
+	Name          string
+	NameEs        string
+	Description   string
+	DescriptionEs string
+	Pokemon       []string
 }
 
 type EvolutionStage struct {
