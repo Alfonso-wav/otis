@@ -10,7 +10,7 @@ import {
   GetAllSpeciesClassifications,
 } from "../api";
 import type { Pokemon, PokemonListItem } from "../types";
-import { t } from "../i18n";
+import { t, typeName } from "../i18n";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../components/column-toggle";
 import { SortCache } from "../utils/sort-cache";
@@ -406,7 +406,7 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
         ? `<img class="poke-table__sprite" src="${p.Sprites.FrontDefault}" alt="${p.Name}" loading="lazy" />`
         : "";
       const types = (p.Types || [])
-        .map((t) => `<span class="type-badge type-badge--icon-only type-${t.Name}" title="${t.Name}"><img src="/assets/types/${t.Name}.svg" alt="${t.Name}" class="type-icon"></span>`)
+        .map((t) => `<span class="type-badge type-badge--icon-only type-${t.Name}" title="${typeName(t.Name)}"><img src="/assets/types/${t.Name}.svg" alt="${typeName(t.Name)}" class="type-icon"></span>`)
         .join(" ");
       const stats = (p.Stats || []).map((s) => s.BaseStat);
       const total = stats.reduce((a, b) => a + b, 0);
@@ -585,7 +585,7 @@ async function showDetail(name: string): Promise<void> {
 
 async function renderDetail(p: Pokemon): Promise<void> {
   const types = (p.Types || [])
-    .map((t) => `<span class="type-badge type-${t.Name}"><img src="/assets/types/${t.Name}.svg" alt="" class="type-icon">${t.Name}</span>`)
+    .map((t) => `<span class="type-badge type-${t.Name}"><img src="/assets/types/${t.Name}.svg" alt="" class="type-icon">${typeName(t.Name)}</span>`)
     .join("");
 
   const sprites = `
