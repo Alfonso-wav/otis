@@ -486,6 +486,7 @@
   flex-wrap: wrap;
   align-items: center;
   margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
 }
 
 .battle-auto-btn {
@@ -1021,7 +1022,7 @@
   align-items: center;
   gap: 0.5rem;
   margin-top: 1rem;
-  padding-top: 1rem;
+  padding: 1rem 0.75rem 0;
   border-top: 2px dashed #e2e8f0;
   flex-wrap: wrap;
 }
@@ -1582,6 +1583,14 @@
   font-size: 1rem;
   letter-spacing: 0.06em;
   color: #718096;
+}
+
+.tb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
 }
 
 .team-battle-select {
