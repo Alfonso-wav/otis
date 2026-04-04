@@ -968,7 +968,7 @@ async function populateFilters(): Promise<void> {
       const chip = document.createElement("button");
       chip.className = "filter-chip";
       chip.dataset.value = tp.Name;
-      chip.textContent = tp.Name.charAt(0).toUpperCase() + tp.Name.slice(1);
+      chip.textContent = typeName(tp.Name);
       chip.addEventListener("click", () => {
         chip.classList.toggle("active");
         if (chip.classList.contains("active")) {
@@ -992,16 +992,18 @@ function formatGenName(name: string): string {
   return "Gen " + match[1].toUpperCase();
 }
 
-function applyFilters(): void {
+async function applyFilters(): Promise<void> {
   resetInfiniteScroll();
   filteredList = [];
 
+  showSortingOverlay(t("pokedex.applyingFilters"));
   if (hasFilter()) {
-    loadFiltered();
+    await loadFiltered();
   } else {
     resetSorting();
-    loadList();
+    await loadList();
   }
+  hideSortingOverlay();
 }
 
 function resetFilterUI(): void {
@@ -1224,22 +1226,26 @@ export function initPokedex(): void {
     if (e.key === "Enter") search();
   });
 
-  filterLegendaryBtn.addEventListener("click", () => {
+  filterLegendaryBtn.addEventListener("click", async () => {
     filter.legendary = !filter.legendary;
     filterLegendaryBtn.classList.toggle("active", filter.legendary);
     resetInfiniteScroll();
     filteredList = [];
-    if (hasFilter()) loadFiltered();
-    else loadList();
+    showSortingOverlay(t("pokedex.applyingFilters"));
+    if (hasFilter()) await loadFiltered();
+    else await loadList();
+    hideSortingOverlay();
   });
 
-  filterMythicalBtn.addEventListener("click", () => {
+  filterMythicalBtn.addEventListener("click", async () => {
     filter.mythical = !filter.mythical;
     filterMythicalBtn.classList.toggle("active", filter.mythical);
     resetInfiniteScroll();
     filteredList = [];
-    if (hasFilter()) loadFiltered();
-    else loadList();
+    showSortingOverlay(t("pokedex.applyingFilters"));
+    if (hasFilter()) await loadFiltered();
+    else await loadList();
+    hideSortingOverlay();
   });
 
   filterResetBtn.addEventListener("click", () => {
