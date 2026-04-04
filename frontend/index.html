@@ -60,10 +60,10 @@
         <div id="scroll-sentinel" class="scroll-sentinel">
           <span class="scroll-sentinel__text" data-i18n="common.loading">Cargando...</span>
         </div>
-        <div id="pagination" class="d-flex align-items-center justify-content-center gap-3 mt-4">
-          <button id="prev-btn" class="btn btn-primary" disabled>&larr; <span data-i18n="common.previous">Anterior</span></button>
-          <span id="page-info"></span>
-          <button id="next-btn" class="btn btn-primary"><span data-i18n="common.next">Siguiente</span> &rarr;</button>
+        <div id="row-limit-control" class="row-limit-control hidden">
+          <button id="limit-decrease" class="btn btn-primary" disabled>−50</button>
+          <span id="limit-display" class="row-limit-control__display">50</span>
+          <button id="limit-increase" class="btn btn-primary">+50</button>
         </div>
       </section>
 
