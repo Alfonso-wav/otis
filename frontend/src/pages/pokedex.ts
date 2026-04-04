@@ -17,7 +17,8 @@ import { SortCache } from "../utils/sort-cache";
 import { showSortingOverlay, updateSortingOverlayText, hideSortingOverlay } from "../components/sorting-overlay";
 import { createAutocomplete } from "../autocomplete";
 
-const LIMIT = 20;
+const LIMIT_STEP = 50;
+let rowLimit = 50;
 
 interface FilterState {
   generations: string[];
@@ -34,7 +35,6 @@ let viewMode: "grid" | "table" = "grid";
 let infiniteLoading = false;
 let scrollObserver: IntersectionObserver | null = null;
 let scrollSentinel: HTMLDivElement;
-let paginationEl: HTMLDivElement;
 
 // -- Sorting state -----------------------------------------------------------
 
@@ -159,9 +159,10 @@ let grid: HTMLDivElement;
 let listView: HTMLElement;
 let detailView: HTMLElement;
 let detailEl: HTMLDivElement;
-let prevBtn: HTMLButtonElement;
-let nextBtn: HTMLButtonElement;
-let pageInfo: HTMLSpanElement;
+let limitDecreaseBtn: HTMLButtonElement;
+let limitIncreaseBtn: HTMLButtonElement;
+let limitDisplay: HTMLSpanElement;
+let rowLimitControl: HTMLDivElement;
 let searchInput: HTMLInputElement;
 let searchBtn: HTMLButtonElement;
 let backBtn: HTMLButtonElement;
@@ -186,14 +187,14 @@ function hasFilter(): boolean {
 async function loadList(): Promise<void> {
   grid.innerHTML = `<p class="loading">${t("common.loading")}</p>`;
   try {
-    const data = await ListPokemon(offset, LIMIT);
+    const data = await ListPokemon(offset, rowLimit);
     totalCount = data.Count;
     if (viewMode === "grid") {
       renderGrid(data.Results, false);
       updateScrollSentinel();
     } else {
       await renderTable(data.Results);
-      updatePagination();
+      updateRowLimitControl();
     }
   } catch (err: unknown) {
     grid.innerHTML = `<p class="loading error-text">${String(err)}</p>`;
@@ -262,13 +263,13 @@ async function loadFiltered(): Promise<void> {
     totalCount = base.length;
     offset = 0;
 
-    const page = filteredList.slice(0, LIMIT);
+    const page = filteredList.slice(0, rowLimit);
     if (viewMode === "grid") {
       renderGrid(page, false);
       updateScrollSentinel();
     } else {
       await renderTable(page);
-      updatePagination();
+      updateRowLimitControl();
     }
   } catch (err: unknown) {
     grid.innerHTML = `<p class="loading error-text">${String(err)}</p>`;
@@ -476,11 +477,11 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
           sortedFullList = null;
           offset = 0;
           if (hasFilter()) {
-            await renderCurrentView(filteredList.slice(offset, offset + LIMIT));
+            await renderCurrentView(filteredList.slice(offset, offset + rowLimit));
           } else {
             await loadList();
           }
-          updatePagination();
+          updateRowLimitControl();
           return;
         }
       } else {
@@ -499,7 +500,7 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
         offset = 0;
         hideSortingOverlay();
         await renderTable(getCurrentPageItems());
-        updatePagination();
+        updateRowLimitControl();
       } finally {
         hideSortingOverlay();
         sortingLoading = false;
@@ -523,13 +524,9 @@ function staggerTableRows(container: HTMLElement): void {
   });
 }
 
-function updatePagination(): void {
-  const total = sortedFullList ? sortedFullList.length : totalCount;
-  const page = Math.floor(offset / LIMIT) + 1;
-  const pages = Math.ceil(total / LIMIT) || 1;
-  pageInfo.textContent = t("pokedex.page", { page, pages });
-  prevBtn.disabled = offset === 0;
-  nextBtn.disabled = offset + LIMIT >= total;
+function updateRowLimitControl(): void {
+  limitDisplay.textContent = String(rowLimit);
+  limitDecreaseBtn.disabled = rowLimit <= LIMIT_STEP;
 }
 
 // -- Paginación --------------------------------------------------------------
@@ -541,32 +538,20 @@ function resetSorting(): void {
   pokemonSortCache.invalidate();
 }
 
-async function prevPage(): Promise<void> {
-  if (offset <= 0) return;
-  offset -= LIMIT;
+async function changeRowLimit(delta: number): Promise<void> {
+  const newLimit = rowLimit + delta;
+  if (newLimit < LIMIT_STEP) return;
+  rowLimit = newLimit;
+  offset = 0;
+  updateRowLimitControl();
   if (sortedFullList) {
-    await renderCurrentView(getCurrentPageItems());
-    updatePagination();
+    // Re-sort with new limit
+    const pageItems = sortedFullList.slice(0, rowLimit).map((p) => ({ Name: p.Name, URL: "" }));
+    await renderCurrentView(pageItems);
   } else if (hasFilter()) {
-    await renderCurrentView(filteredList.slice(offset, offset + LIMIT));
-    updatePagination();
+    await renderCurrentView(filteredList.slice(0, rowLimit));
   } else {
-    loadList();
-  }
-}
-
-async function nextPage(): Promise<void> {
-  const max = sortedFullList ? sortedFullList.length : hasFilter() ? filteredList.length : totalCount;
-  if (offset + LIMIT >= max) return;
-  offset += LIMIT;
-  if (sortedFullList) {
-    await renderCurrentView(getCurrentPageItems());
-    updatePagination();
-  } else if (hasFilter()) {
-    await renderCurrentView(filteredList.slice(offset, offset + LIMIT));
-    updatePagination();
-  } else {
-    loadList();
+    await loadList();
   }
 }
 
@@ -1035,26 +1020,26 @@ function staggerNewCards(container: HTMLElement, startIndex: number): void {
 async function loadNextBatch(): Promise<void> {
   if (infiniteLoading || viewMode !== "grid") return;
   const total = sortedFullList ? sortedFullList.length : totalCount;
-  if (offset + LIMIT >= total) return;
+  if (offset + rowLimit >= total) return;
 
   infiniteLoading = true;
-  offset += LIMIT;
+  offset += rowLimit;
 
   try {
     let items: PokemonListItem[];
     if (sortedFullList) {
       items = getCurrentPageItems();
     } else if (hasFilter()) {
-      items = filteredList.slice(offset, offset + LIMIT);
+      items = filteredList.slice(offset, offset + rowLimit);
     } else {
-      const data = await ListPokemon(offset, LIMIT);
+      const data = await ListPokemon(offset, rowLimit);
       items = data.Results;
     }
     renderGrid(items, true);
     updateScrollSentinel();
   } catch (err: unknown) {
     console.error("Error loading next batch:", err);
-    offset -= LIMIT;
+    offset -= rowLimit;
   } finally {
     infiniteLoading = false;
   }
@@ -1082,17 +1067,17 @@ function disconnectScrollObserver(): void {
 
 function updateScrollSentinel(): void {
   const total = sortedFullList ? sortedFullList.length : totalCount;
-  const allLoaded = offset + LIMIT >= total;
+  const allLoaded = offset + rowLimit >= total;
   scrollSentinel.classList.toggle("hidden", allLoaded);
 }
 
-function updatePaginationVisibility(): void {
+function updateRowLimitVisibility(): void {
   if (viewMode === "grid") {
-    paginationEl.classList.add("hidden");
+    rowLimitControl.classList.add("hidden");
     scrollSentinel.classList.remove("hidden");
     setupScrollObserver();
   } else {
-    paginationEl.classList.remove("hidden");
+    rowLimitControl.classList.remove("hidden");
     scrollSentinel.classList.add("hidden");
     disconnectScrollObserver();
   }
@@ -1110,7 +1095,7 @@ let lastRenderedItems: PokemonListItem[] = [];
 
 function getCurrentPageItems(): PokemonListItem[] {
   if (sortedFullList) {
-    const pageItems = sortedFullList.slice(offset, offset + LIMIT);
+    const pageItems = sortedFullList.slice(offset, offset + rowLimit);
     return pageItems.map((p) => ({ Name: p.Name, URL: "" }));
   }
   return lastRenderedItems;
@@ -1123,9 +1108,10 @@ export function initPokedex(): void {
   listView = document.getElementById("list-view") as HTMLElement;
   detailView = document.getElementById("detail-view") as HTMLElement;
   detailEl = document.getElementById("pokemon-detail") as HTMLDivElement;
-  prevBtn = document.getElementById("prev-btn") as HTMLButtonElement;
-  nextBtn = document.getElementById("next-btn") as HTMLButtonElement;
-  pageInfo = document.getElementById("page-info") as HTMLSpanElement;
+  limitDecreaseBtn = document.getElementById("limit-decrease") as HTMLButtonElement;
+  limitIncreaseBtn = document.getElementById("limit-increase") as HTMLButtonElement;
+  limitDisplay = document.getElementById("limit-display") as HTMLSpanElement;
+  rowLimitControl = document.getElementById("row-limit-control") as HTMLDivElement;
   searchInput = document.getElementById("search-input") as HTMLInputElement;
   searchBtn = document.getElementById("search-btn") as HTMLButtonElement;
   backBtn = document.getElementById("back-btn") as HTMLButtonElement;
@@ -1136,17 +1122,16 @@ export function initPokedex(): void {
   filterResetBtn = document.getElementById("filter-reset") as HTMLButtonElement;
   viewToggleBtn = document.getElementById("view-toggle-btn") as HTMLButtonElement;
   scrollSentinel = document.getElementById("scroll-sentinel") as HTMLDivElement;
-  paginationEl = document.getElementById("pagination") as HTMLDivElement;
 
-  prevBtn.addEventListener("click", prevPage);
-  nextBtn.addEventListener("click", nextPage);
+  limitDecreaseBtn.addEventListener("click", () => changeRowLimit(-LIMIT_STEP));
+  limitIncreaseBtn.addEventListener("click", () => changeRowLimit(LIMIT_STEP));
 
   viewToggleBtn.addEventListener("click", async () => {
     const oldMode = viewMode;
     viewMode = viewMode === "grid" ? "table" : "grid";
     resetSorting();
     viewToggleBtn.textContent = viewMode === "grid" ? t("filters.tableView") : t("filters.cardView");
-    updatePaginationVisibility();
+    updateRowLimitVisibility();
 
     if (oldMode === "grid" && viewMode === "table") {
       // Switch to table: reset offset for table pagination, render first page
@@ -1155,7 +1140,7 @@ export function initPokedex(): void {
       await morphToTable(grid, async () => {
         await renderTable(items);
       });
-      updatePagination();
+      updateRowLimitControl();
     } else {
       // Switch to grid: reset and load with infinite scroll
       offset = 0;
@@ -1163,7 +1148,7 @@ export function initPokedex(): void {
         // Will be replaced by loadList below
       });
       if (hasFilter()) {
-        renderGrid(filteredList.slice(0, LIMIT), false);
+        renderGrid(filteredList.slice(0, rowLimit), false);
       } else {
         await loadList();
         return;
@@ -1211,7 +1196,7 @@ export function initPokedex(): void {
   });
 
   populateFilters();
-  updatePaginationVisibility();
+  updateRowLimitVisibility();
   loadList();
 
   // Load all pokemon names for autocomplete (non-blocking)
@@ -1230,6 +1215,6 @@ export function initPokedex(): void {
     if (viewMode === "table") {
       renderCurrentView(getCurrentPageItems());
     }
-    updatePagination();
+    updateRowLimitControl();
   });
 }
