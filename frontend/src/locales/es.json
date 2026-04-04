@@ -50,6 +50,7 @@
     "loadingClassifications": "Cargando clasificaciones...",
     "loadingData": "Cargando datos...",
     "noResults": "No se encontraron Pokémon.",
+    "rowLimit": "Límite de filas",
     "page": "Pág. {page} / {pages}",
     "sorting": "Ordenando...",
     "sortingPct": "Ordenando... {pct}%",
