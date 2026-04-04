@@ -74,6 +74,10 @@ export function GetLocationArea(arg1) {
   return window['go']['app']['App']['GetLocationArea'](arg1);
 }
 
+export function GetLocationEncounters(arg1) {
+  return window['go']['app']['App']['GetLocationEncounters'](arg1);
+}
+
 export function GetMachine(arg1) {
   return window['go']['app']['App']['GetMachine'](arg1);
 }

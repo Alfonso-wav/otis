@@ -50,6 +50,7 @@
     "loadingClassifications": "Loading classifications...",
     "loadingData": "Loading data...",
     "noResults": "No Pokémon found.",
+    "rowLimit": "Row limit",
     "page": "Page {page} / {pages}",
     "sorting": "Sorting...",
     "sortingPct": "Sorting... {pct}%",
