@@ -1185,9 +1185,16 @@ export function initPokedex(): void {
     if (oldMode === "grid" && viewMode === "table") {
       // Switch to table: reset offset for table pagination, render first page
       offset = 0;
-      const items = getCurrentPageItems();
+      lastRenderedItems = [];
       await morphToTable(grid, async () => {
-        await renderTable(items);
+        if (sortedFullList || (hasFilter() && filteredList.length > 0)) {
+          await renderTable(getCurrentPageItems());
+        } else {
+          // Fetch fresh data from offset 0 to avoid stale lastRenderedItems from grid scroll
+          const data = await ListPokemon(offset, rowLimit);
+          totalCount = data.Count;
+          await renderTable(data.Results);
+        }
       });
       updateRowLimitControl();
     } else {
