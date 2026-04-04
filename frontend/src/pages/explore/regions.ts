@@ -6,6 +6,7 @@ import { openLocationEncounterModal } from "../../components/location-encounter-
 import { t } from "../../i18n";
 
 let initialized = false;
+let lastContainer: HTMLElement | null = null;
 
 // Track expanded/collapsed state per region
 const expandedLocations = new Map<string, boolean>();
@@ -139,8 +140,12 @@ async function loadRegionDetail(
 }
 
 export async function initRegions(container: HTMLElement): Promise<void> {
-  if (initialized) return;
+  if (initialized) {
+    lastContainer = container;
+    return;
+  }
   initialized = true;
+  lastContainer = container;
 
   container.innerHTML = `<p class="loading">${t("regions.loading")}</p>`;
 
@@ -180,4 +185,11 @@ export async function initRegions(container: HTMLElement): Promise<void> {
   } catch (err: unknown) {
     container.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
   }
+
+  document.addEventListener("locale-changed", () => {
+    if (!lastContainer) return;
+    initialized = false;
+    expandedLocations.clear();
+    initRegions(lastContainer);
+  });
 }
