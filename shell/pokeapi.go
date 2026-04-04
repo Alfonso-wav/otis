@@ -306,6 +306,10 @@ type apiMove struct {
 	PP       int    `json:"pp"`
 	Priority int    `json:"priority"`
 	DamageClass struct{ Name string `json:"name"` } `json:"damage_class"`
+	Names []struct {
+		Name     string `json:"name"`
+		Language struct{ Name string `json:"name"` } `json:"language"`
+	} `json:"names"`
 	FlavorTextEntries []struct {
 		FlavorText string `json:"flavor_text"`
 		Language   struct{ Name string `json:"name"` } `json:"language"`
@@ -342,29 +346,46 @@ func (c *PokeAPIClient) FetchMove(name string) (core.Move, error) {
 	}
 
 	desc := ""
+	descEs := ""
 	for _, fe := range raw.FlavorTextEntries {
-		if fe.Language.Name == "en" {
+		if fe.Language.Name == "en" && desc == "" {
 			desc = fe.FlavorText
+		}
+		if fe.Language.Name == "es" && descEs == "" {
+			descEs = fe.FlavorText
+		}
+	}
+
+	nameEs := ""
+	for _, n := range raw.Names {
+		if n.Language.Name == "es" {
+			nameEs = n.Name
 			break
 		}
 	}
 
 	return core.Move{
-		Name:        raw.Name,
-		Type:        raw.Type.Name,
-		Power:       power,
-		Accuracy:    accuracy,
-		PP:          raw.PP,
-		Priority:    raw.Priority,
-		Category:    raw.DamageClass.Name,
-		Description: desc,
+		Name:          raw.Name,
+		NameEs:        nameEs,
+		Type:          raw.Type.Name,
+		Power:         power,
+		Accuracy:      accuracy,
+		PP:            raw.PP,
+		Priority:      raw.Priority,
+		Category:      raw.DamageClass.Name,
+		Description:   desc,
+		DescriptionEs: descEs,
 	}, nil
 }
 
 // --- Ability ---
 
 type apiAbility struct {
-	Name string `json:"name"`
+	Name  string `json:"name"`
+	Names []struct {
+		Name     string `json:"name"`
+		Language struct{ Name string `json:"name"` } `json:"language"`
+	} `json:"names"`
 	FlavorTextEntries []struct {
 		FlavorText string `json:"flavor_text"`
 		Language   struct{ Name string `json:"name"` } `json:"language"`
@@ -395,9 +416,20 @@ func (c *PokeAPIClient) FetchAbility(name string) (core.Ability, error) {
 	}
 
 	desc := ""
+	descEs := ""
 	for _, fe := range raw.FlavorTextEntries {
-		if fe.Language.Name == "en" {
+		if fe.Language.Name == "en" && desc == "" {
 			desc = fe.FlavorText
+		}
+		if fe.Language.Name == "es" && descEs == "" {
+			descEs = fe.FlavorText
+		}
+	}
+
+	nameEs := ""
+	for _, n := range raw.Names {
+		if n.Language.Name == "es" {
+			nameEs = n.Name
 			break
 		}
 	}
@@ -407,7 +439,7 @@ func (c *PokeAPIClient) FetchAbility(name string) (core.Ability, error) {
 		pokemon[i] = p.Pokemon.Name
 	}
 
-	return core.Ability{Name: raw.Name, Description: desc, Pokemon: pokemon}, nil
+	return core.Ability{Name: raw.Name, NameEs: nameEs, Description: desc, DescriptionEs: descEs, Pokemon: pokemon}, nil
 }
 
 // --- EvolutionChain ---

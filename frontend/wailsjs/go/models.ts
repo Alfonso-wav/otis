@@ -2,7 +2,9 @@ export namespace core {
 	
 	export class Ability {
 	    Name: string;
+	    NameEs: string;
 	    Description: string;
+	    DescriptionEs: string;
 	    Pokemon: string[];
 	
 	    static createFrom(source: any = {}) {
@@ -12,7 +14,9 @@ export namespace core {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Name = source["Name"];
+	        this.NameEs = source["NameEs"];
 	        this.Description = source["Description"];
+	        this.DescriptionEs = source["DescriptionEs"];
 	        this.Pokemon = source["Pokemon"];
 	    }
 	}
@@ -136,6 +140,7 @@ export namespace core {
 	}
 	export class Move {
 	    Name: string;
+	    NameEs: string;
 	    Type: string;
 	    Power: number;
 	    Accuracy: number;
@@ -143,6 +148,7 @@ export namespace core {
 	    Priority: number;
 	    Category: string;
 	    Description: string;
+	    DescriptionEs: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Move(source);
@@ -151,6 +157,7 @@ export namespace core {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Name = source["Name"];
+	        this.NameEs = source["NameEs"];
 	        this.Type = source["Type"];
 	        this.Power = source["Power"];
 	        this.Accuracy = source["Accuracy"];
@@ -158,6 +165,7 @@ export namespace core {
 	        this.Priority = source["Priority"];
 	        this.Category = source["Category"];
 	        this.Description = source["Description"];
+	        this.DescriptionEs = source["DescriptionEs"];
 	    }
 	}
 	export class Stats {
