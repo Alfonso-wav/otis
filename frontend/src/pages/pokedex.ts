@@ -1223,6 +1223,7 @@ export function initPokedex(): void {
   });
 
   backBtn.addEventListener("click", async () => {
+    hideSortingOverlay();
     const { disposeChart } = await import("../charts/stats-chart");
     disposeChart();
     await showView(listView, detailView);
