@@ -55,6 +55,12 @@ type apiPokemon struct {
 			} `json:"move_learn_method"`
 		} `json:"version_group_details"`
 	} `json:"moves"`
+	Abilities []struct {
+		Ability struct {
+			Name string `json:"name"`
+		} `json:"ability"`
+		IsHidden bool `json:"is_hidden"`
+	} `json:"abilities"`
 }
 
 // apiList es la estructura raw que devuelve PokéAPI para /pokemon?offset=&limit=.
@@ -149,6 +155,11 @@ func toDomainPokemon(raw apiPokemon) core.Pokemon {
 		moves = append(moves, entry)
 	}
 
+	abilities := make([]string, len(raw.Abilities))
+	for i, a := range raw.Abilities {
+		abilities[i] = a.Ability.Name
+	}
+
 	return core.Pokemon{
 		ID:    raw.ID,
 		Name:  raw.Name,
@@ -158,9 +169,10 @@ func toDomainPokemon(raw apiPokemon) core.Pokemon {
 			FrontDefault: raw.Sprites.FrontDefault,
 			FrontShiny:   raw.Sprites.FrontShiny,
 		},
-		Height: raw.Height,
-		Weight: raw.Weight,
-		Moves:  moves,
+		Height:    raw.Height,
+		Weight:    raw.Weight,
+		Moves:     moves,
+		Abilities: abilities,
 	}
 }
 

@@ -8,9 +8,10 @@ import {
   GetPokemonSpecies,
   GetPokemonEncounters,
   GetAllSpeciesClassifications,
+  GetAbility,
 } from "../api";
-import type { Pokemon, PokemonListItem } from "../types";
-import { t, typeName } from "../i18n";
+import type { Pokemon, PokemonListItem, PokemonMoveEntry } from "../types";
+import { t, typeName, getLocale } from "../i18n";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../components/column-toggle";
 import { SortCache } from "../utils/sort-cache";
@@ -635,7 +636,9 @@ async function renderDetail(p: Pokemon): Promise<void> {
     </div>
     <div id="chart-legend" class="chart-legend hidden"></div>
     <div id="pokemon-lore" class="pokemon-lore"><p class="loading">${t("detail.loadingLore")}</p></div>
-    <div id="pokemon-encounters" class="pokemon-encounters"><p class="loading">${t("encounters.loading")}</p></div>`;
+    <div id="pokemon-encounters" class="pokemon-encounters"><p class="loading">${t("encounters.loading")}</p></div>
+    <div id="pokemon-abilities" class="pokemon-abilities"><p class="loading">${t("common.loading")}</p></div>
+    <div id="pokemon-moves" class="pokemon-moves"></div>`;
 
   const chartContainer = document.getElementById("stats-chart") as HTMLDivElement;
   const { renderStatsChart } = await import("../charts/stats-chart");
@@ -692,6 +695,8 @@ async function renderDetail(p: Pokemon): Promise<void> {
 
   loadLore(p.Name);
   loadEncounters(p.Name);
+  loadAbilities(p.Abilities || []);
+  renderMoves(p.Moves || []);
 }
 
 async function loadLore(name: string): Promise<void> {
@@ -916,6 +921,132 @@ async function loadEncounters(name: string): Promise<void> {
       <h3>${t("encounters.title")}</h3>
       <p class="encounters-error">${t("encounters.error")}</p>`;
   }
+}
+
+// -- Abilities section -------------------------------------------------------
+
+async function loadAbilities(abilityNames: string[]): Promise<void> {
+  const el = document.getElementById("pokemon-abilities") as HTMLDivElement;
+  if (!el) return;
+
+  if (!abilityNames || abilityNames.length === 0) {
+    el.innerHTML = "";
+    return;
+  }
+
+  try {
+    const abilities = await Promise.all(abilityNames.map((name) => GetAbility(name)));
+    const lang = getLocale() === "es" ? "es" : "en";
+
+    const cards = abilities.map((ab) => {
+      const name = lang === "es" && ab.NameEs ? ab.NameEs : ab.Name;
+      const desc = lang === "es" && ab.DescriptionEs ? ab.DescriptionEs : ab.Description;
+      return `<div class="ability-card">
+        <span class="ability-name">${capitalize(name)}</span>
+        ${desc ? `<p class="ability-desc">${desc}</p>` : ""}
+      </div>`;
+    }).join("");
+
+    el.innerHTML = `
+      <h3>${t("detail.abilities")}</h3>
+      <div class="abilities-list">${cards}</div>
+    `;
+  } catch {
+    el.innerHTML = `<h3>${t("detail.abilities")}</h3><p class="lore-error">${t("detail.abilitiesError")}</p>`;
+  }
+}
+
+// -- Moves section -----------------------------------------------------------
+
+type MoveMethodFilter = "all" | "level-up" | "machine" | "egg" | "tutor";
+
+function renderMoves(moves: PokemonMoveEntry[]): void {
+  const el = document.getElementById("pokemon-moves") as HTMLDivElement;
+  if (!el) return;
+
+  if (!moves || moves.length === 0) {
+    el.innerHTML = "";
+    return;
+  }
+
+  let activeFilter: MoveMethodFilter = "all";
+
+  const methodFilters: MoveMethodFilter[] = ["all", "level-up", "machine", "egg", "tutor"];
+
+  function getFilterLabel(method: MoveMethodFilter): string {
+    switch (method) {
+      case "all": return t("detail.moveMethod.all");
+      case "level-up": return t("detail.moveMethod.levelUp");
+      case "machine": return t("detail.moveMethod.machine");
+      case "egg": return t("detail.moveMethod.egg");
+      case "tutor": return t("detail.moveMethod.tutor");
+    }
+  }
+
+  function getMethodLabel(method: string): string {
+    switch (method) {
+      case "level-up": return t("detail.moveMethod.levelUp");
+      case "machine": return t("detail.moveMethod.machine");
+      case "egg": return t("detail.moveMethod.egg");
+      case "tutor": return t("detail.moveMethod.tutor");
+      default: return capitalize(method.replace(/-/g, " "));
+    }
+  }
+
+  function renderTable(): string {
+    const filtered = activeFilter === "all"
+      ? moves
+      : moves.filter((m) => m.Method === activeFilter);
+
+    if (filtered.length === 0) {
+      return `<p class="moves-empty">${t("pokedex.noResults")}</p>`;
+    }
+
+    const rows = filtered.map((m) => {
+      const levelCell = m.Method === "level-up" && m.Level > 0 ? String(m.Level) : "\u2014";
+      return `<tr>
+        <td class="move-name">${capitalize(m.Name.replace(/-/g, " "))}</td>
+        <td class="move-method">${getMethodLabel(m.Method)}</td>
+        <td class="move-level">${levelCell}</td>
+      </tr>`;
+    }).join("");
+
+    return `<div class="moves-table-wrap">
+      <table class="poke-table moves-table">
+        <thead><tr>
+          <th>${t("detail.moveName")}</th>
+          <th>${t("detail.moveMethodCol")}</th>
+          <th>${t("detail.moveLevelCol")}</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  function rebuildFilterBtns(): void {
+    const bar = el.querySelector(".moves-filter-bar");
+    if (!bar) return;
+    bar.innerHTML = methodFilters.map((mf) =>
+      `<button class="filter-chip${activeFilter === mf ? " active" : ""}" data-method="${mf}">${getFilterLabel(mf)}</button>`
+    ).join("");
+
+    bar.querySelectorAll<HTMLButtonElement>(".filter-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeFilter = btn.dataset.method as MoveMethodFilter;
+        rebuildFilterBtns();
+        const tableWrap = el.querySelector(".moves-body");
+        if (tableWrap) tableWrap.innerHTML = renderTable();
+      });
+    });
+  }
+
+  el.innerHTML = `
+    <h3>${t("detail.moves")}</h3>
+    <div class="moves-filter-bar"></div>
+    <div class="moves-body">${renderTable()}</div>
+  `;
+
+  rebuildFilterBtns();
 }
 
 function formatLocationName(name: string): string {

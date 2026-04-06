@@ -51,14 +51,15 @@ type PokemonMoveEntry struct {
 }
 
 type Pokemon struct {
-	ID      int
-	Name    string
-	Types   []PokemonType
-	Stats   []Stat
-	Sprites Sprites
-	Height  int
-	Weight  int
-	Moves   []PokemonMoveEntry
+	ID        int
+	Name      string
+	Types     []PokemonType
+	Stats     []Stat
+	Sprites   Sprites
+	Height    int
+	Weight    int
+	Moves     []PokemonMoveEntry
+	Abilities []string
 }
 
 type PokemonType struct {

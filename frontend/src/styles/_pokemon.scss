@@ -634,3 +634,147 @@ th.sortable.active .sort-indicator {
 [data-bs-theme="dark"] .encounters-table-wrap {
   background: #1a202c;
 }
+
+// -- Pokemon Abilities --------------------------------------------------------
+
+.pokemon-abilities {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+  text-align: left;
+
+  h3 {
+    font-family: $font-display;
+    font-size: 1.4rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.75rem;
+    color: $pokedex-red;
+  }
+}
+
+.abilities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ability-card {
+  padding: 0.75rem 1rem;
+  background: #f7fafc;
+  border-radius: $border-radius-lg;
+  border-left: 3px solid $pokedex-red;
+}
+
+.ability-name {
+  font-family: $font-display;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #2d3748;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.ability-desc {
+  font-family: $font-body;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #4a5568;
+  margin: 0;
+}
+
+[data-bs-theme="dark"] .pokemon-abilities {
+  border-top-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .ability-card {
+  background: #2d3748;
+}
+
+[data-bs-theme="dark"] .ability-name {
+  color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .ability-desc {
+  color: #a0aec0;
+}
+
+// -- Pokemon Moves ------------------------------------------------------------
+
+.pokemon-moves {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+  text-align: left;
+
+  h3 {
+    font-family: $font-display;
+    font-size: 1.4rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.75rem;
+    color: $pokedex-red;
+  }
+}
+
+.moves-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.moves-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: $border-radius-lg;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  background: white;
+}
+
+.moves-table {
+  min-width: 300px;
+
+  .move-name {
+    text-transform: capitalize;
+    font-family: $font-display;
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+  }
+
+  .move-method {
+    font-family: $font-body;
+    font-size: 0.82rem;
+    color: #718096;
+  }
+
+  .move-level {
+    text-align: right;
+    font-family: $font-body;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #4a5568;
+  }
+}
+
+.moves-empty {
+  font-family: $font-body;
+  font-size: 0.85rem;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+[data-bs-theme="dark"] .pokemon-moves {
+  border-top-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .moves-table-wrap {
+  background: #1a202c;
+}
+
+[data-bs-theme="dark"] .moves-table .move-method {
+  color: #a0aec0;
+}
+
+[data-bs-theme="dark"] .moves-table .move-level {
+  color: #e2e8f0;
+}
