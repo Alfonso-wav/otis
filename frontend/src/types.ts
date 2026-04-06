@@ -12,6 +12,12 @@ export interface PokemonType {
   Name: string;
 }
 
+export interface PokemonMoveEntry {
+  Name: string;
+  Method: string;
+  Level: number;
+}
+
 export interface Pokemon {
   ID: number;
   Name: string;
@@ -20,6 +26,8 @@ export interface Pokemon {
   Sprites: Sprites;
   Height: number;
   Weight: number;
+  Moves: PokemonMoveEntry[];
+  Abilities: string[];
 }
 
 export interface PokemonListItem {

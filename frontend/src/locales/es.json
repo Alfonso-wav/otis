@@ -72,7 +72,20 @@
     "shiny": "Shiny",
     "compare": "Comparar",
     "comparePlaceholder": "Buscar Pokémon...",
-    "clearCompare": "Limpiar comparación"
+    "clearCompare": "Limpiar comparación",
+    "abilities": "Habilidades",
+    "abilitiesError": "No se pudieron cargar las habilidades.",
+    "moves": "Movimientos",
+    "moveName": "Nombre",
+    "moveMethodCol": "Método",
+    "moveLevelCol": "Nivel",
+    "moveMethod": {
+      "all": "Todos",
+      "levelUp": "Nivel",
+      "machine": "MT/MO",
+      "egg": "Huevo",
+      "tutor": "Tutor"
+    }
   },
   "encounters": {
     "title": "Encounters",
