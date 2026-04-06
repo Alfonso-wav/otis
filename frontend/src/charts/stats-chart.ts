@@ -40,6 +40,8 @@ export function renderStatsChart(container: HTMLElement, series: ChartSeries[]):
         name,
         max: 255,
       })),
+      radius: "80%",
+      center: ["50%", "50%"],
       shape: "polygon",
       axisName: {
         color: "#4a5568",
