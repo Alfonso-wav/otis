@@ -166,6 +166,11 @@ export function GetAllAbilities(): Promise<core.Ability[]> {
   return get("/api/abilities/all");
 }
 
+export function GetAbility(name: string): Promise<core.Ability> {
+  if (isWails()) return wails("GetAbility", name);
+  return get(`/api/abilities/${encodeURIComponent(name)}`);
+}
+
 // --- Stats y generaciones ---
 
 export function ListGenerations(): Promise<core.NamedResource[]> {
