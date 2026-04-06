@@ -3,6 +3,7 @@ import { RadarChart } from "echarts/charts";
 import { TooltipComponent } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
 import type { Stat } from "../types";
+import { statName } from "../i18n";
 
 echarts.use([RadarChart, TooltipComponent, CanvasRenderer]);
 
@@ -21,7 +22,7 @@ export function renderStatsChart(container: HTMLElement, series: ChartSeries[]):
 
   chartInstance = echarts.init(container);
 
-  const names = series[0]?.stats.map((s) => s.Name) ?? [];
+  const names = series[0]?.stats.map((s) => statName(s.Name)) ?? [];
 
   const seriesData: object[] = series.map((s) => ({
     value: s.stats.map((stat) => stat.BaseStat),

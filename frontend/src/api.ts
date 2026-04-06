@@ -135,9 +135,9 @@ export function GetAllSpeciesClassifications(): Promise<Record<string, { isLegen
 
 // --- Pokémon extendido ---
 
-export function GetPokemonSpecies(name: string): Promise<core.PokemonSpecies> {
-  if (isWails()) return wails("GetPokemonSpecies", name);
-  return get(`/api/pokemon-species/${encodeURIComponent(name)}`);
+export function GetPokemonSpecies(name: string, lang: string): Promise<core.PokemonSpecies> {
+  if (isWails()) return wails("GetPokemonSpecies", name, lang);
+  return get(`/api/pokemon-species/${encodeURIComponent(name)}?lang=${encodeURIComponent(lang)}`);
 }
 
 // --- Encuentros ---
