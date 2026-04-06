@@ -631,7 +631,7 @@ async function renderDetail(p: Pokemon): Promise<void> {
     ${sprites}
     <div class="types">${types}</div>
     <p class="meta">${t("pokedex.height")}: ${p.Height / 10} m &nbsp;&middot;&nbsp; ${t("pokedex.weight")}: ${p.Weight / 10} kg</p>
-    <div id="stats-chart" style="width:100%;height:300px;"></div>
+    <div id="stats-chart" style="width:100%;height:420px;"></div>
     <div id="compare-controls" class="compare-controls">
       <button id="compare-btn" class="btn btn-secondary">${t("detail.compare")}</button>
     </div>
