@@ -34,6 +34,10 @@ export function typeName(apiName: string): string {
   return t(`typeNames.${apiName.toLowerCase()}`);
 }
 
+export function statName(apiName: string): string {
+  return t(`statNames.${apiName}`);
+}
+
 export function getLocale(): string {
   return current;
 }

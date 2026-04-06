@@ -275,6 +275,14 @@
     "remaining": "{name}: {count} remaining",
     "remainingAvg": "{name} remaining (avg)"
   },
+  "statNames": {
+    "hp": "HP",
+    "attack": "Attack",
+    "defense": "Defense",
+    "special-attack": "Sp. Atk",
+    "special-defense": "Sp. Def",
+    "speed": "Speed"
+  },
   "typeNames": {
     "normal": "Normal",
     "fire": "Fire",
