@@ -430,6 +430,52 @@ th.sortable.active .sort-indicator {
   font-family: $font-body;
 }
 
+// -- Compare controls --------------------------------------------------------
+
+.compare-controls {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.compare-input-wrap {
+  position: relative;
+}
+
+.compare-input {
+  font-family: $font-body;
+  font-size: 0.9rem;
+  padding: 0.35rem 0.65rem;
+  border: 1.5px solid #cbd5e0;
+  border-radius: $border-radius-lg;
+  outline: none;
+  width: 200px;
+
+  &:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+  }
+}
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+
+  &.hidden {
+    display: none;
+  }
+}
+
 // -- Pokemon Lore -------------------------------------------------------------
 
 .pokemon-lore {

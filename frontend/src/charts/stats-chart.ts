@@ -8,15 +8,56 @@ echarts.use([RadarChart, TooltipComponent, CanvasRenderer]);
 
 let chartInstance: echarts.ECharts | null = null;
 
-export function renderStatsChart(container: HTMLElement, stats: Stat[]): void {
+export interface ChartSeries {
+  label: string;
+  stats: Stat[];
+  color: string;
+}
+
+export function renderStatsChart(container: HTMLElement, primary: ChartSeries, secondary?: ChartSeries): void {
   if (chartInstance) {
     chartInstance.dispose();
   }
 
   chartInstance = echarts.init(container);
 
-  const names = stats.map((s) => s.Name);
-  const values = stats.map((s) => s.BaseStat);
+  const names = primary.stats.map((s) => s.Name);
+  const primaryValues = primary.stats.map((s) => s.BaseStat);
+
+  const seriesData: object[] = [
+    {
+      value: primaryValues,
+      name: primary.label,
+      areaStyle: {
+        color: hexToRgba(primary.color, 0.2),
+      },
+      lineStyle: {
+        color: primary.color,
+        width: 2,
+      },
+      itemStyle: {
+        color: primary.color,
+      },
+    },
+  ];
+
+  if (secondary) {
+    const secondaryValues = secondary.stats.map((s) => s.BaseStat);
+    seriesData.push({
+      value: secondaryValues,
+      name: secondary.label,
+      areaStyle: {
+        color: hexToRgba(secondary.color, 0.2),
+      },
+      lineStyle: {
+        color: secondary.color,
+        width: 2,
+      },
+      itemStyle: {
+        color: secondary.color,
+      },
+    });
+  }
 
   chartInstance.setOption({
     tooltip: {
@@ -46,22 +87,7 @@ export function renderStatsChart(container: HTMLElement, stats: Stat[]): void {
     series: [
       {
         type: "radar",
-        data: [
-          {
-            value: values,
-            name: "Base Stats",
-            areaStyle: {
-              color: "rgba(229, 62, 62, 0.2)",
-            },
-            lineStyle: {
-              color: "#e53e3e",
-              width: 2,
-            },
-            itemStyle: {
-              color: "#e53e3e",
-            },
-          },
-        ],
+        data: seriesData,
       },
     ],
   });
@@ -72,4 +98,11 @@ export function disposeChart(): void {
     chartInstance.dispose();
     chartInstance = null;
   }
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }

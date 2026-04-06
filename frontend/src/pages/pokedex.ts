@@ -155,6 +155,9 @@ let classificationsCache: Record<string, { isLegendary: boolean; isMythical: boo
 // Cache para datos completos de Pokémon (tabla)
 const pokemonDataCache = new Map<string, Pokemon>();
 
+// Nombres de todos los Pokémon (para el autocomplete del comparador)
+let allPokemonNames: string[] = [];
+
 // DOM refs
 let grid: HTMLDivElement;
 let listView: HTMLElement;
@@ -627,12 +630,65 @@ async function renderDetail(p: Pokemon): Promise<void> {
     <div class="types">${types}</div>
     <p class="meta">${t("pokedex.height")}: ${p.Height / 10} m &nbsp;&middot;&nbsp; ${t("pokedex.weight")}: ${p.Weight / 10} kg</p>
     <div id="stats-chart" style="width:100%;height:300px;"></div>
+    <div id="compare-controls" class="compare-controls">
+      <button id="compare-btn" class="btn btn-secondary">⚖️ ${t("detail.compare")}</button>
+    </div>
+    <div id="chart-legend" class="chart-legend hidden"></div>
     <div id="pokemon-lore" class="pokemon-lore"><p class="loading">${t("detail.loadingLore")}</p></div>
     <div id="pokemon-encounters" class="pokemon-encounters"><p class="loading">${t("encounters.loading")}</p></div>`;
 
   const chartContainer = document.getElementById("stats-chart") as HTMLDivElement;
   const { renderStatsChart } = await import("../charts/stats-chart");
-  renderStatsChart(chartContainer, p.Stats || []);
+  const primarySeries = { label: p.Name, stats: p.Stats || [], color: "#e53e3e" };
+  renderStatsChart(chartContainer, primarySeries);
+
+  const compareBtn = document.getElementById("compare-btn") as HTMLButtonElement;
+  const compareControls = document.getElementById("compare-controls") as HTMLDivElement;
+  const chartLegend = document.getElementById("chart-legend") as HTMLDivElement;
+
+  compareBtn.addEventListener("click", () => {
+    // Remove existing compare input if already present
+    const existing = compareControls.querySelector(".compare-input-wrap");
+    if (existing) {
+      existing.remove();
+      return;
+    }
+
+    const inputWrap = document.createElement("div");
+    inputWrap.className = "compare-input-wrap";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = t("detail.comparePlaceholder");
+    input.className = "compare-input";
+    inputWrap.appendChild(input);
+    compareControls.appendChild(inputWrap);
+    input.focus();
+
+    createAutocomplete(input, allPokemonNames, async (name) => {
+      inputWrap.remove();
+      try {
+        const p2 = await GetPokemon(name);
+        const secondarySeries = { label: p2.Name, stats: p2.Stats || [], color: "#3182ce" };
+        renderStatsChart(chartContainer, primarySeries, secondarySeries);
+
+        chartLegend.innerHTML = `
+          <span style="color: #e53e3e">■ ${p.Name}</span>
+          <span style="color: #3182ce">■ ${p2.Name}</span>
+          <button id="clear-compare-btn" class="btn btn-secondary btn-sm">✕ ${t("detail.clearCompare")}</button>`;
+        chartLegend.classList.remove("hidden");
+
+        const clearBtn = document.getElementById("clear-compare-btn") as HTMLButtonElement;
+        clearBtn.addEventListener("click", () => {
+          renderStatsChart(chartContainer, primarySeries);
+          chartLegend.classList.add("hidden");
+          chartLegend.innerHTML = "";
+        });
+      } catch {
+        // If error fetching comparison pokemon, silently ignore
+      }
+    });
+  });
 
   loadLore(p.Name);
   loadEncounters(p.Name);
@@ -1285,6 +1341,7 @@ export function initPokedex(): void {
   // Load all pokemon names for autocomplete (non-blocking)
   ListPokemon(0, 2000).then((data) => {
     const names = data.Results.map((r) => r.Name);
+    allPokemonNames = names;
     createAutocomplete(searchInput, names, (name) => {
       searchInput.value = name;
       showDetail(name);

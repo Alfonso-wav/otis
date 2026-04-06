@@ -25,6 +25,11 @@ export function navigate(id: string): void {
     btn.classList.toggle("active", btn.dataset.tab === id);
   });
 
+  const searchBar = document.getElementById("search-bar");
+  if (searchBar) {
+    searchBar.classList.toggle("hidden", id !== "pokedex");
+  }
+
   activeId = id;
 
   if (!current) {
