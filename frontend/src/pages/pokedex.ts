@@ -615,6 +615,7 @@ async function showDetail(name: string): Promise<void> {
 }
 
 async function renderDetail(p: Pokemon): Promise<void> {
+  currentDetailPokemon = p;
   const types = (p.Types || [])
     .map((t) => `<span class="type-badge type-${t.Name}"><img src="/assets/types/${t.Name}.svg" alt="" class="type-icon">${typeName(t.Name)}</span>`)
     .join("");
@@ -742,6 +743,7 @@ interface EncounterRow {
 }
 
 let encounterSortColumn: EncounterSortColumn = null;
+let currentDetailPokemon: Pokemon | null = null;
 let encounterSortDirection: EncounterSortDirection = null;
 let encounterRows: EncounterRow[] = [];
 let selectedGames: string[] = [];
@@ -1487,5 +1489,8 @@ export function initPokedex(): void {
       renderCurrentView(getCurrentPageItems());
     }
     updateRowLimitControl();
+    if (currentDetailPokemon !== null && detailView.style.display !== "none") {
+      renderDetail(currentDetailPokemon);
+    }
   });
 }
