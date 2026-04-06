@@ -29,6 +29,7 @@ interface FilterState {
 
 let filter: FilterState = { generations: [], types: [], legendary: false, mythical: false };
 let filteredList: PokemonListItem[] = [];
+let isFiltering = false;
 let offset = 0;
 let totalCount = 0;
 let viewMode: "grid" | "table" = "grid";
@@ -993,17 +994,23 @@ function formatGenName(name: string): string {
 }
 
 async function applyFilters(): Promise<void> {
+  if (isFiltering) return;
+  isFiltering = true;
   resetInfiniteScroll();
   filteredList = [];
 
   showSortingOverlay(t("pokedex.applyingFilters"));
-  if (hasFilter()) {
-    await loadFiltered();
-  } else {
-    resetSorting();
-    await loadList();
+  try {
+    if (hasFilter()) {
+      await loadFiltered();
+    } else {
+      resetSorting();
+      await loadList();
+    }
+  } finally {
+    hideSortingOverlay();
+    isFiltering = false;
   }
-  hideSortingOverlay();
 }
 
 function resetFilterUI(): void {
@@ -1227,28 +1234,41 @@ export function initPokedex(): void {
   });
 
   filterLegendaryBtn.addEventListener("click", async () => {
+    if (isFiltering) return;
+    isFiltering = true;
     filter.legendary = !filter.legendary;
     filterLegendaryBtn.classList.toggle("active", filter.legendary);
     resetInfiniteScroll();
     filteredList = [];
     showSortingOverlay(t("pokedex.applyingFilters"));
-    if (hasFilter()) await loadFiltered();
-    else await loadList();
-    hideSortingOverlay();
+    try {
+      if (hasFilter()) await loadFiltered();
+      else await loadList();
+    } finally {
+      hideSortingOverlay();
+      isFiltering = false;
+    }
   });
 
   filterMythicalBtn.addEventListener("click", async () => {
+    if (isFiltering) return;
+    isFiltering = true;
     filter.mythical = !filter.mythical;
     filterMythicalBtn.classList.toggle("active", filter.mythical);
     resetInfiniteScroll();
     filteredList = [];
     showSortingOverlay(t("pokedex.applyingFilters"));
-    if (hasFilter()) await loadFiltered();
-    else await loadList();
-    hideSortingOverlay();
+    try {
+      if (hasFilter()) await loadFiltered();
+      else await loadList();
+    } finally {
+      hideSortingOverlay();
+      isFiltering = false;
+    }
   });
 
   filterResetBtn.addEventListener("click", () => {
+    if (isFiltering) return;
     resetInfiniteScroll();
     filter = { generations: [], types: [], legendary: false, mythical: false };
     filteredList = [];
