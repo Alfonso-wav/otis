@@ -23,6 +23,7 @@ export function showView(viewIn: HTMLElement, viewOut: HTMLElement): Promise<voi
         y: 0,
         duration: 0.3,
         ease: "power2.out",
+        clearProps: "opacity,transform",
         onStart() {
           viewIn.style.display = "";
           viewIn.style.removeProperty("display");
