@@ -256,8 +256,8 @@ func (a *App) GetAllSpeciesClassifications() (map[string]core.SpeciesClassificat
 
 // --- Grupo A: Pokémon extendido ---
 
-func (a *App) GetPokemonSpecies(name string) (core.PokemonSpecies, error) {
-	return a.fetcher.FetchPokemonSpecies(core.NormalizeName(name))
+func (a *App) GetPokemonSpecies(name, lang string) (core.PokemonSpecies, error) {
+	return a.fetcher.FetchPokemonSpecies(core.NormalizeName(name), lang)
 }
 
 func (a *App) GetPokemonForm(name string) (core.PokemonForm, error) {

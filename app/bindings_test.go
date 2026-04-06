@@ -60,7 +60,7 @@ func (m *mockFetcher) FetchAllSpeciesClassifications() (map[string]core.SpeciesC
 }
 
 // --- Grupo A ---
-func (m *mockFetcher) FetchPokemonSpecies(name string) (core.PokemonSpecies, error) {
+func (m *mockFetcher) FetchPokemonSpecies(name, lang string) (core.PokemonSpecies, error) {
 	return core.PokemonSpecies{}, nil
 }
 func (m *mockFetcher) FetchPokemonForm(name string) (core.PokemonForm, error) {

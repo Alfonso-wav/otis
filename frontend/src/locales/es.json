@@ -275,6 +275,14 @@
     "remaining": "{name}: {count} restantes",
     "remainingAvg": "{name} restantes (media)"
   },
+  "statNames": {
+    "hp": "PS",
+    "attack": "Ataque",
+    "defense": "Defensa",
+    "special-attack": "At. Esp.",
+    "special-defense": "Def. Esp.",
+    "speed": "Velocidad"
+  },
   "typeNames": {
     "normal": "Normal",
     "fire": "Fuego",

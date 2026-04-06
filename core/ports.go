@@ -27,7 +27,7 @@ type PokemonFetcher interface {
 	FetchAllSpeciesClassifications() (map[string]SpeciesClassification, error)
 
 	// --- Grupo A: Pokémon extendido ---
-	FetchPokemonSpecies(name string) (PokemonSpecies, error)
+	FetchPokemonSpecies(name, lang string) (PokemonSpecies, error)
 	FetchPokemonForm(name string) (PokemonForm, error)
 	FetchPokemonColors() ([]NamedResource, error)
 	FetchPokemonShapes() ([]NamedResource, error)
