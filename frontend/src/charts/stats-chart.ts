@@ -14,50 +14,22 @@ export interface ChartSeries {
   color: string;
 }
 
-export function renderStatsChart(container: HTMLElement, primary: ChartSeries, secondary?: ChartSeries): void {
+export function renderStatsChart(container: HTMLElement, series: ChartSeries[]): void {
   if (chartInstance) {
     chartInstance.dispose();
   }
 
   chartInstance = echarts.init(container);
 
-  const names = primary.stats.map((s) => s.Name);
-  const primaryValues = primary.stats.map((s) => s.BaseStat);
+  const names = series[0]?.stats.map((s) => s.Name) ?? [];
 
-  const seriesData: object[] = [
-    {
-      value: primaryValues,
-      name: primary.label,
-      areaStyle: {
-        color: hexToRgba(primary.color, 0.2),
-      },
-      lineStyle: {
-        color: primary.color,
-        width: 2,
-      },
-      itemStyle: {
-        color: primary.color,
-      },
-    },
-  ];
-
-  if (secondary) {
-    const secondaryValues = secondary.stats.map((s) => s.BaseStat);
-    seriesData.push({
-      value: secondaryValues,
-      name: secondary.label,
-      areaStyle: {
-        color: hexToRgba(secondary.color, 0.2),
-      },
-      lineStyle: {
-        color: secondary.color,
-        width: 2,
-      },
-      itemStyle: {
-        color: secondary.color,
-      },
-    });
-  }
+  const seriesData: object[] = series.map((s) => ({
+    value: s.stats.map((stat) => stat.BaseStat),
+    name: s.label,
+    areaStyle: { color: hexToRgba(s.color, 0.2) },
+    lineStyle: { color: s.color, width: 2 },
+    itemStyle: { color: s.color },
+  }));
 
   chartInstance.setOption({
     tooltip: {

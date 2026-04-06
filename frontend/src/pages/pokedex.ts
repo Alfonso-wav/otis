@@ -633,7 +633,7 @@ async function renderDetail(p: Pokemon): Promise<void> {
     <p class="meta">${t("pokedex.height")}: ${p.Height / 10} m &nbsp;&middot;&nbsp; ${t("pokedex.weight")}: ${p.Weight / 10} kg</p>
     <div id="stats-chart" style="width:100%;height:300px;"></div>
     <div id="compare-controls" class="compare-controls">
-      <button id="compare-btn" class="btn btn-secondary">⚖️ ${t("detail.compare")}</button>
+      <button id="compare-btn" class="btn btn-secondary">${t("detail.compare")}</button>
     </div>
     <div id="chart-legend" class="chart-legend hidden"></div>
     <div id="pokemon-lore" class="pokemon-lore"><p class="loading">${t("detail.loadingLore")}</p></div>
@@ -643,15 +643,53 @@ async function renderDetail(p: Pokemon): Promise<void> {
 
   const chartContainer = document.getElementById("stats-chart") as HTMLDivElement;
   const { renderStatsChart } = await import("../charts/stats-chart");
-  const primarySeries = { label: p.Name, stats: p.Stats || [], color: "#e53e3e" };
-  renderStatsChart(chartContainer, primarySeries);
+
+  const COMPARE_COLORS = [
+    "#e53e3e", // base — red
+    "#3182ce", // blue
+    "#38a169", // green
+    "#d69e2e", // gold
+    "#805ad5", // purple
+    "#dd6b20", // orange
+    "#319795", // teal
+    "#e53e8e", // pink
+  ];
+
+  const primarySeries = { label: p.Name, stats: p.Stats || [], color: COMPARE_COLORS[0] };
+  const comparedSeries = [primarySeries];
+  renderStatsChart(chartContainer, comparedSeries);
 
   const compareBtn = document.getElementById("compare-btn") as HTMLButtonElement;
   const compareControls = document.getElementById("compare-controls") as HTMLDivElement;
   const chartLegend = document.getElementById("chart-legend") as HTMLDivElement;
 
+  function rebuildLegend(): void {
+    if (comparedSeries.length === 1) {
+      chartLegend.classList.add("hidden");
+      chartLegend.innerHTML = "";
+      return;
+    }
+    chartLegend.innerHTML = comparedSeries
+      .map((s, i) => {
+        const removeBtn = i === 0
+          ? ""
+          : `<button class="compare-remove-btn" data-index="${i}" aria-label="Remove">×</button>`;
+        return `<span class="chart-legend-entry" style="color:${s.color}">■ ${s.label}${removeBtn}</span>`;
+      })
+      .join("");
+    chartLegend.classList.remove("hidden");
+
+    chartLegend.querySelectorAll<HTMLButtonElement>(".compare-remove-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.dataset.index ?? "0", 10);
+        comparedSeries.splice(idx, 1);
+        renderStatsChart(chartContainer, comparedSeries);
+        rebuildLegend();
+      });
+    });
+  }
+
   compareBtn.addEventListener("click", () => {
-    // Remove existing compare input if already present
     const existing = compareControls.querySelector(".compare-input-wrap");
     if (existing) {
       existing.remove();
@@ -673,23 +711,13 @@ async function renderDetail(p: Pokemon): Promise<void> {
       inputWrap.remove();
       try {
         const p2 = await GetPokemon(name);
-        const secondarySeries = { label: p2.Name, stats: p2.Stats || [], color: "#3182ce" };
-        renderStatsChart(chartContainer, primarySeries, secondarySeries);
-
-        chartLegend.innerHTML = `
-          <span style="color: #e53e3e">■ ${p.Name}</span>
-          <span style="color: #3182ce">■ ${p2.Name}</span>
-          <button id="clear-compare-btn" class="btn btn-secondary btn-sm">✕ ${t("detail.clearCompare")}</button>`;
-        chartLegend.classList.remove("hidden");
-
-        const clearBtn = document.getElementById("clear-compare-btn") as HTMLButtonElement;
-        clearBtn.addEventListener("click", () => {
-          renderStatsChart(chartContainer, primarySeries);
-          chartLegend.classList.add("hidden");
-          chartLegend.innerHTML = "";
-        });
+        const colorIndex = 1 + ((comparedSeries.length - 1) % (COMPARE_COLORS.length - 1));
+        const color = COMPARE_COLORS[colorIndex];
+        comparedSeries.push({ label: p2.Name, stats: p2.Stats || [], color });
+        renderStatsChart(chartContainer, comparedSeries);
+        rebuildLegend();
       } catch {
-        // If error fetching comparison pokemon, silently ignore
+        // silently ignore fetch errors
       }
     });
   });
