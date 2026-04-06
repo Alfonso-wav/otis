@@ -61,7 +61,7 @@ type apiPokemonSpecies struct {
 	} `json:"varieties"`
 }
 
-func toDomainSpecies(raw apiPokemonSpecies) core.PokemonSpecies {
+func toDomainSpecies(raw apiPokemonSpecies, lang string) core.PokemonSpecies {
 	eggGroups := make([]string, len(raw.EggGroups))
 	for i, eg := range raw.EggGroups {
 		eggGroups[i] = eg.Name
@@ -75,11 +75,18 @@ func toDomainSpecies(raw apiPokemonSpecies) core.PokemonSpecies {
 		}
 	}
 
-	// Tomar la última entrada en inglés (texto del juego más reciente).
+	// Tomar la última entrada en el idioma pedido; fallback a inglés.
 	flavorText := ""
 	for _, ft := range raw.FlavorTextEntries {
-		if ft.Language.Name == "en" {
+		if ft.Language.Name == lang {
 			flavorText = ft.FlavorText
+		}
+	}
+	if flavorText == "" && lang != "en" {
+		for _, ft := range raw.FlavorTextEntries {
+			if ft.Language.Name == "en" {
+				flavorText = ft.FlavorText
+			}
 		}
 	}
 
@@ -116,13 +123,13 @@ func toDomainSpecies(raw apiPokemonSpecies) core.PokemonSpecies {
 	}
 }
 
-func (c *PokeAPIClient) FetchPokemonSpecies(name string) (core.PokemonSpecies, error) {
+func (c *PokeAPIClient) FetchPokemonSpecies(name, lang string) (core.PokemonSpecies, error) {
 	url := fmt.Sprintf("%s/pokemon-species/%s", c.baseURL, name)
 	var raw apiPokemonSpecies
 	if err := fetchOne(c, url, &raw); err != nil {
 		return core.PokemonSpecies{}, fmt.Errorf("fetching pokemon species %q: %w", name, err)
 	}
-	return toDomainSpecies(raw), nil
+	return toDomainSpecies(raw, lang), nil
 }
 
 // --- apiPokemonForm ---
@@ -217,7 +224,7 @@ func (c *PokeAPIClient) FetchAllSpeciesClassifications() (map[string]core.Specie
 			defer wg.Done()
 			sem <- struct{}{}
 			defer func() { <-sem }()
-			species, err := c.FetchPokemonSpecies(name)
+			species, err := c.FetchPokemonSpecies(name, "en")
 			if err != nil {
 				return
 			}

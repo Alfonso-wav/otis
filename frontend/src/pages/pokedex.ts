@@ -733,7 +733,7 @@ async function loadLore(name: string): Promise<void> {
   if (!loreEl) return;
 
   try {
-    const species = await GetPokemonSpecies(name);
+    const species = await GetPokemonSpecies(name, getLocale());
 
     const flavorText = cleanFlavorText(species.FlavorText);
     const badges: string[] = [];
@@ -1056,8 +1056,8 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
       const levelCell = m.Method === "level-up" && m.Level > 0 ? String(m.Level) : "\u2014";
       return `<tr>
         <td class="move-name">${capitalize(m.Name.replace(/-/g, " "))}</td>
-        <td class="move-method">${getMethodLabel(m.Method)}</td>
         <td class="move-level">${levelCell}</td>
+        <td class="move-method">${getMethodLabel(m.Method)}</td>
       </tr>`;
     }).join("");
 
@@ -1070,8 +1070,8 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
       <table class="poke-table moves-table">
         <thead><tr>
           <th ${thClass("name")} data-sort="name">${t("detail.moveName")}</th>
-          <th ${thClass("method")} data-sort="method">${t("detail.moveMethodCol")}</th>
           <th ${thClass("level")} data-sort="level">${t("detail.moveLevelCol")}</th>
+          <th ${thClass("method")} data-sort="method">${t("detail.moveMethodCol")}</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>

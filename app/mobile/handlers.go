@@ -251,7 +251,11 @@ func RegisterRoutes(mux *http.ServeMux, a *app.App) {
 	// --- Grupo A: Pokémon extendido ---
 
 	mux.HandleFunc("GET /api/pokemon-species/{name}", func(w http.ResponseWriter, r *http.Request) {
-		result, err := a.GetPokemonSpecies(r.PathValue("name"))
+		lang := r.URL.Query().Get("lang")
+		if lang == "" {
+			lang = "en"
+		}
+		result, err := a.GetPokemonSpecies(r.PathValue("name"), lang)
 		if err != nil {
 			jsonError(w, err.Error(), http.StatusNotFound)
 			return
