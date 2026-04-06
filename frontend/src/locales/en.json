@@ -69,7 +69,10 @@
     "loreError": "Could not load lore data.",
     "loadingLore": "Loading lore...",
     "normal": "Normal",
-    "shiny": "Shiny"
+    "shiny": "Shiny",
+    "compare": "Compare",
+    "comparePlaceholder": "Search Pokémon...",
+    "clearCompare": "Clear comparison"
   },
   "encounters": {
     "title": "Encounters",
