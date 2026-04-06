@@ -8,7 +8,7 @@
   "tabs": {
     "pokedex": "Pokédex",
     "explore": "Explore",
-    "builds": "Builds",
+    "builds": "Simulations",
     "settings": "Settings"
   },
   "common": {
@@ -69,7 +69,10 @@
     "loreError": "Could not load lore data.",
     "loadingLore": "Loading lore...",
     "normal": "Normal",
-    "shiny": "Shiny"
+    "shiny": "Shiny",
+    "compare": "Compare",
+    "comparePlaceholder": "Search Pokémon...",
+    "clearCompare": "Clear comparison"
   },
   "encounters": {
     "title": "Encounters",
@@ -169,7 +172,7 @@
     "sorting": "Sorting..."
   },
   "builds": {
-    "title": "Builds & Simulator",
+    "title": "Simulations",
     "attacker": "Attacker",
     "defender": "Defender",
     "pokemonPlaceholder": "Pokémon name...",
