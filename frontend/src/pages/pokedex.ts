@@ -600,8 +600,8 @@ async function goToNextPage(): Promise<void> {
 // -- Detalle -----------------------------------------------------------------
 
 async function showDetail(name: string): Promise<void> {
-  await showView(detailView, listView);
   detailEl.innerHTML = `<p class="loading">${t("common.loading")}</p>`;
+  await showView(detailView, listView);
   try {
     const p = await GetPokemon(name);
     renderDetail(p);
