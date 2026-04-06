@@ -8,7 +8,7 @@
   "tabs": {
     "pokedex": "Pokédex",
     "explore": "Explorar",
-    "builds": "Builds",
+    "builds": "Simulaciones",
     "settings": "Configuración"
   },
   "common": {
@@ -169,7 +169,7 @@
     "sorting": "Ordenando..."
   },
   "builds": {
-    "title": "Builds & Simulador",
+    "title": "Simulaciones",
     "attacker": "Atacante",
     "defender": "Defensor",
     "pokemonPlaceholder": "Nombre del Pokémon...",
