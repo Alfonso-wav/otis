@@ -999,7 +999,10 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
     return;
   }
 
-  let activeFilter: MoveMethodFilter = "all";
+  let activeFilters: Set<MoveMethodFilter> = new Set();
+  type SortCol = "name" | "method" | "level" | null;
+  let sortCol: SortCol = null;
+  let sortDir: "asc" | "desc" = "asc";
 
   const methodFilters: MoveMethodFilter[] = ["all", "level-up", "machine", "egg", "tutor"];
 
@@ -1024,15 +1027,32 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
   }
 
   function renderTable(): string {
-    const filtered = activeFilter === "all"
+    const filtered = activeFilters.size === 0
       ? moves
-      : moves.filter((m) => m.Method === activeFilter);
+      : moves.filter((m) => activeFilters.has(m.Method as MoveMethodFilter));
 
-    if (filtered.length === 0) {
+    let sorted = [...filtered];
+    if (sortCol !== null) {
+      sorted.sort((a, b) => {
+        let cmp = 0;
+        if (sortCol === "name") {
+          cmp = a.Name.localeCompare(b.Name);
+        } else if (sortCol === "method") {
+          cmp = a.Method.localeCompare(b.Method);
+        } else if (sortCol === "level") {
+          const la = a.Method === "level-up" && a.Level > 0 ? a.Level : Infinity;
+          const lb = b.Method === "level-up" && b.Level > 0 ? b.Level : Infinity;
+          cmp = la - lb;
+        }
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
+
+    if (sorted.length === 0) {
       return `<p class="moves-empty">${t("pokedex.noResults")}</p>`;
     }
 
-    const rows = filtered.map((m) => {
+    const rows = sorted.map((m) => {
       const levelCell = m.Method === "level-up" && m.Level > 0 ? String(m.Level) : "\u2014";
       return `<tr>
         <td class="move-name">${capitalize(m.Name.replace(/-/g, " "))}</td>
@@ -1041,31 +1061,68 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
       </tr>`;
     }).join("");
 
+    function thClass(col: SortCol): string {
+      if (sortCol !== col) return 'class="sort-none"';
+      return `class="${sortDir === "asc" ? "sort-asc" : "sort-desc"}"`;
+    }
+
     return `<div class="moves-table-wrap">
       <table class="poke-table moves-table">
         <thead><tr>
-          <th>${t("detail.moveName")}</th>
-          <th>${t("detail.moveMethodCol")}</th>
-          <th>${t("detail.moveLevelCol")}</th>
+          <th ${thClass("name")} data-sort="name">${t("detail.moveName")}</th>
+          <th ${thClass("method")} data-sort="method">${t("detail.moveMethodCol")}</th>
+          <th ${thClass("level")} data-sort="level">${t("detail.moveLevelCol")}</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>`;
   }
 
+  function rebuildTable(): void {
+    const tableWrap = el.querySelector(".moves-body");
+    if (tableWrap) {
+      tableWrap.innerHTML = renderTable();
+      tableWrap.querySelectorAll<HTMLTableCellElement>("thead th[data-sort]").forEach((th) => {
+        th.addEventListener("click", () => {
+          const col = th.dataset.sort as SortCol;
+          if (sortCol === col) {
+            if (sortDir === "asc") {
+              sortDir = "desc";
+            } else {
+              sortCol = null;
+            }
+          } else {
+            sortCol = col;
+            sortDir = "asc";
+          }
+          rebuildTable();
+        });
+      });
+    }
+  }
+
   function rebuildFilterBtns(): void {
     const bar = el.querySelector(".moves-filter-bar");
     if (!bar) return;
-    bar.innerHTML = methodFilters.map((mf) =>
-      `<button class="filter-chip${activeFilter === mf ? " active" : ""}" data-method="${mf}">${getFilterLabel(mf)}</button>`
-    ).join("");
+    bar.innerHTML = methodFilters.map((mf) => {
+      const isAll = mf === "all";
+      const isActive = isAll ? activeFilters.size === 0 : activeFilters.has(mf);
+      return `<button class="filter-chip${isActive ? " active" : ""}" data-method="${mf}">${getFilterLabel(mf)}</button>`;
+    }).join("");
 
     bar.querySelectorAll<HTMLButtonElement>(".filter-chip").forEach((btn) => {
       btn.addEventListener("click", () => {
-        activeFilter = btn.dataset.method as MoveMethodFilter;
+        const method = btn.dataset.method as MoveMethodFilter;
+        if (method === "all") {
+          activeFilters.clear();
+        } else if (activeFilters.has(method)) {
+          activeFilters.delete(method);
+        } else {
+          activeFilters.add(method);
+        }
+        sortCol = null;
         rebuildFilterBtns();
-        const tableWrap = el.querySelector(".moves-body");
-        if (tableWrap) tableWrap.innerHTML = renderTable();
+        rebuildTable();
       });
     });
   }
@@ -1073,10 +1130,11 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
   el.innerHTML = `
     <h3>${t("detail.moves")}</h3>
     <div class="moves-filter-bar"></div>
-    <div class="moves-body">${renderTable()}</div>
+    <div class="moves-body"></div>
   `;
 
   rebuildFilterBtns();
+  rebuildTable();
 }
 
 function formatLocationName(name: string): string {
