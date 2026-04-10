@@ -127,7 +127,8 @@
   "typeChart": {
     "title": "Efectividad de tipos",
     "attackingLabel": "Atacante →",
-    "defendingLabel": "↓ Defensor"
+    "defendingLabel": "↓ Defensor",
+    "restoreTypes": "Restaurar tipos"
   },
   "berries": {
     "title": "Bayas",
