@@ -36,6 +36,8 @@ function dismissSplashInteractive(splash: HTMLElement, snorlax: HTMLElement): vo
     }, "<0.05")
     .to(snorlax, { scale: 1, duration: 0.1 })
     .call(() => {
+      // Parar la animación CSS de respiración para que GSAP pueda controlar el transform
+      snorlax.style.animation = "none";
       // Snorlax crece y se desvanece lentamente
       gsap.to(snorlax, {
         scale: 3,
