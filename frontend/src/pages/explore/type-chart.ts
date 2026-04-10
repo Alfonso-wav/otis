@@ -84,7 +84,6 @@ function renderChart(panel: HTMLElement): void {
   panel.innerHTML = `
     <div class="type-chart-wrap">
       <h2 class="type-chart-title">${title}</h2>
-      ${filterBar}
       <div class="type-chart-labels">
         <span class="tc-attacking-label">${attackingLabel}</span>
         <span class="tc-defending-label">${defendingLabel}</span>
@@ -97,11 +96,10 @@ function renderChart(panel: HTMLElement): void {
               ${headerCells}
             </tr>
           </thead>
-          <tbody>
-            ${rows}
-          </tbody>
+          <tbody>${rows}</tbody>
         </table>
       </div>
+      ${filterBar}
     </div>
   `;
 
