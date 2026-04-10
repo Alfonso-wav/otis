@@ -1470,6 +1470,7 @@ export function initPokedex(): void {
       // Switch to table: reset offset for table pagination, render first page
       offset = 0;
       lastRenderedItems = [];
+      showSortingOverlay();
       await morphToTable(grid, async () => {
         if (sortedFullList || (hasFilter() && filteredList.length > 0)) {
           await renderTable(getCurrentPageItems());
@@ -1479,6 +1480,7 @@ export function initPokedex(): void {
           totalCount = data.Count;
           await renderTable(data.Results);
         }
+        hideSortingOverlay();
       });
       updateRowLimitControl();
     } else {
