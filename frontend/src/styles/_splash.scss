@@ -93,13 +93,6 @@
   opacity: 0;
 }
 
-.splash-exit-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 99998;
-  background: #1a202c;
-  pointer-events: none;
-}
 
 // Breathing animation — subtle scale
 @keyframes snorlax-breathe {
