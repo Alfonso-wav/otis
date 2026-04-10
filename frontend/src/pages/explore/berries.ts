@@ -106,6 +106,10 @@ function renderCards(container: HTMLElement): void {
       ? `${typeIcon(berry.NaturalGiftType)} <span class="type-badge" style="background:${typeColor(berry.NaturalGiftType)}">${typeName(berry.NaturalGiftType)}</span>`
       : "—";
 
+    const effectLine = berry.Effect
+      ? `<div class="berry-card__effect" title="${berry.Effect}">${berry.Effect}</div>`
+      : "";
+
     return `
       <div class="berry-card">
         <div class="berry-card__img">${sprite}</div>
@@ -113,6 +117,7 @@ function renderCards(container: HTMLElement): void {
           <div class="berry-card__name">${capitalize(berry.Name.replace(/-/g, " "))}</div>
           <div class="berry-card__type">${typeCell}</div>
           <div class="berry-card__meta">${firmnessBadge(berry.Firmness)}</div>
+          ${effectLine}
         </div>
       </div>`;
   }).join("");
@@ -144,7 +149,7 @@ function renderTableBody(container: HTMLElement): void {
   if (nextBtn) nextBtn.disabled = state.page >= pages;
 
   if (slice.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" class="loading">${t("berries.noResults")}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="loading">${t("berries.noResults")}</td></tr>`;
     return;
   }
 
@@ -157,6 +162,8 @@ function renderTableBody(container: HTMLElement): void {
       ? `${typeIcon(berry.NaturalGiftType)} <span class="type-badge" style="background:${typeColor(berry.NaturalGiftType)};font-size:0.65rem">${typeName(berry.NaturalGiftType)}</span>`
       : "—";
 
+    const effectText = berry.Effect ? berry.Effect.slice(0, 60) + (berry.Effect.length > 60 ? "…" : "") : "—";
+
     return `<tr>
       <td class="num-cell">${berry.ID}</td>
       <td class="berry-name-cell">${capitalize(berry.Name.replace(/-/g, " "))}</td>
@@ -168,6 +175,7 @@ function renderTableBody(container: HTMLElement): void {
       <td class="num-cell">${berry.Smoothness}</td>
       <td class="num-cell">${berry.MaxHarvest}</td>
       <td class="berry-flavors-cell">${flavorsText(berry)}</td>
+      <td class="berry-effect-cell" title="${berry.Effect}">${effectText}</td>
     </tr>`;
   }).join("");
 }
@@ -193,6 +201,7 @@ function renderTableHeaders(container: HTMLElement): void {
     ["-",                t("berries.columns.smoothness"),       false],
     ["-",                t("berries.columns.maxHarvest"),       false],
     ["-",                t("berries.columns.flavors"),          false],
+    ["-",                t("berries.columns.effect"),           false],
   ];
   thead.innerHTML = `<tr>${cols.map(([key, label, sortable]) =>
     sortable && key !== "-"
