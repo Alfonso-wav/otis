@@ -1,4 +1,5 @@
 import "./styles/main.scss";
+import gsap from "gsap";
 import { registerPage, initRouter } from "./router";
 import { initPokedex } from "./pages/pokedex";
 import { initExplore } from "./pages/explore";
