@@ -523,30 +523,58 @@
 }
 
 .tc-icon {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   display: block;
-  margin: 0 auto 0.1rem;
+  margin: 0 auto;
 }
 
 .tc-row-header .tc-icon {
   display: inline-block;
   vertical-align: middle;
-  margin: 0 0.2rem 0 0;
+  margin: 0;
 }
 
-.tc-abbr {
-  font-size: 0.6rem;
+// Type background colors for col/row headers
+@each $type, $color in $type-colors {
+  .tc-col-header[data-type="#{$type}"],
+  .tc-row-header[data-type="#{$type}"] {
+    background-color: rgba($color, 0.22);
+  }
+}
+
+// Filter bar with restore button
+.tc-filter-bar {
+  margin-bottom: 0.5rem;
+}
+
+.tc-restore-btn {
+  background: none;
+  border: 1.5px solid $pokedex-red;
+  color: $pokedex-red;
+  border-radius: $border-radius-pill;
+  padding: 0.2rem 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: #4a5568;
-  text-transform: capitalize;
-  display: block;
-  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: $pokedex-red;
+    color: white;
+  }
 }
 
-.tc-row-header .tc-abbr {
-  display: inline;
-  vertical-align: middle;
+// Make type headers feel interactive
+.tc-col-header[data-type],
+.tc-row-header[data-type] {
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.1s;
+
+  &:hover {
+    opacity: 0.75;
+  }
 }
 
 .tc-cell {

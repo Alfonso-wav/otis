@@ -127,7 +127,8 @@
   "typeChart": {
     "title": "Type Effectiveness",
     "attackingLabel": "Attacker →",
-    "defendingLabel": "↓ Defender"
+    "defendingLabel": "↓ Defender",
+    "restoreTypes": "Restore types"
   },
   "berries": {
     "title": "Berries",
