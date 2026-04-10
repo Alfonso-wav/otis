@@ -616,6 +616,39 @@
     color: #a0aec0;
   }
 
+  // ─── Berries ─────────────────────────────────────────────────────────────
+  .berry-card {
+    background: #2d3748;
+  }
+
+  .berry-card__img {
+    background: #1a202c;
+  }
+
+  .berry-card__name {
+    color: #e2e8f0;
+  }
+
+  .berry-firmness-badge {
+    background: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .berry-card__effect {
+    color: #a0aec0;
+  }
+
+  .berries-table-wrap {
+    background: #1a202c;
+  }
+
+  .berries-table {
+    .berry-flavors-cell,
+    .berry-effect-cell {
+      color: #a0aec0;
+    }
+  }
+
   // ─── Column toggle ──────────────────────────────────────────────────
   .col-toggle-btn {
     color: #a0aec0;

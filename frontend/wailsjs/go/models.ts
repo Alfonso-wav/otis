@@ -1633,6 +1633,7 @@ export namespace core {
 	    NaturalGiftType: string;
 	    ItemName: string;
 	    ItemSprite: string;
+	    Effect: string;
 
 	    static createFrom(source: any = {}) {
 	        return new Berry(source);
@@ -1653,6 +1654,7 @@ export namespace core {
 	        this.NaturalGiftType = source["NaturalGiftType"];
 	        this.ItemName = source["ItemName"];
 	        this.ItemSprite = source["ItemSprite"];
+	        this.Effect = source["Effect"];
 	    }
 
 	    convertValues(a: any, classs: any, asMap: boolean = false): any {

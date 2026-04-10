@@ -432,6 +432,7 @@ type Berry struct {
 	NaturalGiftType  string
 	ItemName         string
 	ItemSprite       string
+	Effect           string // short effect description from PokeAPI item endpoint
 }
 
 type BerryListItem struct {
