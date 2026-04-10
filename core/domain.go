@@ -411,6 +411,39 @@ type PokemonLocationEncounter struct {
 	Versions     []VersionEncounter
 }
 
+// --- Bayas ---
+
+type BerryFlavor struct {
+	Flavor  string
+	Potency int
+}
+
+type Berry struct {
+	ID               int
+	Name             string
+	GrowthTime       int
+	MaxHarvest       int
+	NaturalGiftPower int
+	Size             int
+	Smoothness       int
+	SoilDryness      int
+	Firmness         string
+	Flavors          []BerryFlavor
+	NaturalGiftType  string
+	ItemName         string
+	ItemSprite       string
+}
+
+type BerryListItem struct {
+	Name string
+	URL  string
+}
+
+type BerryListResponse struct {
+	Count   int
+	Results []BerryListItem
+}
+
 // --- Species Classification ---
 
 type SpeciesClassification struct {
