@@ -11,11 +11,10 @@ import { ListGenerations } from "./api";
 function showSplashInteractive(): void {
   const splash = document.getElementById("splash-screen");
   const zzz = splash?.querySelector(".splash-zzz");
-  const zzzText = splash?.querySelector(".splash-zzz-text");
   const snorlax = splash?.querySelector(".splash-snorlax") as HTMLElement | null;
   if (!splash || !snorlax) return;
 
-  gsap.to([zzz, zzzText], { opacity: 0, duration: 0.4 });
+  gsap.to(zzz, { opacity: 0, duration: 0.4 });
   snorlax.style.cursor = "pointer";
 
   snorlax.addEventListener("click", () => dismissSplashInteractive(splash, snorlax), { once: true });

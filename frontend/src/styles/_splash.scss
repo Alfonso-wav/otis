@@ -33,18 +33,20 @@
   font-family: "Bebas Neue", sans-serif;
   color: #a0aec0;
 
+  // Duración = 7 letras × 0.4s de stagger = 2.8s por ciclo.
+  // Delays negativos mantienen el phase offset en todos los loops infinitos.
+  // Orden de pico: L1(t=0) → L2(t=0.4s) → … → L7(t=2.4s) → repite.
   span {
     display: inline-block;
-    opacity: 0;
-    animation: zzz-wave 2.4s ease-in-out infinite;
+    animation: zzz-wave 2.8s ease-in-out infinite;
 
-    &:nth-child(1) { font-size: 1.0rem; animation-delay: 0.0s; }
-    &:nth-child(2) { font-size: 1.5rem; animation-delay: 0.2s; }
-    &:nth-child(3) { font-size: 1.0rem; animation-delay: 0.4s; }
-    &:nth-child(4) { font-size: 1.8rem; animation-delay: 0.6s; }
-    &:nth-child(5) { font-size: 1.3rem; animation-delay: 0.8s; }
-    &:nth-child(6) { font-size: 1.0rem; animation-delay: 1.0s; }
-    &:nth-child(7) { font-size: 2.2rem; animation-delay: 1.2s; }
+    &:nth-child(1) { font-size: 1.0rem; animation-delay:  0s;    }
+    &:nth-child(2) { font-size: 1.5rem; animation-delay: -2.4s;  }
+    &:nth-child(3) { font-size: 1.0rem; animation-delay: -2.0s;  }
+    &:nth-child(4) { font-size: 1.8rem; animation-delay: -1.6s;  }
+    &:nth-child(5) { font-size: 1.3rem; animation-delay: -1.2s;  }
+    &:nth-child(6) { font-size: 1.0rem; animation-delay: -0.8s;  }
+    &:nth-child(7) { font-size: 2.2rem; animation-delay: -0.4s;  }
   }
 }
 
@@ -110,12 +112,11 @@
   }
 }
 
-// Inline ZzZ text wave
+// Inline ZzZ text wave — pico al inicio del ciclo, se desvanece rápido
 @keyframes zzz-wave {
-  0%   { opacity: 0; transform: translateY(4px); }
-  25%  { opacity: 1; transform: translateY(-4px); }
-  75%  { opacity: 1; transform: translateY(-4px); }
-  100% { opacity: 0; transform: translateY(-10px); }
+  0%   { opacity: 1; transform: translateY(-6px);  }
+  25%  { opacity: 0; transform: translateY(-14px); }
+  100% { opacity: 0; transform: translateY(0);     }
 }
 
 // Floating zzZ letters
