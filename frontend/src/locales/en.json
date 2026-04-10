@@ -20,7 +20,8 @@
     "previous": "Previous"
   },
   "splash": {
-    "text": "Snorlax is waking up..."
+    "text": "Snorlax is waking up...",
+    "hint": "Tap Snorlax!"
   },
   "filters": {
     "generation": "Generation",

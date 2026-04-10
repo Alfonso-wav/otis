@@ -66,6 +66,25 @@
   }
 }
 
+.splash-hint {
+  margin-top: 1rem;
+  color: #e2e8f0;
+  font-family: "Exo 2", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0;
+}
+
+.splash-exit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  background: #1a202c;
+  pointer-events: none;
+}
+
 // Breathing animation — subtle scale
 @keyframes snorlax-breathe {
   0%,
