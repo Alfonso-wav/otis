@@ -12,11 +12,9 @@ function showSplashInteractive(): void {
   const splash = document.getElementById("splash-screen");
   const zzz = splash?.querySelector(".splash-zzz");
   const snorlax = splash?.querySelector(".splash-snorlax") as HTMLElement | null;
-  const hint = splash?.querySelector(".splash-hint") as HTMLElement | null;
   if (!splash || !snorlax) return;
 
   gsap.to(zzz, { opacity: 0, duration: 0.4 });
-  gsap.to(hint, { opacity: 1, duration: 0.4, delay: 0.3 });
   snorlax.style.cursor = "pointer";
 
   snorlax.addEventListener("click", () => dismissSplashInteractive(splash, snorlax), { once: true });
