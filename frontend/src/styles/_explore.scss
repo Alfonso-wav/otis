@@ -458,6 +458,130 @@
   }
 }
 
+// ─── Type Chart ─────────────────────────────────────────────────────────────
+
+.type-chart-wrap {
+  padding: 0.25rem 0;
+}
+
+.type-chart-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: #2d3748;
+}
+
+.type-chart-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #718096;
+}
+
+.type-chart-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: $border-radius-lg;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.type-chart-table {
+  border-collapse: collapse;
+  background: white;
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.tc-corner {
+  min-width: 52px;
+  width: 52px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.tc-col-header {
+  min-width: 36px;
+  width: 36px;
+  padding: 0.3rem 0.15rem;
+  text-align: center;
+  vertical-align: middle;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.tc-row-header {
+  min-width: 52px;
+  padding: 0.25rem 0.4rem;
+  text-align: left;
+  vertical-align: middle;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.tc-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+  margin: 0 auto 0.1rem;
+}
+
+.tc-row-header .tc-icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.2rem 0 0;
+}
+
+.tc-abbr {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: capitalize;
+  display: block;
+  text-align: center;
+}
+
+.tc-row-header .tc-abbr {
+  display: inline;
+  vertical-align: middle;
+}
+
+.tc-cell {
+  width: 36px;
+  min-width: 36px;
+  height: 26px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #e2e8f0;
+  font-weight: 700;
+  font-size: 0.68rem;
+  padding: 0;
+}
+
+.tc-neutral {
+  background: transparent;
+  color: transparent;
+}
+
+.tc-super {
+  background: #c6f6d5;
+  color: #276749;
+}
+
+.tc-resisted {
+  background: #fed7d7;
+  color: #9b2c2c;
+}
+
+.tc-immune {
+  background: #4a5568;
+  color: #e2e8f0;
+  font-size: 0.72rem;
+}
+
 // ─── Responsive ─────────────────────────────────────────────────────────────
 
 // Tablet breakpoint

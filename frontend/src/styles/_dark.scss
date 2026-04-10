@@ -419,6 +419,51 @@
     background: $navy-blue;
   }
 
+  // Type chart
+  .type-chart-title {
+    color: #e2e8f0;
+  }
+
+  .type-chart-table {
+    background: #2d3748;
+  }
+
+  .tc-corner,
+  .tc-col-header,
+  .tc-row-header {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .tc-abbr {
+    color: #a0aec0;
+  }
+
+  .tc-cell {
+    border-color: #4a5568;
+  }
+
+  .tc-neutral {
+    background: #2d3748;
+    color: transparent;
+  }
+
+  .tc-super {
+    background: #276749;
+    color: #c6f6d5;
+  }
+
+  .tc-resisted {
+    background: #822727;
+    color: #fed7d7;
+  }
+
+  .tc-immune {
+    background: #1a202c;
+    color: #718096;
+  }
+
   // Explore input focus
   .explore-input:focus {
     border-color: $navy-blue-hover;

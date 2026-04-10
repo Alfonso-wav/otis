@@ -117,11 +117,16 @@
     "title": "Explore",
     "comingSoon": "Coming soon — regions, moves and detailed data",
     "tabs": {
-      "types": "Types",
+      "typeChart": "Type Chart",
       "regions": "Regions",
       "moves": "Moves",
       "abilities": "Abilities"
     }
+  },
+  "typeChart": {
+    "title": "Type Effectiveness",
+    "attackingLabel": "Attacker →",
+    "defendingLabel": "↓ Defender"
   },
   "types": {
     "title": "Types",
