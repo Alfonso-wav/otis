@@ -149,7 +149,8 @@
       "size": "Talla",
       "smoothness": "Suavidad",
       "maxHarvest": "Cosecha Máx.",
-      "flavors": "Sabores"
+      "flavors": "Sabores",
+      "effect": "Efecto"
     }
   },
   "types": {

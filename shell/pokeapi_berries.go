@@ -43,6 +43,12 @@ type apiItem struct {
 	Sprites struct {
 		Default string `json:"default"`
 	} `json:"sprites"`
+	EffectEntries []struct {
+		ShortEffect string `json:"short_effect"`
+		Language    struct {
+			Name string `json:"name"`
+		} `json:"language"`
+	} `json:"effect_entries"`
 }
 
 func (c *PokeAPIClient) FetchBerryList() (core.BerryListResponse, error) {
@@ -76,13 +82,20 @@ func (c *PokeAPIClient) FetchBerry(name string) (core.Berry, error) {
 		}
 	}
 
-	// Fetch item sprite
+	// Fetch item sprite and effect
 	itemSprite := ""
+	effect := ""
 	if raw.Item.Name != "" {
 		itemURL := fmt.Sprintf("%s/item/%s", c.baseURL, raw.Item.Name)
 		var item apiItem
 		if err := fetchOne(c, itemURL, &item); err == nil {
 			itemSprite = item.Sprites.Default
+			for _, e := range item.EffectEntries {
+				if e.Language.Name == "en" {
+					effect = e.ShortEffect
+					break
+				}
+			}
 		}
 	}
 
@@ -100,5 +113,6 @@ func (c *PokeAPIClient) FetchBerry(name string) (core.Berry, error) {
 		NaturalGiftType:  raw.NaturalGiftType.Name,
 		ItemName:         raw.Item.Name,
 		ItemSprite:       itemSprite,
+		Effect:           effect,
 	}, nil
 }
