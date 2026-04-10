@@ -441,14 +441,6 @@
     background: #1a202c;
   }
 
-  // Type background colors in dark mode (slightly brighter alpha)
-  @each $type, $color in $type-colors {
-    .tc-col-header[data-type="#{$type}"],
-    .tc-row-header[data-type="#{$type}"] {
-      background-color: rgba($color, 0.28);
-    }
-  }
-
   .tc-restore-btn {
     border-color: $navy-blue-text;
     color: $navy-blue-text;
