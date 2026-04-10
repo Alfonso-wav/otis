@@ -491,21 +491,21 @@
 .type-chart-table {
   border-collapse: collapse;
   background: white;
-  font-size: 0.68rem;
+  font-size: 1rem;
   white-space: nowrap;
 }
 
 .tc-corner {
-  min-width: 52px;
-  width: 52px;
+  min-width: 156px;
+  width: 156px;
   background: #f7fafc;
   border: 1px solid #e2e8f0;
 }
 
 .tc-col-header {
-  min-width: 36px;
-  width: 36px;
-  padding: 0.3rem 0.15rem;
+  min-width: 108px;
+  width: 108px;
+  padding: 0.9rem 0.45rem;
   text-align: center;
   vertical-align: middle;
   background: #f7fafc;
@@ -513,8 +513,8 @@
 }
 
 .tc-row-header {
-  min-width: 52px;
-  padding: 0.25rem 0.4rem;
+  min-width: 156px;
+  padding: 0.75rem 1.2rem;
   text-align: left;
   vertical-align: middle;
   background: #f7fafc;
@@ -523,8 +523,8 @@
 }
 
 .tc-icon {
-  width: 20px;
-  height: 20px;
+  width: 60px;
+  height: 60px;
   display: block;
   margin: 0 auto;
 }
@@ -535,17 +535,22 @@
   margin: 0;
 }
 
-// Type background colors for col/row headers
+// Type color on icon circle (not on header background)
 @each $type, $color in $type-colors {
-  .tc-col-header[data-type="#{$type}"],
-  .tc-row-header[data-type="#{$type}"] {
-    background-color: rgba($color, 0.22);
+  .tc-col-header[data-type="#{$type}"] .tc-icon,
+  .tc-row-header[data-type="#{$type}"] .tc-icon {
+    background-color: $color;
+    border-radius: 50%;
+    padding: 8px;
+    box-sizing: border-box;
   }
 }
 
 // Filter bar with restore button
 .tc-filter-bar {
-  margin-bottom: 0.5rem;
+  margin-top: 1.25rem;
+  display: flex;
+  justify-content: center;
 }
 
 .tc-restore-btn {
@@ -553,8 +558,8 @@
   border: 1.5px solid $pokedex-red;
   color: $pokedex-red;
   border-radius: $border-radius-pill;
-  padding: 0.2rem 0.85rem;
-  font-size: 0.78rem;
+  padding: 0.4rem 1.4rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
@@ -578,14 +583,14 @@
 }
 
 .tc-cell {
-  width: 36px;
-  min-width: 36px;
-  height: 26px;
+  width: 108px;
+  min-width: 108px;
+  height: 78px;
   text-align: center;
   vertical-align: middle;
   border: 1px solid #e2e8f0;
   font-weight: 700;
-  font-size: 0.68rem;
+  font-size: 1.1rem;
   padding: 0;
 }
 
