@@ -699,6 +699,16 @@
   justify-content: center;
 }
 
+.berry-card__effect {
+  font-size: 0.62rem;
+  color: #718096;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0 0.25rem;
+}
+
 .berry-firmness-badge {
   display: inline-block;
   background: #edf2f7;
@@ -752,6 +762,15 @@
     font-size: 0.75rem;
     color: #4a5568;
     white-space: nowrap;
+  }
+
+  .berry-effect-cell {
+    font-size: 0.75rem;
+    color: #4a5568;
+    max-width: 220px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .berry-tbl-sprite {

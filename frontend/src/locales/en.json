@@ -149,7 +149,8 @@
       "size": "Size",
       "smoothness": "Smoothness",
       "maxHarvest": "Max Harvest",
-      "flavors": "Flavors"
+      "flavors": "Flavors",
+      "effect": "Effect"
     }
   },
   "types": {
