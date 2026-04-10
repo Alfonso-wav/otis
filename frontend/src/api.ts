@@ -79,6 +79,18 @@ async function del<T>(path: string): Promise<T> {
   return res.json();
 }
 
+// --- Bayas ---
+
+export function ListBerries(): Promise<core.BerryListResponse> {
+  if (isWails()) return wails("ListBerries");
+  return get("/api/berries");
+}
+
+export function GetBerry(name: string): Promise<core.Berry> {
+  if (isWails()) return wails("GetBerry", name);
+  return get(`/api/berries/${encodeURIComponent(name)}`);
+}
+
 // --- Pokémon base ---
 
 export function ListPokemon(offset: number, limit: number): Promise<core.PokemonListResponse> {

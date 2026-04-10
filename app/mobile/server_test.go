@@ -56,6 +56,8 @@ func (m *mockFetcher) FetchLocation(name string) (core.LocationDetail, error)   
 func (m *mockFetcher) FetchLocationArea(name string) (core.LocationArea, error)      { return core.LocationArea{}, nil }
 func (m *mockFetcher) FetchLocationEncounters(name string) ([]core.PokemonEncounter, error) { return nil, nil }
 func (m *mockFetcher) FetchPokemonEncounters(name string) ([]core.PokemonLocationEncounter, error) { return nil, nil }
+func (m *mockFetcher) FetchBerryList() (core.BerryListResponse, error)              { return core.BerryListResponse{}, nil }
+func (m *mockFetcher) FetchBerry(name string) (core.Berry, error)                    { return core.Berry{}, nil }
 func (m *mockFetcher) FetchStat(name string) (core.StatDetail, error)                { return core.StatDetail{}, nil }
 func (m *mockFetcher) FetchGenerations() ([]core.NamedResource, error)               { return nil, nil }
 func (m *mockFetcher) FetchGeneration(name string) (core.Generation, error)          { return core.Generation{}, nil }

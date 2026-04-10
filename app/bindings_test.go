@@ -117,6 +117,10 @@ func (m *mockFetcher) FetchPokemonEncounters(name string) ([]core.PokemonLocatio
 	return nil, nil
 }
 
+// --- Bayas ---
+func (m *mockFetcher) FetchBerryList() (core.BerryListResponse, error) { return core.BerryListResponse{}, nil }
+func (m *mockFetcher) FetchBerry(name string) (core.Berry, error)       { return core.Berry{}, nil }
+
 // --- Grupo G ---
 func (m *mockFetcher) FetchStat(name string) (core.StatDetail, error) { return core.StatDetail{}, nil }
 func (m *mockFetcher) FetchGenerations() ([]core.NamedResource, error) { return nil, nil }
