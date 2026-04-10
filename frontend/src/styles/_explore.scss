@@ -582,6 +582,189 @@
   font-size: 0.72rem;
 }
 
+// ─── Berries ─────────────────────────────────────────────────────────────────
+
+.berries-wrap {
+  padding: 0.25rem 0;
+}
+
+.berries-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.berries-view-toggle {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.berries-content {
+  min-height: 100px;
+}
+
+.berries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.75rem;
+}
+
+.berry-card {
+  background: white;
+  border-radius: $border-radius;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+
+  &:hover {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.berry-card__img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  background: #f7fafc;
+}
+
+.berry-card__sprite {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.berry-card__sprite-placeholder {
+  width: 48px;
+  height: 48px;
+  background: #e2e8f0;
+  border-radius: $border-radius;
+}
+
+.berry-card__body {
+  padding: 0.45rem 0.5rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.berry-card__name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #2d3748;
+  text-align: center;
+}
+
+.berry-card__type {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  font-size: 0.68rem;
+}
+
+.berry-card__meta {
+  display: flex;
+  justify-content: center;
+}
+
+.berry-firmness-badge {
+  display: inline-block;
+  background: #edf2f7;
+  color: #4a5568;
+  border-radius: $border-radius-pill;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.berries-table-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.berries-count {
+  font-size: 0.78rem;
+  color: #718096;
+}
+
+.berries-pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.berries-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: $border-radius-lg;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  background: white;
+}
+
+.berries-table {
+  min-width: 700px;
+
+  .berry-name-cell {
+    text-transform: capitalize;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .berry-flavors-cell {
+    font-size: 0.75rem;
+    color: #4a5568;
+    white-space: nowrap;
+  }
+
+  .berry-tbl-sprite {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  }
+
+  .num-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+
+    &:hover {
+      background: #edf2f7;
+    }
+  }
+
+  .sort-indicator {
+    color: #a0aec0;
+    font-size: 0.75rem;
+    margin-left: 0.2rem;
+
+    &.active {
+      color: $pokedex-red;
+    }
+  }
+}
+
+.type-icon-sm {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 // ─── Responsive ─────────────────────────────────────────────────────────────
 
 // Tablet breakpoint

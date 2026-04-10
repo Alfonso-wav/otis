@@ -71,6 +71,10 @@ type PokemonFetcher interface {
 	FetchLocationEncounters(name string) ([]PokemonEncounter, error)
 	FetchPokemonEncounters(name string) ([]PokemonLocationEncounter, error)
 
+	// --- Bayas ---
+	FetchBerryList() (BerryListResponse, error)
+	FetchBerry(name string) (Berry, error)
+
 	// --- Grupo G: Stats y generaciones ---
 	FetchStat(name string) (StatDetail, error)
 	FetchGenerations() ([]NamedResource, error)

@@ -120,13 +120,36 @@
       "typeChart": "Tabla de Tipos",
       "regions": "Regiones",
       "moves": "Movimientos",
-      "abilities": "Habilidades"
+      "abilities": "Habilidades",
+      "berries": "Bayas"
     }
   },
   "typeChart": {
     "title": "Efectividad de tipos",
     "attackingLabel": "Atacante →",
     "defendingLabel": "↓ Defensor"
+  },
+  "berries": {
+    "title": "Bayas",
+    "loading": "Cargando bayas...",
+    "searchPlaceholder": "Buscar baya...",
+    "noResults": "No se encontraron bayas.",
+    "error": "Error al cargar bayas.",
+    "count": "{count} bayas",
+    "tableView": "⊞ Tabla",
+    "cardView": "⊟ Tarjetas",
+    "columns": {
+      "id": "#",
+      "name": "Nombre",
+      "sprite": "Imagen",
+      "firmness": "Firmeza",
+      "naturalGiftType": "Tipo Natural",
+      "naturalGiftPower": "Poder",
+      "size": "Talla",
+      "smoothness": "Suavidad",
+      "maxHarvest": "Cosecha Máx.",
+      "flavors": "Sabores"
+    }
   },
   "types": {
     "title": "Tipos",

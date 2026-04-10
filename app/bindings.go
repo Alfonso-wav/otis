@@ -248,6 +248,18 @@ func (a *App) SimulateMultipleBattles(input core.FullBattleInput, n int) (core.B
 	}), nil
 }
 
+// --- Bayas ---
+
+// ListBerries retorna la lista de todas las bayas.
+func (a *App) ListBerries() (core.BerryListResponse, error) {
+	return a.fetcher.FetchBerryList()
+}
+
+// GetBerry retorna el detalle de una baya por nombre.
+func (a *App) GetBerry(name string) (core.Berry, error) {
+	return a.fetcher.FetchBerry(core.NormalizeName(name))
+}
+
 // --- Clasificación masiva ---
 
 func (a *App) GetAllSpeciesClassifications() (map[string]core.SpeciesClassification, error) {
