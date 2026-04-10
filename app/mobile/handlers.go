@@ -2,6 +2,10 @@
 //
 // Endpoint mapping (bindings.go method → REST endpoint):
 //
+// --- Bayas ---
+// ListBerries          → GET  /api/berries
+// GetBerry             → GET  /api/berries/{name}
+//
 // --- Pokémon base ---
 // ListPokemon          → GET  /api/pokemon?offset=X&limit=Y
 // GetPokemon           → GET  /api/pokemon/{name}
@@ -133,6 +137,26 @@ func decodeBody(r *http.Request, v interface{}) error {
 
 // RegisterRoutes registers all REST endpoints on the given mux.
 func RegisterRoutes(mux *http.ServeMux, a *app.App) {
+	// --- Bayas ---
+
+	mux.HandleFunc("GET /api/berries", func(w http.ResponseWriter, r *http.Request) {
+		result, err := a.ListBerries()
+		if err != nil {
+			jsonError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		jsonResponse(w, result)
+	})
+
+	mux.HandleFunc("GET /api/berries/{name}", func(w http.ResponseWriter, r *http.Request) {
+		result, err := a.GetBerry(r.PathValue("name"))
+		if err != nil {
+			jsonError(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		jsonResponse(w, result)
+	})
+
 	// --- Pokémon base ---
 	mux.HandleFunc("GET /api/pokemon", func(w http.ResponseWriter, r *http.Request) {
 		// If a "name" query param is present, treat as GetPokemon for compatibility

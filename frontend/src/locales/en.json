@@ -120,13 +120,36 @@
       "typeChart": "Type Chart",
       "regions": "Regions",
       "moves": "Moves",
-      "abilities": "Abilities"
+      "abilities": "Abilities",
+      "berries": "Berries"
     }
   },
   "typeChart": {
     "title": "Type Effectiveness",
     "attackingLabel": "Attacker →",
     "defendingLabel": "↓ Defender"
+  },
+  "berries": {
+    "title": "Berries",
+    "loading": "Loading berries...",
+    "searchPlaceholder": "Search berry...",
+    "noResults": "No berries found.",
+    "error": "Error loading berries.",
+    "count": "{count} berries",
+    "tableView": "⊞ Table",
+    "cardView": "⊟ Cards",
+    "columns": {
+      "id": "#",
+      "name": "Name",
+      "sprite": "Image",
+      "firmness": "Firmness",
+      "naturalGiftType": "Natural Gift Type",
+      "naturalGiftPower": "Power",
+      "size": "Size",
+      "smoothness": "Smoothness",
+      "maxHarvest": "Max Harvest",
+      "flavors": "Flavors"
+    }
   },
   "types": {
     "title": "Types",
