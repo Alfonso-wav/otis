@@ -36,20 +36,20 @@ function dismissSplashInteractive(splash: HTMLElement, snorlax: HTMLElement): vo
     }, "<0.05")
     .to(snorlax, { scale: 1, duration: 0.1 })
     .call(() => {
-      const overlay = document.createElement("div");
-      overlay.className = "splash-exit-overlay";
-      splash.appendChild(overlay);
-      gsap.fromTo(overlay,
-        { clipPath: "circle(0% at 50% 50%)" },
-        {
-          clipPath: "circle(150% at 50% 50%)",
-          duration: 0.55,
-          ease: "power2.in",
-          onComplete: () => {
-            splash.remove();
-          }
-        }
-      );
+      // Snorlax crece y se desvanece lentamente
+      gsap.to(snorlax, {
+        scale: 3,
+        opacity: 0,
+        duration: 2.2,
+        ease: "power1.in",
+      });
+      // El fondo oscuro se desvanece muuy lentamente revelando la app
+      gsap.to(splash, {
+        opacity: 0,
+        duration: 3.5,
+        ease: "power1.inOut",
+        onComplete: () => splash.remove(),
+      });
     });
 }
 
