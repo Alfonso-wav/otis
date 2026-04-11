@@ -748,6 +748,8 @@ th.sortable.active .sort-indicator {
 }
 
 .moves-table-wrap {
+  max-height: 1900px;
+  overflow-y: auto;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   border-radius: $border-radius-lg;
@@ -757,6 +759,12 @@ th.sortable.active .sort-indicator {
 
 .moves-table {
   min-width: 300px;
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
 
   thead th[data-sort] {
     cursor: pointer;
