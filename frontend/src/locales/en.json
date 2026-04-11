@@ -135,7 +135,8 @@
     "title": "Type Effectiveness",
     "attackingLabel": "ATK →",
     "defendingLabel": "↓ DEF",
-    "restoreTypes": "Restore types"
+    "restoreTypes": "Restore types",
+    "removeType": "Remove type"
   },
   "berries": {
     "title": "Berries",
