@@ -86,7 +86,12 @@
       "egg": "Huevo",
       "tutor": "Tutor"
     },
-    "movesLimitInfo": "Mostrando 50 de {total} movimientos"
+    "movesLimitInfo": "Mostrando 50 de {total} movimientos",
+    "statTotals": "Totales de Stats Base",
+    "bstDiff": "vs {base}",
+    "highestStat": "Stat más alto",
+    "biggestAdvantage": "Mayor ventaja",
+    "biggestDisadvantage": "Mayor desventaja"
   },
   "encounters": {
     "title": "Encuentros",
@@ -128,8 +133,8 @@
   },
   "typeChart": {
     "title": "Efectividad de tipos",
-    "attackingLabel": "Atacante →",
-    "defendingLabel": "↓ Defensor",
+    "attackingLabel": "ATK →",
+    "defendingLabel": "↓ DEF",
     "restoreTypes": "Restaurar tipos"
   },
   "berries": {
@@ -198,7 +203,8 @@
       "power": "Poder",
       "accuracy": "Prec.",
       "pp": "PP",
-      "priority": "Prio."
+      "priority": "Prio.",
+      "pokemon": "PKMN"
     },
     "categories": {
       "all": "Todos",
@@ -354,6 +360,8 @@
     "typeInRegion": "{type} en {region}",
     "locationLoading": "Cargando encounters...",
     "locationEmpty": "No se encontraron Pokémon en esta localización.",
-    "locationError": "Error al cargar los encounters."
+    "locationError": "Error al cargar los encounters.",
+    "moveLoading": "Cargando Pokémon...",
+    "moveEmpty": "Ningún Pokémon puede aprender {name}."
   }
 }
