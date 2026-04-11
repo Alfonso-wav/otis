@@ -1,4 +1,5 @@
 import gsap from "gsap";
+import { cleanupSettings } from "./settings";
 
 export interface Page {
   id: string;
@@ -18,6 +19,10 @@ export function navigate(id: string): void {
 
   const next = pages.find((p) => p.id === id);
   if (!next) return;
+
+  if (activeId === "settings") {
+    cleanupSettings();
+  }
 
   const current = pages.find((p) => p.id === activeId);
 
