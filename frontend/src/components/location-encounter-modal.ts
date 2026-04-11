@@ -1,6 +1,7 @@
 import gsap from "gsap";
 import { GetLocationEncounters } from "../api";
 import { t } from "../i18n";
+import { createInlineDiglett, removeInlineDiglett } from "./sorting-overlay";
 
 let overlayEl: HTMLDivElement | null = null;
 
@@ -48,16 +49,14 @@ export async function openLocationEncounterModal(locationName: string): Promise<
         <span>${formatLocationName(locationName)}</span>
         <button class="type-modal-close">&times;</button>
       </div>
-      <div class="type-modal-body">
-        <div class="encounter-loading">
-          <div class="encounter-spinner"></div>
-          <p>${t("modals.locationLoading")}</p>
-        </div>
-      </div>
+      <div class="type-modal-body"></div>
     </div>`;
 
   document.body.appendChild(overlay);
   overlayEl = overlay;
+
+  const bodyEl = overlay.querySelector<HTMLElement>(".type-modal-body")!;
+  const diglettEl = createInlineDiglett(bodyEl, t("modals.locationLoading"));
 
   overlay.querySelector(".type-modal-close")!.addEventListener("click", closeModal);
   overlay.addEventListener("click", (e) => {
@@ -74,7 +73,7 @@ export async function openLocationEncounterModal(locationName: string): Promise<
 
   try {
     const encounters = await GetLocationEncounters(locationName);
-    const bodyEl = overlay.querySelector(".type-modal-body")!;
+    removeInlineDiglett(diglettEl);
 
     if (!encounters || encounters.length === 0) {
       bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.locationEmpty")}</p>`;
@@ -132,9 +131,7 @@ export async function openLocationEncounterModal(locationName: string): Promise<
       });
     });
   } catch {
-    const bodyEl = overlay.querySelector(".type-modal-body");
-    if (bodyEl) {
-      bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.locationError")}</p>`;
-    }
+    removeInlineDiglett(diglettEl);
+    bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.locationError")}</p>`;
   }
 }
