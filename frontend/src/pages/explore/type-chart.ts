@@ -50,12 +50,10 @@ function cellClass(mult: number): string {
 
 function typeHeader(type: PokemonType): string {
   const name = t(`typeNames.${type}`);
-  return `<img src="/assets/types/${type}.svg" class="tc-icon" alt="${name}">`;
+  return `<span class="tc-header-wrap"><img src="/assets/types/${type}.svg" class="tc-icon" alt="${name}"><button class="tc-remove-btn" data-remove-type="${type}" title="${t("typeChart.removeType")}">&times;</button></span>`;
 }
 
 const filteredTypes = new Set<PokemonType>();
-let isDragging = false;
-let dragAxis: "col" | "row" | null = null;
 
 function renderChart(panel: HTMLElement): void {
   const title = t("typeChart.title");
@@ -107,65 +105,18 @@ function renderChart(panel: HTMLElement): void {
 }
 
 function attachFilterListeners(panel: HTMLElement): void {
-  const headers = panel.querySelectorAll<HTMLElement>(
-    ".tc-col-header[data-type], .tc-row-header[data-type]",
-  );
+  const removeBtns = panel.querySelectorAll<HTMLButtonElement>(".tc-remove-btn[data-remove-type]");
 
-  headers.forEach((th) => {
-    th.addEventListener("mousedown", (e) => {
-      e.preventDefault();
-      isDragging = true;
-      dragAxis = th.classList.contains("tc-col-header") ? "col" : "row";
-      const type = th.dataset.type as PokemonType;
+  removeBtns.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const type = btn.dataset.removeType as PokemonType;
       if (type) {
         filteredTypes.add(type);
         renderChart(panel);
       }
     });
-
-    th.addEventListener("mouseenter", () => {
-      if (!isDragging) return;
-      const thAxis = th.classList.contains("tc-col-header") ? "col" : "row";
-      if (thAxis !== dragAxis) return;
-      const type = th.dataset.type as PokemonType;
-      if (type && !filteredTypes.has(type)) {
-        filteredTypes.add(type);
-        renderChart(panel);
-      }
-    });
-
-    th.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      isDragging = true;
-      dragAxis = th.classList.contains("tc-col-header") ? "col" : "row";
-      const type = th.dataset.type as PokemonType;
-      if (type) {
-        filteredTypes.add(type);
-        renderChart(panel);
-      }
-    }, { passive: false });
   });
-
-  // Touch drag — detect type under finger via elementFromPoint
-  const scroll = panel.querySelector<HTMLElement>(".type-chart-scroll");
-  if (scroll) {
-    scroll.addEventListener("touchmove", (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const touch = e.touches[0];
-      const el = document.elementFromPoint(touch.clientX, touch.clientY);
-      if (!el) return;
-      const target = el.closest<HTMLElement>(".tc-col-header[data-type], .tc-row-header[data-type]");
-      if (!target) return;
-      const thAxis = target.classList.contains("tc-col-header") ? "col" : "row";
-      if (thAxis !== dragAxis) return;
-      const type = target.dataset.type as PokemonType;
-      if (type && !filteredTypes.has(type)) {
-        filteredTypes.add(type);
-        renderChart(panel);
-      }
-    }, { passive: false });
-  }
 
   const restoreBtn = panel.querySelector<HTMLButtonElement>(".tc-restore-btn");
   if (restoreBtn) {
@@ -179,16 +130,6 @@ function attachFilterListeners(panel: HTMLElement): void {
 export function initTypeChart(panel: HTMLElement): void {
   filteredTypes.clear();
   renderChart(panel);
-
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-    dragAxis = null;
-  });
-
-  document.addEventListener("touchend", () => {
-    isDragging = false;
-    dragAxis = null;
-  });
 
   document.addEventListener("locale-changed", () => {
     renderChart(panel);
