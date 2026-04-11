@@ -14,19 +14,9 @@ const expandedLocations = new Map<string, boolean>();
 const GEN7_PLUS = new Set(["alola", "galar", "hisui", "paldea"]);
 
 function regionLabel(name: string): string {
-  const labels: Record<string, string> = {
-    kanto: "Kanto (Gen I)",
-    johto: "Johto (Gen II)",
-    hoenn: "Hoenn (Gen III)",
-    sinnoh: "Sinnoh (Gen IV)",
-    unova: "Unova (Gen V)",
-    kalos: "Kalos (Gen VI)",
-    alola: "Alola (Gen VII)",
-    galar: "Galar (Gen VIII)",
-    hisui: "Hisui",
-    paldea: "Paldea (Gen IX)",
-  };
-  return labels[name] ?? name.charAt(0).toUpperCase() + name.slice(1);
+  const key = `regions.labels.${name}`;
+  const label = t(key);
+  return label !== key ? label : name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 async function loadRegionDetail(

@@ -168,7 +168,19 @@
     "typeDistribution": "Type Distribution",
     "showLess": "Show less",
     "showMore": "+{count} more",
-    "encounterLimited": "Location encounter data is not available for this generation."
+    "encounterLimited": "Location encounter data is not available for this generation.",
+    "labels": {
+      "kanto": "Kanto (Gen I)",
+      "johto": "Johto (Gen II)",
+      "hoenn": "Hoenn (Gen III)",
+      "sinnoh": "Sinnoh (Gen IV)",
+      "unova": "Unova (Gen V)",
+      "kalos": "Kalos (Gen VI)",
+      "alola": "Alola (Gen VII)",
+      "galar": "Galar (Gen VIII)",
+      "hisui": "Hisui",
+      "paldea": "Paldea (Gen IX)"
+    }
   },
   "moves": {
     "title": "Moves",

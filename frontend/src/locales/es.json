@@ -168,7 +168,19 @@
     "typeDistribution": "Distribución de tipos",
     "showLess": "Mostrar menos",
     "showMore": "+{count} más",
-    "encounterLimited": "Los datos de encuentros por localización no están disponibles para esta generación."
+    "encounterLimited": "Los datos de encuentros por localización no están disponibles para esta generación.",
+    "labels": {
+      "kanto": "Kanto (Gen I)",
+      "johto": "Johto (Gen II)",
+      "hoenn": "Hoenn (Gen III)",
+      "sinnoh": "Sinnoh (Gen IV)",
+      "unova": "Teselia (Gen V)",
+      "kalos": "Kalos (Gen VI)",
+      "alola": "Alola (Gen VII)",
+      "galar": "Galar (Gen VIII)",
+      "hisui": "Hisui",
+      "paldea": "Paldea (Gen IX)"
+    }
   },
   "moves": {
     "title": "Movimientos",
