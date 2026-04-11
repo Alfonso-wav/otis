@@ -85,7 +85,8 @@
       "machine": "MT/MO",
       "egg": "Huevo",
       "tutor": "Tutor"
-    }
+    },
+    "movesLimitInfo": "Mostrando 50 de {total} movimientos"
   },
   "encounters": {
     "title": "Encuentros",
