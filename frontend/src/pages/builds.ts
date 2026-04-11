@@ -1636,22 +1636,23 @@ function bindTeamBattleEvents(): void {
 function bindEvents(): void {
   const atkBtn = container.querySelector<HTMLButtonElement>("#atk-btn");
   const atkInput = container.querySelector<HTMLInputElement>("#atk-input");
-  atkBtn?.addEventListener("click", () => fetchPokemon("atk", atkInput?.value ?? ""));
-  atkInput?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") fetchPokemon("atk", atkInput.value);
-  });
-
   const defBtn = container.querySelector<HTMLButtonElement>("#def-btn");
   const defInput = container.querySelector<HTMLInputElement>("#def-input");
-  defBtn?.addEventListener("click", () => fetchPokemon("def", defInput?.value ?? ""));
-  defInput?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") fetchPokemon("def", defInput.value);
-  });
 
   if (pokemonNames.length > 0) {
     if (atkInput) createAutocomplete(atkInput, pokemonNames, (name) => fetchPokemon("atk", name));
     if (defInput) createAutocomplete(defInput, pokemonNames, (name) => fetchPokemon("def", name));
   }
+
+  atkBtn?.addEventListener("click", () => fetchPokemon("atk", atkInput?.value ?? ""));
+  atkInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.defaultPrevented) fetchPokemon("atk", atkInput.value);
+  });
+
+  defBtn?.addEventListener("click", () => fetchPokemon("def", defInput?.value ?? ""));
+  defInput?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.defaultPrevented) fetchPokemon("def", defInput.value);
+  });
 
   container.querySelector<HTMLButtonElement>("#atk-random-fill-btn")?.addEventListener("click", () => randomFillSlots("atk"));
   container.querySelector<HTMLButtonElement>("#def-random-fill-btn")?.addEventListener("click", () => randomFillSlots("def"));
