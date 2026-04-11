@@ -37,6 +37,7 @@ export function initSettings(): void {
     toggle.checked = saved === "dark";
     toggle.addEventListener("change", () => {
       pending.theme = toggle.checked ? "dark" : "light";
+      applyTheme(pending.theme);
       updateApplyButton();
     });
   }
@@ -67,6 +68,22 @@ export function initSettings(): void {
       updateApplyButton();
     });
   }
+}
+
+export function cleanupSettings(): void {
+  if (pending.theme !== null && pending.theme !== currentTheme()) {
+    applyTheme(currentTheme());
+  }
+  pending.theme = null;
+  pending.locale = null;
+
+  const toggle = document.getElementById(
+    "dark-mode-toggle",
+  ) as HTMLInputElement | null;
+  if (toggle) {
+    toggle.checked = currentTheme() === "dark";
+  }
+  updateApplyButton();
 }
 
 function applyTheme(theme: "dark" | "light"): void {
