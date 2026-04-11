@@ -167,7 +167,8 @@
     "locations": "Locations ({count})",
     "typeDistribution": "Type Distribution",
     "showLess": "Show less",
-    "showMore": "+{count} more"
+    "showMore": "+{count} more",
+    "encounterLimited": "Location encounter data is not available for this generation."
   },
   "moves": {
     "title": "Moves",
