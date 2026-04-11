@@ -50,19 +50,18 @@ function cellClass(mult: number): string {
 
 function typeHeader(type: PokemonType): string {
   const name = t(`typeNames.${type}`);
-  return `<img src="/assets/types/${type}.svg" class="tc-icon" alt="${name}">`;
+  return `<span class="tc-header-wrap"><img src="/assets/types/${type}.svg" class="tc-icon" alt="${name}"><button class="tc-remove-btn" data-remove-type="${type}" title="${t("typeChart.removeType")}">&times;</button></span>`;
 }
 
-const filteredCols = new Set<PokemonType>();
-const filteredRows = new Set<PokemonType>();
+const filteredTypes = new Set<PokemonType>();
 
 function renderChart(panel: HTMLElement): void {
   const title = t("typeChart.title");
   const attackingLabel = t("typeChart.attackingLabel");
   const defendingLabel = t("typeChart.defendingLabel");
 
-  const visibleCols = TYPES.filter((tp) => !filteredCols.has(tp));
-  const visibleRows = TYPES.filter((tp) => !filteredRows.has(tp));
+  const visibleCols = TYPES.filter((tp) => !filteredTypes.has(tp));
+  const visibleRows = TYPES.filter((tp) => !filteredTypes.has(tp));
 
   const headerCells = visibleCols.map(
     (def) =>
@@ -77,7 +76,7 @@ function renderChart(panel: HTMLElement): void {
     return `<tr><th class="tc-row-header" data-type="${atk}">${typeHeader(atk)}</th>${cells}</tr>`;
   }).join("");
 
-  const hasFilters = filteredCols.size > 0 || filteredRows.size > 0;
+  const hasFilters = filteredTypes.size > 0;
   const filterBar = hasFilters
     ? `<div class="tc-filter-bar"><button class="tc-restore-btn">${t("typeChart.restoreTypes")}</button></div>`
     : "";
@@ -108,21 +107,14 @@ function renderChart(panel: HTMLElement): void {
 }
 
 function attachFilterListeners(panel: HTMLElement): void {
-  panel.querySelectorAll<HTMLElement>(".tc-col-header[data-type]").forEach((th) => {
-    th.addEventListener("click", () => {
-      const type = th.dataset.type as PokemonType;
-      if (type) {
-        filteredCols.add(type);
-        renderChart(panel);
-      }
-    });
-  });
+  const removeBtns = panel.querySelectorAll<HTMLButtonElement>(".tc-remove-btn[data-remove-type]");
 
-  panel.querySelectorAll<HTMLElement>(".tc-row-header[data-type]").forEach((th) => {
-    th.addEventListener("click", () => {
-      const type = th.dataset.type as PokemonType;
+  removeBtns.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const type = btn.dataset.removeType as PokemonType;
       if (type) {
-        filteredRows.add(type);
+        filteredTypes.add(type);
         renderChart(panel);
       }
     });
@@ -131,16 +123,14 @@ function attachFilterListeners(panel: HTMLElement): void {
   const restoreBtn = panel.querySelector<HTMLButtonElement>(".tc-restore-btn");
   if (restoreBtn) {
     restoreBtn.addEventListener("click", () => {
-      filteredCols.clear();
-      filteredRows.clear();
+      filteredTypes.clear();
       renderChart(panel);
     });
   }
 }
 
 export function initTypeChart(panel: HTMLElement): void {
-  filteredCols.clear();
-  filteredRows.clear();
+  filteredTypes.clear();
   renderChart(panel);
 
   document.addEventListener("locale-changed", () => {

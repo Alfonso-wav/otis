@@ -135,7 +135,8 @@
     "title": "Efectividad de tipos",
     "attackingLabel": "ATK →",
     "defendingLabel": "↓ DEF",
-    "restoreTypes": "Restaurar tipos"
+    "restoreTypes": "Restaurar tipos",
+    "removeType": "Quitar tipo"
   },
   "berries": {
     "title": "Bayas",
