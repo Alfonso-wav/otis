@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { ListRegions, GetRegion, GetRegionPokemonByType } from "../../api";
+import { ListRegions, GetRegion, GetRegionPokemonByType, GetRegionTypeDistribution } from "../../api";
 import { renderTypeDistributionChart } from "../../charts/type-distribution";
 import { openTypeModal } from "../../components/pokemon-type-modal";
 import { openLocationEncounterModal } from "../../components/location-encounter-modal";
@@ -128,14 +128,20 @@ async function loadRegionDetail(
       });
     }
 
-    renderTypeDistributionChart(chartId, regionName, async (typeName: string) => {
-      try {
-        const names = await GetRegionPokemonByType(regionName, typeName);
-        openTypeModal(regionName, typeName, names ?? []);
-      } catch {
-        openTypeModal(regionName, typeName, []);
-      }
-    });
+    GetRegionTypeDistribution(regionName)
+      .then((dist) => {
+        renderTypeDistributionChart(chartId, dist ?? {}, async (typeName: string) => {
+          try {
+            const names = await GetRegionPokemonByType(regionName, typeName);
+            openTypeModal(regionName, typeName, names ?? []);
+          } catch {
+            openTypeModal(regionName, typeName, []);
+          }
+        });
+      })
+      .catch(() => {
+        renderTypeDistributionChart(chartId, {});
+      });
   } catch (err: unknown) {
     hideSortingOverlay();
     body.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;

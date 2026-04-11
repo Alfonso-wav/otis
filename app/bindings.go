@@ -110,6 +110,59 @@ func (a *App) GetRegionPokemonByType(region, typeName string) ([]string, error) 
 	return core.FilterPokedexByType(pokedexNames, typePokemonNames), nil
 }
 
+// GetRegionTypeDistribution returns a type→count map for the pokemon in a region's pokedex.
+func (a *App) GetRegionTypeDistribution(region string) (map[string]int, error) {
+	pokedexMap := map[string]string{
+		"kanto":  "kanto",
+		"johto":  "original-johto",
+		"hoenn":  "hoenn",
+		"sinnoh": "original-sinnoh",
+		"unova":  "original-unova",
+		"kalos":  "kalos-central",
+		"alola":  "original-alola",
+		"galar":  "galar",
+		"hisui":  "hisui",
+		"paldea": "paldea",
+	}
+	pokedexName, ok := pokedexMap[core.NormalizeName(region)]
+	if !ok {
+		pokedexName = core.NormalizeName(region)
+	}
+
+	pokedex, err := a.fetcher.FetchPokedex(pokedexName)
+	if err != nil {
+		return nil, err
+	}
+
+	pokedexNames := make([]string, len(pokedex.PokemonEntries))
+	for i, e := range pokedex.PokemonEntries {
+		pokedexNames[i] = e.Pokemon
+	}
+
+	types := []string{
+		"normal", "fire", "water", "grass", "electric", "ice",
+		"fighting", "poison", "ground", "flying", "psychic", "bug",
+		"rock", "ghost", "dragon", "dark", "steel", "fairy",
+	}
+
+	result := make(map[string]int)
+	for _, typeName := range types {
+		typeDetail, err := a.fetcher.FetchType(typeName)
+		if err != nil {
+			continue
+		}
+		typePokemonNames := make([]string, len(typeDetail.Pokemon))
+		for i, p := range typeDetail.Pokemon {
+			typePokemonNames[i] = p.Name
+		}
+		count := len(core.FilterPokedexByType(pokedexNames, typePokemonNames))
+		if count > 0 {
+			result[typeName] = count
+		}
+	}
+	return result, nil
+}
+
 // GetAbility retorna el detalle de una habilidad.
 func (a *App) GetAbility(name string) (core.Ability, error) {
 	return a.fetcher.FetchAbility(core.NormalizeName(name))
