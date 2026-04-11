@@ -11,6 +11,8 @@ let lastContainer: HTMLElement | null = null;
 // Track expanded/collapsed state per region
 const expandedLocations = new Map<string, boolean>();
 
+const GEN7_PLUS = new Set(["alola", "galar", "hisui", "paldea"]);
+
 function regionLabel(name: string): string {
   const labels: Record<string, string> = {
     kanto: "Kanto (Gen I)",
@@ -88,7 +90,7 @@ async function loadRegionDetail(
                   : `<span class="region-location-more region-location-toggle" data-region="${regionName}" data-action="expand">${t("regions.showMore", { count: locations.length - limit })}</span>`
                 : ""
             }
-          </div>
+          </div>${GEN7_PLUS.has(regionName) ? `\n          <p class="region-encounter-note">${t("regions.encounterLimited")}</p>` : ""}
         </div>
         <div class="region-chart-container">
           <h4 class="region-section-title">${t("regions.typeDistribution")}</h4>
@@ -105,13 +107,19 @@ async function loadRegionDetail(
       { opacity: 1, y: 0, duration: 0.2, stagger: 0.02, ease: "power2.out" },
     );
 
-    // Click on location tag → open encounter modal
-    body.querySelectorAll<HTMLElement>(".region-location-tag").forEach((tag) => {
-      tag.addEventListener("click", async () => {
-        const locName = tag.dataset.location!;
-        openLocationEncounterModal(locName);
+    // Click on location tag → open encounter modal (skip Gen VII+ — no data)
+    if (GEN7_PLUS.has(regionName)) {
+      body.querySelectorAll<HTMLElement>(".region-location-tag").forEach((tag) => {
+        tag.classList.add("disabled");
       });
-    });
+    } else {
+      body.querySelectorAll<HTMLElement>(".region-location-tag").forEach((tag) => {
+        tag.addEventListener("click", async () => {
+          const locName = tag.dataset.location!;
+          openLocationEncounterModal(locName);
+        });
+      });
+    }
 
     // Click on "+X más" / "Mostrar menos" → expand/collapse
     const toggleBtn = body.querySelector<HTMLElement>(".region-location-toggle");
