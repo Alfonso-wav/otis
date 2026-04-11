@@ -15,7 +15,7 @@ import { t, typeName, statName, getLocale } from "../i18n";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../components/column-toggle";
 import { SortCache } from "../utils/sort-cache";
-import { showSortingOverlay, updateSortingOverlayText, hideSortingOverlay } from "../components/sorting-overlay";
+import { showSortingOverlay, updateSortingOverlayText, hideSortingOverlay, createInlineDiglett } from "../components/sorting-overlay";
 import { createAutocomplete } from "../autocomplete";
 
 const LIMIT_STEP = 50;
@@ -193,7 +193,7 @@ function hasFilter(): boolean {
 // -- Lista sin filtro --------------------------------------------------------
 
 async function loadList(): Promise<void> {
-  grid.innerHTML = `<p class="loading">${t("common.loading")}</p>`;
+  createInlineDiglett(grid, t("common.loading"));
   try {
     const data = await ListPokemon(offset, rowLimit);
     totalCount = data.Count;
@@ -213,7 +213,7 @@ async function loadList(): Promise<void> {
 
 async function loadFiltered(): Promise<void> {
   resetSorting();
-  grid.innerHTML = `<p class="loading">${t("pokedex.applyingFilters")}</p>`;
+  createInlineDiglett(grid, t("pokedex.applyingFilters"));
   try {
     let base: PokemonListItem[] = [];
     const hasGens = filter.generations.length > 0;
@@ -296,7 +296,12 @@ async function loadAllPokemonList(): Promise<PokemonListItem[]> {
 
   while (currentOffset < total) {
     const pct = Math.round((currentOffset / total) * 100);
-    grid.innerHTML = `<p class="loading">${t("pokedex.loadingFullList", { pct, current: currentOffset, total })}</p>`;
+    const existingText = grid.querySelector<HTMLParagraphElement>(".diglett-inline__text");
+    if (existingText) {
+      existingText.textContent = t("pokedex.loadingFullList", { pct, current: currentOffset, total });
+    } else {
+      createInlineDiglett(grid, t("pokedex.loadingFullList", { pct, current: currentOffset, total }));
+    }
     const batch = await ListPokemon(currentOffset, BATCH_SIZE);
     all.push(...batch.Results);
     currentOffset += BATCH_SIZE;
@@ -307,7 +312,7 @@ async function loadAllPokemonList(): Promise<PokemonListItem[]> {
 
 async function filterByLegendary(list: PokemonListItem[]): Promise<PokemonListItem[]> {
   if (!classificationsCache) {
-    grid.innerHTML = `<p class="loading">${t("pokedex.loadingClassifications")}</p>`;
+    createInlineDiglett(grid, t("pokedex.loadingClassifications"));
     classificationsCache = await GetAllSpeciesClassifications();
   }
 
@@ -391,7 +396,7 @@ async function renderTable(items: PokemonListItem[]): Promise<void> {
     return;
   }
 
-  grid.innerHTML = `<p class="loading">${t("pokedex.loadingData")}</p>`;
+  createInlineDiglett(grid, t("pokedex.loadingData"));
 
   const pokemonData: Pokemon[] = await Promise.all(
     items.map(async (item) => {
@@ -604,7 +609,7 @@ async function goToNextPage(): Promise<void> {
 // -- Detalle -----------------------------------------------------------------
 
 async function showDetail(name: string): Promise<void> {
-  detailEl.innerHTML = `<p class="loading">${t("common.loading")}</p>`;
+  createInlineDiglett(detailEl, t("common.loading"));
   await showView(detailView, listView);
   try {
     const p = await GetPokemon(name);
