@@ -22,6 +22,7 @@ type Move struct {
 	Category      string
 	Description   string
 	DescriptionEs string
+	LearnedBy     []string
 }
 
 type Ability struct {

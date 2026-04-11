@@ -5,6 +5,7 @@ import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "..
 import { SortCache } from "../../utils/sort-cache";
 import { showSortingOverlay, hideSortingOverlay, showLoadingOverlay } from "../../components/sorting-overlay";
 import { t, typeName, getLocale } from "../../i18n";
+import { openMovePokemonModal } from "../../components/move-pokemon-modal";
 
 type Category = "all" | "physical" | "special" | "status";
 type SortColumn = "name" | "type" | "category" | "power" | "accuracy" | "pp" | "priority" | null;
@@ -49,6 +50,7 @@ function movesTableColumns(): ColumnConfig[] {
     { key: "accuracy", label: t("moves.columns.accuracy") },
     { key: "pp", label: t("moves.columns.pp") },
     { key: "priority", label: t("moves.columns.priority") },
+    { key: "pokemon", label: t("moves.columns.pokemon") },
   ];
 }
 
@@ -108,7 +110,7 @@ function renderTable(container: HTMLElement): void {
   if (countEl) countEl.textContent = t("moves.count", { count: moves.length });
 
   if (moves.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="loading">${t("moves.noResults")}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="loading">${t("moves.noResults")}</td></tr>`;
     return;
   }
 
@@ -123,8 +125,16 @@ function renderTable(container: HTMLElement): void {
     <td class="num-cell" data-col="accuracy">${m.Accuracy ? m.Accuracy + "%" : "—"}</td>
     <td class="num-cell" data-col="pp">${m.PP}</td>
     <td class="num-cell" data-col="priority">${m.Priority}</td>
+    <td data-col="pokemon"><button class="pkmn-btn" data-move="${m.Name}">PKMN</button></td>
   </tr>`;
   }).join("");
+
+  tbody.querySelectorAll<HTMLButtonElement>(".pkmn-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const moveName = btn.dataset.move;
+      if (moveName) openMovePokemonModal(moveName);
+    });
+  });
 
   reapplyColumnVisibility("moves");
   gsap.fromTo(tbody, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" });
@@ -177,10 +187,11 @@ export async function initMoves(container: HTMLElement): Promise<void> {
             <th class="sortable" data-col="accuracy">${t("moves.columns.accuracy")} <span class="sort-indicator"></span></th>
             <th class="sortable" data-col="pp">${t("moves.columns.pp")} <span class="sort-indicator"></span></th>
             <th class="sortable" data-col="priority">${t("moves.columns.priority")} <span class="sort-indicator"></span></th>
+            <th data-col="pokemon">${t("moves.columns.pokemon")}</th>
           </tr>
         </thead>
         <tbody id="moves-tbody">
-          <tr><td colspan="7" class="loading">${t("moves.loading")}</td></tr>
+          <tr><td colspan="8" class="loading">${t("moves.loading")}</td></tr>
         </tbody>
       </table>
     </div>`;
@@ -240,7 +251,7 @@ export async function initMoves(container: HTMLElement): Promise<void> {
       state.allMoves = await GetAllMoves();
     } catch (err) {
       const tbody = container.querySelector<HTMLElement>("#moves-tbody");
-      if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="loading">${t("moves.error")}</td></tr>`;
+      if (tbody) tbody.innerHTML = `<tr><td colspan="8" class="loading">${t("moves.error")}</td></tr>`;
       return;
     } finally {
       state.loading = false;
