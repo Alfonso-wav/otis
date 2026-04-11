@@ -382,6 +382,9 @@ type apiMove struct {
 		FlavorText string `json:"flavor_text"`
 		Language   struct{ Name string `json:"name"` } `json:"language"`
 	} `json:"flavor_text_entries"`
+	LearnedByPokemon []struct {
+		Name string `json:"name"`
+	} `json:"learned_by_pokemon"`
 }
 
 func (c *PokeAPIClient) FetchMove(name string) (core.Move, error) {
@@ -432,6 +435,11 @@ func (c *PokeAPIClient) FetchMove(name string) (core.Move, error) {
 		}
 	}
 
+	learnedBy := make([]string, len(raw.LearnedByPokemon))
+	for i, p := range raw.LearnedByPokemon {
+		learnedBy[i] = p.Name
+	}
+
 	return core.Move{
 		Name:          raw.Name,
 		NameEs:        nameEs,
@@ -443,6 +451,7 @@ func (c *PokeAPIClient) FetchMove(name string) (core.Move, error) {
 		Category:      raw.DamageClass.Name,
 		Description:   desc,
 		DescriptionEs: descEs,
+		LearnedBy:     learnedBy,
 	}, nil
 }
 

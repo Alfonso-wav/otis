@@ -11,7 +11,7 @@ import {
   GetAbility,
 } from "../api";
 import type { Pokemon, PokemonListItem, PokemonMoveEntry } from "../types";
-import { t, typeName, getLocale } from "../i18n";
+import { t, typeName, statName, getLocale } from "../i18n";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../components/column-toggle";
 import { SortCache } from "../utils/sort-cache";
@@ -636,6 +636,7 @@ async function renderDetail(p: Pokemon): Promise<void> {
       <button id="compare-btn" class="btn btn-secondary">${t("detail.compare")}</button>
     </div>
     <div id="chart-legend" class="chart-legend hidden"></div>
+    <div id="stat-totals" class="stat-totals hidden"></div>
     <div id="pokemon-lore" class="pokemon-lore"><p class="loading">${t("detail.loadingLore")}</p></div>
     <div id="pokemon-encounters" class="pokemon-encounters"><p class="loading">${t("encounters.loading")}</p></div>
     <div id="pokemon-abilities" class="pokemon-abilities"><p class="loading">${t("common.loading")}</p></div>
@@ -655,6 +656,16 @@ async function renderDetail(p: Pokemon): Promise<void> {
     "#e53e8e", // pink
   ];
 
+  const STAT_COLORS: Record<string, string> = {
+    hp: "#ff5959",
+    attack: "#f5ac78",
+    defense: "#fae078",
+    "special-attack": "#9db7f5",
+    "special-defense": "#a7db8d",
+    speed: "#fa92b2",
+  };
+  const BST_MAX = 800;
+
   const primarySeries = { label: p.Name, stats: p.Stats || [], color: COMPARE_COLORS[0] };
   const comparedSeries = [primarySeries];
   renderStatsChart(chartContainer, comparedSeries);
@@ -662,6 +673,7 @@ async function renderDetail(p: Pokemon): Promise<void> {
   const compareBtn = document.getElementById("compare-btn") as HTMLButtonElement;
   const compareControls = document.getElementById("compare-controls") as HTMLDivElement;
   const chartLegend = document.getElementById("chart-legend") as HTMLDivElement;
+  const statTotalsEl = document.getElementById("stat-totals") as HTMLDivElement;
 
   function rebuildLegend(): void {
     if (comparedSeries.length === 1) {
@@ -685,8 +697,87 @@ async function renderDetail(p: Pokemon): Promise<void> {
         comparedSeries.splice(idx, 1);
         renderStatsChart(chartContainer, comparedSeries);
         rebuildLegend();
+        rebuildStatTotals();
       });
     });
+  }
+
+  function bst(stats: { BaseStat: number }[]): number {
+    return stats.reduce((sum, s) => sum + s.BaseStat, 0);
+  }
+
+  function rebuildStatTotals(): void {
+    if (comparedSeries.length < 2) {
+      statTotalsEl.classList.add("hidden");
+      statTotalsEl.innerHTML = "";
+      return;
+    }
+
+    const baseBst = bst(comparedSeries[0].stats);
+
+    const bars = comparedSeries.map((s) => {
+      const total = bst(s.stats);
+      const diff = total - baseBst;
+      const diffStr =
+        s === comparedSeries[0]
+          ? ""
+          : `<span class="bst-diff ${diff > 0 ? "bst-diff--pos" : diff < 0 ? "bst-diff--neg" : ""}">${diff > 0 ? "+" : ""}${diff}</span>`;
+
+      const segments = s.stats
+        .map((stat) => {
+          const pct = (stat.BaseStat / BST_MAX) * 100;
+          const color = STAT_COLORS[stat.Name] || "#999";
+          return `<div class="bst-segment" style="width:${pct}%;background:${color}" title="${statName(stat.Name)}: ${stat.BaseStat}"></div>`;
+        })
+        .join("");
+
+      return `<div class="bst-row">
+        <span class="bst-label">${s.label}</span>
+        <div class="bst-bar">${segments}</div>
+        <span class="bst-value">${total}</span>
+        ${diffStr}
+      </div>`;
+    });
+
+    // Stat color legend
+    const statLegend = comparedSeries[0].stats
+      .map((s) => `<span class="bst-stat-legend-entry"><span class="bst-stat-swatch" style="background:${STAT_COLORS[s.Name] || "#999"}"></span>${statName(s.Name)}</span>`)
+      .join("");
+
+    // KPIs — only when exactly 2 Pokémon
+    let kpisHtml = "";
+    if (comparedSeries.length === 2) {
+      const baseStats = comparedSeries[0].stats;
+      const otherStats = comparedSeries[1].stats;
+
+      // Highest stat for each
+      const baseMax = baseStats.reduce((best, s) => (s.BaseStat > best.BaseStat ? s : best), baseStats[0]);
+      const otherMax = otherStats.reduce((best, s) => (s.BaseStat > best.BaseStat ? s : best), otherStats[0]);
+
+      // Biggest advantage / disadvantage (base vs other)
+      let bestAdv = { name: "", diff: 0 };
+      let worstAdv = { name: "", diff: 0 };
+      for (let i = 0; i < baseStats.length; i++) {
+        const d = baseStats[i].BaseStat - otherStats[i].BaseStat;
+        if (d > bestAdv.diff) bestAdv = { name: baseStats[i].Name, diff: d };
+        if (d < worstAdv.diff) worstAdv = { name: baseStats[i].Name, diff: d };
+      }
+
+      kpisHtml = `<div class="bst-kpis">
+        <div class="bst-kpi"><span class="bst-kpi-label">${t("detail.highestStat")}</span> <strong>${comparedSeries[0].label}</strong> — ${statName(baseMax.Name)} (${baseMax.BaseStat})</div>
+        <div class="bst-kpi"><span class="bst-kpi-label">${t("detail.highestStat")}</span> <strong>${comparedSeries[1].label}</strong> — ${statName(otherMax.Name)} (${otherMax.BaseStat})</div>
+        ${bestAdv.diff > 0 ? `<div class="bst-kpi"><span class="bst-kpi-label">${t("detail.biggestAdvantage")}</span> ${statName(bestAdv.name)} (+${bestAdv.diff})</div>` : ""}
+        ${worstAdv.diff < 0 ? `<div class="bst-kpi"><span class="bst-kpi-label">${t("detail.biggestDisadvantage")}</span> ${statName(worstAdv.name)} (${worstAdv.diff})</div>` : ""}
+      </div>`;
+    }
+
+    statTotalsEl.innerHTML = `
+      <h4 class="bst-title">${t("detail.statTotals")}</h4>
+      <div class="bst-stat-legend">${statLegend}</div>
+      ${bars.join("")}
+      ${kpisHtml}
+    `;
+    statTotalsEl.classList.remove("hidden");
   }
 
   compareBtn.addEventListener("click", () => {
@@ -716,6 +807,7 @@ async function renderDetail(p: Pokemon): Promise<void> {
         comparedSeries.push({ label: p2.Name, stats: p2.Stats || [], color });
         renderStatsChart(chartContainer, comparedSeries);
         rebuildLegend();
+        rebuildStatTotals();
       } catch {
         // silently ignore fetch errors
       }

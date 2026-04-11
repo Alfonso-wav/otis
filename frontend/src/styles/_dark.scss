@@ -130,6 +130,43 @@
     background: #4a5568;
   }
 
+  // ─── Stat totals (comparator) ─────────────────────────────────────────
+  .stat-totals {
+    background: #2d3748;
+  }
+
+  .bst-title {
+    color: #e2e8f0;
+  }
+
+  .bst-stat-legend {
+    color: #a0aec0;
+  }
+
+  .bst-label {
+    color: #e2e8f0;
+  }
+
+  .bst-bar {
+    background: #4a5568;
+  }
+
+  .bst-value {
+    color: #e2e8f0;
+  }
+
+  .bst-kpis {
+    border-top-color: #4a5568;
+  }
+
+  .bst-kpi {
+    color: #a0aec0;
+  }
+
+  .bst-kpi-label {
+    color: #718096;
+  }
+
   // ─── EV calculator ────────────────────────────────────────────────────
   .ev-results,
   .ev-ivs-section {
@@ -422,6 +459,10 @@
   // Type chart
   .type-chart-title {
     color: #e2e8f0;
+  }
+
+  .type-chart-labels {
+    color: #48bb78;
   }
 
   .type-chart-table {

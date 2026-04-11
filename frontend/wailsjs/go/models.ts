@@ -149,11 +149,12 @@ export namespace core {
 	    Category: string;
 	    Description: string;
 	    DescriptionEs: string;
-	
+	    LearnedBy: string[];
+
 	    static createFrom(source: any = {}) {
 	        return new Move(source);
 	    }
-	
+
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Name = source["Name"];
@@ -166,6 +167,7 @@ export namespace core {
 	        this.Category = source["Category"];
 	        this.Description = source["Description"];
 	        this.DescriptionEs = source["DescriptionEs"];
+	        this.LearnedBy = source["LearnedBy"];
 	    }
 	}
 	export class Stats {
