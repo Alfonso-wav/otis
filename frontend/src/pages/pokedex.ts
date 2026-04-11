@@ -1144,11 +1144,7 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
       return `<p class="moves-empty">${t("pokedex.noResults")}</p>`;
     }
 
-    const totalMoves = sorted.length;
-    const maxRows = 50;
-    const displayed = sorted.slice(0, maxRows);
-
-    const rows = displayed.map((m) => {
+    const rows = sorted.map((m) => {
       const levelCell = m.Method === "level-up" && m.Level > 0 ? String(m.Level) : "\u2014";
       return `<tr>
         <td class="move-name">${capitalize(m.Name.replace(/-/g, " "))}</td>
@@ -1162,10 +1158,6 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
       return `class="${sortDir === "asc" ? "sort-asc" : "sort-desc"}"`;
     }
 
-    const limitInfo = totalMoves > maxRows
-      ? `<div class="moves-limit-info">${t("detail.movesLimitInfo").replace("{total}", String(totalMoves))}</div>`
-      : "";
-
     return `<div class="moves-table-wrap">
       <table class="poke-table moves-table">
         <thead><tr>
@@ -1175,7 +1167,7 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
-    </div>${limitInfo}`;
+    </div>`;
   }
 
   function rebuildTable(): void {
