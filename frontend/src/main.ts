@@ -8,51 +8,142 @@ import { initSettings } from "./settings";
 import { initI18n } from "./i18n";
 import { ListGenerations } from "./api";
 
+// ── Arrow helpers ──────────────────────────────────────────────
+const ARROW_POSITIONS = ["n", "ne", "e", "se", "s", "sw", "w", "nw"] as const;
+let arrowInterval: ReturnType<typeof setInterval> | null = null;
+
+function createArrowElements(): void {
+  const container = document.getElementById("splash-arrows");
+  if (!container) return;
+  for (const pos of ARROW_POSITIONS) {
+    const el = document.createElement("div");
+    el.className = `splash-arrow splash-arrow--${pos}`;
+    el.dataset.pos = pos;
+    container.appendChild(el);
+  }
+}
+
+/** Pick 1-3 random unique positions from the 8 compass points. */
+function pickRandomPositions(): string[] {
+  const count = Math.floor(Math.random() * 3) + 1; // 1, 2, or 3
+  const shuffled = [...ARROW_POSITIONS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
+
+function startArrowLoop(): void {
+  const container = document.getElementById("splash-arrows");
+  if (!container) return;
+  const arrows = container.querySelectorAll<HTMLElement>(".splash-arrow");
+
+  function tick(): void {
+    const active = pickRandomPositions();
+    arrows.forEach((el) => {
+      const pos = el.dataset.pos ?? "";
+      if (active.includes(pos)) {
+        gsap.fromTo(el,
+          { opacity: 0, scale: 0.4 },
+          { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.7)" },
+        );
+      } else {
+        gsap.to(el, { opacity: 0, scale: 0.4, duration: 0.25 });
+      }
+    });
+  }
+
+  tick(); // first batch immediately
+  arrowInterval = setInterval(tick, 1000);
+}
+
+function stopArrows(): void {
+  if (arrowInterval !== null) {
+    clearInterval(arrowInterval);
+    arrowInterval = null;
+  }
+  const arrows = document.querySelectorAll<HTMLElement>(".splash-arrow");
+  arrows.forEach((el) => gsap.to(el, { opacity: 0, duration: 0.2 }));
+}
+
+// ── Eyes animation ─────────────────────────────────────────────
+function animateEyesOpen(): Promise<void> {
+  return new Promise((resolve) => {
+    const overlay = document.querySelector<SVGElement>(".splash-eyes-overlay");
+    if (!overlay) { resolve(); return; }
+
+    const clipLeft = document.querySelector("#eye-clip-left ellipse") as SVGEllipseElement | null;
+    const clipRight = document.querySelector("#eye-clip-right ellipse") as SVGEllipseElement | null;
+    if (!clipLeft || !clipRight) { resolve(); return; }
+
+    // Show overlay
+    gsap.set(overlay, { opacity: 1 });
+
+    // Animate clip ellipses ry from 0 → 10 (eye opening)
+    gsap.to([clipLeft, clipRight], {
+      attr: { ry: 10 },
+      duration: 0.8,
+      ease: "power2.out",
+      onComplete: resolve,
+    });
+  });
+}
+
+// ── Splash flow ────────────────────────────────────────────────
 function showSplashInteractive(): void {
   const splash = document.getElementById("splash-screen");
   const zzz = splash?.querySelector(".splash-zzz");
+  const wrapper = splash?.querySelector(".splash-snorlax-wrapper") as HTMLElement | null;
   const snorlax = splash?.querySelector(".splash-snorlax") as HTMLElement | null;
-  if (!splash || !snorlax) return;
+  if (!splash || !snorlax || !wrapper) return;
 
-  gsap.to(zzz, { opacity: 0, duration: 0.4 });
+  if (zzz) gsap.to(zzz, { opacity: 0, duration: 0.4 });
   snorlax.style.cursor = "pointer";
 
-  snorlax.addEventListener("click", () => dismissSplashInteractive(splash, snorlax), { once: true });
+  // Create arrow elements and start loop after 2 seconds
+  createArrowElements();
+  setTimeout(() => startArrowLoop(), 2000);
+
+  snorlax.addEventListener("click", () => dismissSplashInteractive(splash, wrapper, snorlax), { once: true });
 }
 
-function dismissSplashInteractive(splash: HTMLElement, snorlax: HTMLElement): void {
+async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElement, snorlax: HTMLElement): Promise<void> {
   snorlax.style.pointerEvents = "none";
 
-  gsap.timeline()
-    .to(snorlax, { scale: 1.15, duration: 0.1 })
-    .to(snorlax, {
+  // 1. Stop arrows
+  stopArrows();
+
+  // 2. Quick jiggle reaction
+  const tl = gsap.timeline();
+  tl.to(wrapper, { scale: 1.15, duration: 0.1 })
+    .to(wrapper, {
       keyframes: [
         { rotation: -8 }, { rotation: 8 },
         { rotation: -5 }, { rotation: 5 },
-        { rotation: 0 }
+        { rotation: 0 },
       ],
       duration: 0.45,
-      ease: "power2.out"
+      ease: "power2.out",
     }, "<0.05")
-    .to(snorlax, { scale: 1, duration: 0.1 })
-    .call(() => {
-      // Parar la animación CSS de respiración para que GSAP pueda controlar el transform
-      snorlax.style.animation = "none";
-      // Snorlax crece y se desvanece lentamente
-      gsap.to(snorlax, {
-        scale: 3,
-        opacity: 0,
-        duration: 2.2,
-        ease: "power1.in",
-      });
-      // El fondo oscuro se desvanece muuy lentamente revelando la app
-      gsap.to(splash, {
-        opacity: 0,
-        duration: 3.5,
-        ease: "power1.inOut",
-        onComplete: () => splash.remove(),
-      });
-    });
+    .to(wrapper, { scale: 1, duration: 0.1 });
+
+  // Wait for jiggle to finish
+  await tl.then();
+
+  // 3. Eyes opening animation
+  await animateEyesOpen();
+
+  // 4. Existing exit animation — grow Snorlax and fade everything
+  snorlax.style.animation = "none";
+  gsap.to(wrapper, {
+    scale: 3,
+    opacity: 0,
+    duration: 2.2,
+    ease: "power1.in",
+  });
+  gsap.to(splash, {
+    opacity: 0,
+    duration: 3.5,
+    ease: "power1.inOut",
+    onComplete: () => splash.remove(),
+  });
 }
 
 // Ping the API to detect when the server is ready, then show interactive splash.
