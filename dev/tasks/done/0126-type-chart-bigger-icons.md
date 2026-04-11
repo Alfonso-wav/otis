@@ -1,6 +1,6 @@
 # Task 0126 — Type Chart: iconos mucho más grandes
 
-## Estado: pending
+## Estado: done
 
 ## Goal
 
