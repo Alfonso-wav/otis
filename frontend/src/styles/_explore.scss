@@ -164,6 +164,19 @@
   }
 }
 
+.region-location-tag.disabled {
+  opacity: 0.6;
+  cursor: default;
+  pointer-events: none;
+}
+
+.region-encounter-note {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
 .region-location-more {
   background: #e2e8f0;
   color: #718096;
