@@ -1,6 +1,6 @@
 # Task 0134 — Type chart: replace click-to-fade filter with red X button per type
 
-## Estado: todo
+## Estado: done
 
 ## Goal
 Change the filtering mechanism in the Explore > Type Chart table. Instead of clicking/dragging on type headers to fade them, add a small red "X" button next to each type icon. Clicking the X filters out that type. Remove drag-to-filter behavior. Keep the existing "Restore types" button to clear all filters.
