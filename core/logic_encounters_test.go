@@ -47,6 +47,44 @@ func TestAggregateEncounters_Dedup(t *testing.T) {
 	}
 }
 
+func TestAggregateEncounters_CapsAt100(t *testing.T) {
+	areas := []LocationArea{
+		{
+			Name: "area-1",
+			PokemonEncounters: []PokemonEncounter{
+				{PokemonName: "pikachu", MaxChance: 120},
+				{PokemonName: "bulbasaur", MaxChance: 80},
+				{PokemonName: "charmander", MaxChance: 100},
+			},
+		},
+		{
+			Name: "area-2",
+			PokemonEncounters: []PokemonEncounter{
+				{PokemonName: "pikachu", MaxChance: 150},
+			},
+		},
+	}
+
+	result := AggregateEncounters(areas)
+	sort.Slice(result, func(i, j int) bool { return result[i].PokemonName < result[j].PokemonName })
+
+	expected := map[string]int{
+		"bulbasaur":  80,
+		"charmander": 100,
+		"pikachu":    100,
+	}
+	for _, enc := range result {
+		want, ok := expected[enc.PokemonName]
+		if !ok {
+			t.Errorf("unexpected pokemon %q", enc.PokemonName)
+			continue
+		}
+		if enc.MaxChance != want {
+			t.Errorf("%s: expected MaxChance %d, got %d", enc.PokemonName, want, enc.MaxChance)
+		}
+	}
+}
+
 func TestAggregateEncounters_Empty(t *testing.T) {
 	result := AggregateEncounters(nil)
 	if len(result) != 0 {
