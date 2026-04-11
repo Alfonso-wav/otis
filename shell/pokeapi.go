@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/alfon/pokemon-app/core"
@@ -281,6 +282,17 @@ func (c *PokeAPIClient) FetchRegions() ([]core.Region, error) {
 	return regions, nil
 }
 
+// apiLocationNames is the API response for /location/{name} used to extract localized names.
+type apiLocationNames struct {
+	Name  string `json:"name"`
+	Names []struct {
+		Name     string `json:"name"`
+		Language struct {
+			Name string `json:"name"`
+		} `json:"language"`
+	} `json:"names"`
+}
+
 func (c *PokeAPIClient) FetchRegion(name string) (core.Region, error) {
 	url := fmt.Sprintf("%s/region/%s", c.baseURL, name)
 	resp, err := c.httpClient.Get(url)
@@ -305,6 +317,50 @@ func (c *PokeAPIClient) FetchRegion(name string) (core.Region, error) {
 	for i, l := range raw.Locations {
 		locations[i] = core.Location{Name: l.Name, Region: raw.Name}
 	}
+
+	// Fetch localized names for each location concurrently (limited to 5 goroutines).
+	type locNameResult struct {
+		index int
+		names map[string]string
+	}
+
+	results := make(chan locNameResult, len(locations))
+	sem := make(chan struct{}, 5)
+	var wg sync.WaitGroup
+
+	for i, loc := range locations {
+		wg.Add(1)
+		go func(idx int, slug string) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			locURL := fmt.Sprintf("%s/location/%s", c.baseURL, slug)
+			var raw apiLocationNames
+			if err := fetchOne(c, locURL, &raw); err != nil {
+				results <- locNameResult{index: idx, names: nil}
+				return
+			}
+
+			names := make(map[string]string, len(raw.Names))
+			for _, n := range raw.Names {
+				names[n.Language.Name] = n.Name
+			}
+			results <- locNameResult{index: idx, names: names}
+		}(i, loc.Name)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	for res := range results {
+		if res.names != nil {
+			locations[res.index].Names = res.names
+		}
+	}
+
 	return core.Region{Name: raw.Name, Locations: locations}, nil
 }
 
