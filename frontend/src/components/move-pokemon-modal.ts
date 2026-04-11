@@ -1,5 +1,6 @@
 import { GetMove } from "../api";
 import { t } from "../i18n";
+import { createInlineDiglett, removeInlineDiglett } from "./sorting-overlay";
 
 const SPRITE_BASE = "/assets/sprites";
 const CDN_FALLBACK = "https://img.pokemondb.net/sprites/home/normal";
@@ -45,13 +46,14 @@ export async function openMovePokemonModal(moveName: string): Promise<void> {
         <span>${capitalized}</span>
         <button class="type-modal-close" id="move-modal-close">&times;</button>
       </div>
-      <div class="type-modal-body">
-        <p class="type-modal-empty">${t("modals.moveLoading")}</p>
-      </div>
+      <div class="type-modal-body"></div>
     </div>`;
 
   document.body.appendChild(overlay);
   overlayEl = overlay;
+
+  const bodyEl = overlay.querySelector<HTMLElement>(".type-modal-body")!;
+  const diglettEl = createInlineDiglett(bodyEl, t("modals.moveLoading"));
 
   overlay.querySelector("#move-modal-close")!.addEventListener("click", closeMovePokemonModal);
   overlay.addEventListener("click", (e) => {
@@ -63,17 +65,15 @@ export async function openMovePokemonModal(moveName: string): Promise<void> {
   try {
     const move = await GetMove(moveName);
     const pokemonNames = move.LearnedBy ?? [];
-
-    const body = overlay.querySelector<HTMLElement>(".type-modal-body");
-    if (!body) return;
+    removeInlineDiglett(diglettEl);
 
     const header = overlay.querySelector<HTMLElement>(".type-modal-header span");
     if (header) header.textContent = `${capitalized} (${pokemonNames.length})`;
 
     if (pokemonNames.length === 0) {
-      body.innerHTML = `<p class="type-modal-empty">${t("modals.moveEmpty", { name: capitalized })}</p>`;
+      bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.moveEmpty", { name: capitalized })}</p>`;
     } else {
-      body.innerHTML = `<div class="type-modal-grid">${pokemonNames
+      bodyEl.innerHTML = `<div class="type-modal-grid">${pokemonNames
         .map(
           (name) => `
         <div class="type-modal-pokemon" data-name="${name}">
@@ -88,7 +88,7 @@ export async function openMovePokemonModal(moveName: string): Promise<void> {
         )
         .join("")}</div>`;
 
-      body.querySelectorAll<HTMLElement>(".type-modal-pokemon").forEach((el) => {
+      bodyEl.querySelectorAll<HTMLElement>(".type-modal-pokemon").forEach((el) => {
         el.addEventListener("click", () => {
           const pName = el.dataset.name;
           if (pName) navigateToPokemon(pName);
@@ -96,8 +96,8 @@ export async function openMovePokemonModal(moveName: string): Promise<void> {
       });
     }
   } catch {
-    const body = overlay.querySelector<HTMLElement>(".type-modal-body");
-    if (body) body.innerHTML = `<p class="type-modal-empty">${t("modals.moveEmpty", { name: capitalized })}</p>`;
+    removeInlineDiglett(diglettEl);
+    bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.moveEmpty", { name: capitalized })}</p>`;
   }
 }
 

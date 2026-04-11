@@ -5,7 +5,7 @@ import { openTypeModal } from "../../components/pokemon-type-modal";
 import { openLocationEncounterModal } from "../../components/location-encounter-modal";
 import { t, getLocale } from "../../i18n";
 import { getLocationNameEs } from "../../data/location-names-es";
-import { showDiglettOverlay, hideSortingOverlay } from "../../components/sorting-overlay";
+import { showDiglettOverlay, hideSortingOverlay, createInlineDiglett } from "../../components/sorting-overlay";
 
 let initialized = false;
 let lastContainer: HTMLElement | null = null;
@@ -52,7 +52,7 @@ async function loadRegionDetail(
     return;
   }
 
-  body.innerHTML = `<p class="loading">${t("regions.loadingDetail")}</p>`;
+  createInlineDiglett(body, t("regions.loadingDetail"));
   body.classList.remove("hidden");
   showDiglettOverlay(t("regions.loadingDetail"));
 
@@ -156,7 +156,7 @@ export async function initRegions(container: HTMLElement): Promise<void> {
   initialized = true;
   lastContainer = container;
 
-  container.innerHTML = `<p class="loading">${t("regions.loading")}</p>`;
+  createInlineDiglett(container, t("regions.loading"));
 
   try {
     const regions = await ListRegions();
