@@ -114,6 +114,7 @@
         <input id="search-input" type="text" class="form-control" placeholder="Buscar por nombre o número..." data-i18n-placeholder="common.searchPlaceholder" />
         <button id="search-btn" class="btn btn-light" data-i18n="common.search">Buscar</button>
       </div>
+      <div id="header-companion" class="header-companion header-companion--desktop"></div>
     </div>
     <nav class="tab-nav px-4" id="tab-nav">
       <button class="tab-btn active" data-tab="pokedex" data-i18n="tabs.pokedex">Pokédex</button>
@@ -125,6 +126,9 @@
         </svg>
       </button>
     </nav>
+    <div id="header-companion-row" class="header-companion-row">
+      <div id="header-companion-mobile" class="header-companion header-companion--mobile"></div>
+    </div>
   </header>
 
   <main class="container-fluid p-4">
@@ -192,6 +196,18 @@
             <option value="es">Espa&#241;ol</option>
             <option value="en">English</option>
           </select>
+        </div>
+        <div class="settings-row settings-row--companion">
+          <div class="settings-companion-left">
+            <span class="settings-label" data-i18n="settings.companion">Companion</span>
+            <span class="settings-companion-hint" data-i18n="settings.companionHint">Choose a Pok&eacute;mon companion for the header</span>
+          </div>
+          <div class="settings-companion-right">
+            <div class="settings-companion-input-wrap">
+              <input id="companion-input" type="text" class="settings-companion-input" placeholder="diglett" autocomplete="off" />
+            </div>
+            <div id="companion-preview" class="settings-companion-preview"></div>
+          </div>
         </div>
         <button id="settings-apply-btn" class="settings-apply-btn" disabled data-i18n="settings.apply">Aplicar</button>
       </div>

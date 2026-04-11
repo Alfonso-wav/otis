@@ -3,6 +3,8 @@
     "title": "Configuración",
     "darkMode": "Modo Oscuro",
     "language": "Idioma",
+    "companion": "Compañero",
+    "companionHint": "Elige un Pokemon compañero para la barra superior",
     "apply": "Aplicar"
   },
   "tabs": {
