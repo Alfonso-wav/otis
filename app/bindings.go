@@ -77,6 +77,10 @@ func (a *App) GetRegionPokemonByType(region, typeName string) ([]string, error) 
 		"sinnoh": "original-sinnoh",
 		"unova":  "original-unova",
 		"kalos":  "kalos-central",
+		"alola":  "original-alola",
+		"galar":  "galar",
+		"hisui":  "hisui",
+		"paldea": "paldea",
 	}
 	pokedexName, ok := pokedexMap[core.NormalizeName(region)]
 	if !ok {
