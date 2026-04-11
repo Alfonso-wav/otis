@@ -359,14 +359,14 @@
 }
 
 .diglett-clip {
-  width: 120px;
-  height: 100px;
+  width: 130px;
+  height: 130px;
   overflow: hidden;
   position: relative;
 
   @include mobile {
-    width: 90px;
-    height: 75px;
+    width: 98px;
+    height: 98px;
   }
 }
 
