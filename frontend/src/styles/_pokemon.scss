@@ -748,7 +748,7 @@ th.sortable.active .sort-indicator {
 }
 
 .moves-table-wrap {
-  max-height: 1900px;
+  max-height: 1750px;
   overflow-y: auto;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -821,6 +821,14 @@ th.sortable.active .sort-indicator {
   font-style: italic;
 }
 
+.moves-limit-info {
+  text-align: center;
+  padding: 8px;
+  color: #888;
+  font-family: $font-body;
+  font-size: 0.9em;
+}
+
 [data-bs-theme="dark"] .pokemon-moves {
   border-top-color: #4a5568;
 }
@@ -835,4 +843,8 @@ th.sortable.active .sort-indicator {
 
 [data-bs-theme="dark"] .moves-table .move-level {
   color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .moves-limit-info {
+  color: #a0aec0;
 }
