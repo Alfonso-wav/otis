@@ -349,6 +349,53 @@
   }
 }
 
+// ─── Diglett loading animation ───────────────────────────────────────────────
+
+.diglett-hole {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.diglett-clip {
+  width: 120px;
+  height: 100px;
+  overflow: hidden;
+  position: relative;
+
+  @include mobile {
+    width: 90px;
+    height: 75px;
+  }
+}
+
+.diglett-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  position: absolute;
+  bottom: 0;
+
+  @include mobile {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+.diglett-ground {
+  width: 140px;
+  height: 18px;
+  background: radial-gradient(ellipse at center, #8b6914 0%, #a57d1a 40%, transparent 70%);
+  border-radius: 50%;
+  margin-top: -6px;
+
+  @include mobile {
+    width: 105px;
+    height: 14px;
+  }
+}
+
 .error-text {
   color: #e53e3e;
 }
