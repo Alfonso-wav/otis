@@ -3,7 +3,7 @@ import { ListRegions, GetRegion, GetRegionPokemonByType } from "../../api";
 import { renderTypeDistributionChart } from "../../charts/type-distribution";
 import { openTypeModal } from "../../components/pokemon-type-modal";
 import { openLocationEncounterModal } from "../../components/location-encounter-modal";
-import { t } from "../../i18n";
+import { t, getLocale } from "../../i18n";
 
 let initialized = false;
 let lastContainer: HTMLElement | null = null;
@@ -79,7 +79,7 @@ async function loadRegionDetail(
             ${visibleLocations
               .map(
                 (l) =>
-                  `<span class="region-location-tag" data-location="${l.Name}">${l.Name.replace(/-/g, " ")}</span>`,
+                  `<span class="region-location-tag" data-location="${l.Name}">${l.Names?.[getLocale()] ?? l.Names?.["en"] ?? l.Name.replace(/-/g, " ")}</span>`,
               )
               .join("")}${
               hasMore
