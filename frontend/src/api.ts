@@ -128,6 +128,11 @@ export function GetRegionPokemonByType(region: string, typeName: string): Promis
   return get(`/api/regions/${encodeURIComponent(region)}/pokemon-by-type/${encodeURIComponent(typeName)}`);
 }
 
+export function GetRegionTypeDistribution(region: string): Promise<Record<string, number>> {
+  if (isWails()) return wails("GetRegionTypeDistribution", region);
+  return get(`/api/regions/${encodeURIComponent(region)}/type-distribution`);
+}
+
 export function GetMove(name: string): Promise<core.Move> {
   if (isWails()) return wails("GetMove", name);
   return get(`/api/moves/${encodeURIComponent(name)}`);
