@@ -130,7 +130,8 @@
     "title": "Type Effectiveness",
     "attackingLabel": "Attacker →",
     "defendingLabel": "↓ Defender",
-    "restoreTypes": "Restore types"
+    "restoreTypes": "Restore types",
+    "removeType": "Remove type"
   },
   "berries": {
     "title": "Berries",
