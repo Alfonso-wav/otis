@@ -498,15 +498,15 @@
 }
 
 .tc-corner {
-  min-width: 156px;
-  width: 156px;
+  min-width: 168px;
+  width: 168px;
   background: #f7fafc;
   border: 1px solid #e2e8f0;
 }
 
 .tc-col-header {
-  min-width: 108px;
-  width: 108px;
+  min-width: 120px;
+  width: 120px;
   padding: 0.9rem 0.45rem;
   text-align: center;
   vertical-align: middle;
@@ -515,7 +515,7 @@
 }
 
 .tc-row-header {
-  min-width: 156px;
+  min-width: 168px;
   padding: 0.75rem 1.2rem;
   text-align: left;
   vertical-align: middle;
@@ -525,8 +525,8 @@
 }
 
 .tc-icon {
-  width: 60px;
-  height: 60px;
+  width: 84px;
+  height: 84px;
   display: block;
   margin: 0 auto;
 }
@@ -543,7 +543,7 @@
   .tc-row-header[data-type="#{$type}"] .tc-icon {
     background-color: $color;
     border-radius: 50%;
-    padding: 8px;
+    padding: 10px;
     box-sizing: border-box;
   }
 }
@@ -585,9 +585,9 @@
 }
 
 .tc-cell {
-  width: 108px;
-  min-width: 108px;
-  height: 78px;
+  width: 120px;
+  min-width: 120px;
+  height: 84px;
   text-align: center;
   vertical-align: middle;
   border: 1px solid #e2e8f0;
@@ -620,29 +620,29 @@
 // ─── Type Chart — responsive ─────────────────────────────────────────────────
 
 @media (max-width: 991px) {
-  .tc-col-header  { min-width: 72px; width: 72px; padding: 0.6rem 0.3rem; }
-  .tc-row-header  { min-width: 104px; padding: 0.5rem 0.8rem; }
-  .tc-corner      { min-width: 104px; width: 104px; }
-  .tc-cell        { width: 72px; min-width: 72px; height: 52px; font-size: 0.85rem; }
-  .tc-icon        { width: 40px; height: 40px; }
+  .tc-col-header  { min-width: 80px; width: 80px; padding: 0.6rem 0.3rem; }
+  .tc-row-header  { min-width: 116px; padding: 0.5rem 0.8rem; }
+  .tc-corner      { min-width: 116px; width: 116px; }
+  .tc-cell        { width: 80px; min-width: 80px; height: 58px; font-size: 0.85rem; }
+  .tc-icon        { width: 56px; height: 56px; }
   .type-chart-table { font-size: 0.85rem; }
 }
 
 @media (max-width: 767px) {
-  .tc-col-header  { min-width: 44px; width: 44px; padding: 0.3rem 0.15rem; }
-  .tc-row-header  { min-width: 64px; padding: 0.25rem 0.4rem; }
-  .tc-corner      { min-width: 64px; width: 64px; }
-  .tc-cell        { width: 44px; min-width: 44px; height: 32px; font-size: 0.72rem; }
-  .tc-icon        { width: 26px; height: 26px; }
+  .tc-col-header  { min-width: 50px; width: 50px; padding: 0.3rem 0.15rem; }
+  .tc-row-header  { min-width: 72px; padding: 0.25rem 0.4rem; }
+  .tc-corner      { min-width: 72px; width: 72px; }
+  .tc-cell        { width: 50px; min-width: 50px; height: 36px; font-size: 0.72rem; }
+  .tc-icon        { width: 36px; height: 36px; }
   .type-chart-table { font-size: 0.72rem; }
 }
 
 @media (max-width: 479px) {
-  .tc-col-header  { min-width: 30px; width: 30px; padding: 0.2rem 0.1rem; }
-  .tc-row-header  { min-width: 44px; padding: 0.2rem 0.3rem; }
-  .tc-corner      { min-width: 44px; width: 44px; }
-  .tc-cell        { width: 30px; min-width: 30px; height: 22px; font-size: 0.62rem; }
-  .tc-icon        { width: 18px; height: 18px; }
+  .tc-col-header  { min-width: 34px; width: 34px; padding: 0.2rem 0.1rem; }
+  .tc-row-header  { min-width: 48px; padding: 0.2rem 0.3rem; }
+  .tc-corner      { min-width: 48px; width: 48px; }
+  .tc-cell        { width: 34px; min-width: 34px; height: 24px; font-size: 0.62rem; }
+  .tc-icon        { width: 22px; height: 22px; }
   .type-chart-table { font-size: 0.62rem; }
 
   @each $type, $color in $type-colors {
