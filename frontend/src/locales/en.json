@@ -85,7 +85,8 @@
       "machine": "TM/HM",
       "egg": "Egg",
       "tutor": "Tutor"
-    }
+    },
+    "movesLimitInfo": "Showing 50 of {total} moves"
   },
   "encounters": {
     "title": "Encounters",
