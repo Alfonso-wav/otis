@@ -1,4 +1,6 @@
 // _splash.scss — Snorlax splash screen animations
+// NOTE: Critical splash styles are duplicated as inline <style> in index.html
+// so the splash renders before this SCSS bundle loads. Keep both in sync.
 
 #splash-screen {
   position: fixed;
