@@ -3,6 +3,8 @@
     "title": "Settings",
     "darkMode": "Dark Mode",
     "language": "Language",
+    "companion": "Companion",
+    "companionHint": "Choose a Pokemon companion for the header",
     "apply": "Apply"
   },
   "tabs": {
