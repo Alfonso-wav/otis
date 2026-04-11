@@ -15,7 +15,34 @@
       <span>z</span>
       <span>Z</span>
     </div>
-    <img class="splash-snorlax" src="/src/assets/snorlax-splash.svg" alt="Snorlax" />
+    <div class="splash-snorlax-wrapper">
+      <img class="splash-snorlax" src="/src/assets/snorlax-splash.svg" alt="Snorlax" />
+      <!-- SVG overlay for waking-up eyes -->
+      <svg class="splash-eyes-overlay" viewBox="-1.65 -1.9 527.2 424.15" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <clipPath id="eye-clip-left">
+            <ellipse cx="232" cy="84" rx="14" ry="0" />
+          </clipPath>
+          <clipPath id="eye-clip-right">
+            <ellipse cx="293" cy="84" rx="14" ry="0" />
+          </clipPath>
+        </defs>
+        <!-- Left eye -->
+        <g clip-path="url(#eye-clip-left)">
+          <ellipse cx="232" cy="84" rx="12" ry="8" fill="#fdeabe" />
+          <ellipse cx="232" cy="84" rx="6" ry="7" fill="#0d131a" />
+          <ellipse cx="230" cy="82" rx="2.5" ry="2" fill="#ffffff" />
+        </g>
+        <!-- Right eye -->
+        <g clip-path="url(#eye-clip-right)">
+          <ellipse cx="293" cy="84" rx="12" ry="8" fill="#fdeabe" />
+          <ellipse cx="293" cy="84" rx="6" ry="7" fill="#0d131a" />
+          <ellipse cx="291" cy="82" rx="2.5" ry="2" fill="#ffffff" />
+        </g>
+      </svg>
+      <!-- Arrow indicators -->
+      <div class="splash-arrows" id="splash-arrows"></div>
+    </div>
     <p class="splash-zzz-text">
       <span>z</span><span>Z</span><span>z</span><span>Z</span><span>Z</span><span>z</span><span>Z</span>
     </p>
