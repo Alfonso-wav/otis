@@ -26,8 +26,8 @@
   "filters": {
     "generation": "Generación",
     "type": "Tipo",
-    "legendary": "⭐ Legendario",
-    "mythical": "✨ Mítico",
+    "legendary": "Legendario",
+    "mythical": "Mítico",
     "resetAll": "✕ Todos",
     "tableView": "⊞ Tabla",
     "cardView": "⊟ Tarjetas"

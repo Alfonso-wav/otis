@@ -26,8 +26,8 @@
   "filters": {
     "generation": "Generation",
     "type": "Type",
-    "legendary": "⭐ Legendary",
-    "mythical": "✨ Mythical",
+    "legendary": "Legendary",
+    "mythical": "Mythical",
     "resetAll": "✕ All",
     "tableView": "⊞ Table",
     "cardView": "⊟ Cards"
