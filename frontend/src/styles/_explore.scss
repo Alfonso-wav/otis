@@ -414,6 +414,24 @@
   font-size: 0.82rem;
 }
 
+.pkmn-btn {
+  background: $pokedex-red;
+  color: white;
+  border: none;
+  padding: 0.2rem 0.6rem;
+  border-radius: $border-radius;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover {
+    background: darken($pokedex-red, 10%);
+  }
+}
+
 // ─── Abilities ──────────────────────────────────────────────────────────────
 
 .abilities-controls {
@@ -489,9 +507,10 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #718096;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #e53e3e;
+  letter-spacing: 0.05em;
 }
 
 .type-chart-scroll {
@@ -499,8 +518,6 @@
   -webkit-overflow-scrolling: touch;
   border-radius: $border-radius-lg;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  width: fit-content;
-  max-width: 100%;
 }
 
 .type-chart-table {
@@ -508,6 +525,7 @@
   background: white;
   font-size: 1rem;
   white-space: nowrap;
+  width: 100%;
 }
 
 .tc-corner {
@@ -585,7 +603,6 @@
   }
 }
 
-// Make type headers feel interactive
 .tc-col-header[data-type],
 .tc-row-header[data-type] {
   cursor: pointer;

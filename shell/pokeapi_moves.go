@@ -86,10 +86,12 @@ func (c *PokeAPIClient) FetchAllMoves() ([]core.Move, error) {
 		moves[res.index] = res.move
 	}
 
-	// Filter out zero-value entries (failed fetches)
+	// Filter out zero-value entries (failed fetches) and strip LearnedBy to keep payload small.
+	// Frontend fetches LearnedBy lazily via GetMove(name) when the modal opens.
 	filtered := make([]core.Move, 0, len(moves))
 	for _, m := range moves {
 		if m.Name != "" {
+			m.LearnedBy = nil
 			filtered = append(filtered, m)
 		}
 	}

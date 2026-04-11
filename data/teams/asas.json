@@ -1,0 +1,167 @@
+{
+  "name": "asas",
+  "members": [
+    {
+      "pokemonName": "meowth",
+      "moves": [
+        "u-turn",
+        "hypnosis",
+        "knock-off",
+        "rain-dance"
+      ],
+      "level": 50,
+      "nature": "Bold",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 32,
+        "attack": 182,
+        "defense": 33,
+        "spAttack": 132,
+        "spDefense": 88,
+        "speed": 43
+      }
+    },
+    {
+      "pokemonName": "lapras",
+      "moves": [
+        "brine",
+        "hidden-power",
+        "round",
+        "mist"
+      ],
+      "level": 50,
+      "nature": "Brave",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 213,
+        "attack": 165,
+        "defense": 43,
+        "spAttack": 53,
+        "spDefense": 19,
+        "speed": 17
+      }
+    },
+    {
+      "pokemonName": "slowpoke",
+      "moves": [
+        "confide",
+        "curse",
+        "after-you",
+        "mimic"
+      ],
+      "level": 50,
+      "nature": "Timid",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 80,
+        "attack": 69,
+        "defense": 28,
+        "spAttack": 51,
+        "spDefense": 210,
+        "speed": 72
+      }
+    },
+    {
+      "pokemonName": "caterpie",
+      "moves": [
+        "electroweb",
+        "string-shot",
+        "snore",
+        "bug-bite"
+      ],
+      "level": 50,
+      "nature": "Docile",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 177,
+        "attack": 86,
+        "defense": 146,
+        "spAttack": 15,
+        "spDefense": 4,
+        "speed": 82
+      }
+    },
+    {
+      "pokemonName": "golem",
+      "moves": [
+        "bulldoze",
+        "return",
+        "fury-cutter",
+        "swagger"
+      ],
+      "level": 50,
+      "nature": "Impish",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 159,
+        "attack": 16,
+        "defense": 95,
+        "spAttack": 192,
+        "spDefense": 29,
+        "speed": 19
+      }
+    },
+    {
+      "pokemonName": "vaporeon",
+      "moves": [
+        "substitute",
+        "aurora-beam",
+        "baby-doll-eyes",
+        "flip-turn"
+      ],
+      "level": 50,
+      "nature": "Jolly",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 214,
+        "attack": 195,
+        "defense": 87,
+        "spAttack": 14,
+        "spDefense": 0,
+        "speed": 0
+      }
+    }
+  ]
+}

@@ -500,6 +500,129 @@ th.sortable.active .sort-indicator {
   }
 }
 
+// -- Stat Totals (comparator) -------------------------------------------------
+
+.stat-totals {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: $border-radius-lg;
+  font-family: $font-body;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+.bst-title {
+  font-family: $font-display;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem;
+  color: #2d3748;
+}
+
+.bst-stat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.78rem;
+  color: #4a5568;
+}
+
+.bst-stat-legend-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.bst-stat-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.bst-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.bst-label {
+  flex: 0 0 90px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #2d3748;
+}
+
+.bst-bar {
+  flex: 1;
+  display: flex;
+  height: 16px;
+  border-radius: $border-radius-pill;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.bst-segment {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.bst-value {
+  flex: 0 0 36px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: right;
+  color: #2d3748;
+}
+
+.bst-diff {
+  flex: 0 0 42px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: right;
+
+  &--pos {
+    color: #38a169;
+  }
+
+  &--neg {
+    color: #e53e3e;
+  }
+}
+
+.bst-kpis {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.bst-kpi {
+  font-size: 0.82rem;
+  color: #4a5568;
+
+  strong {
+    text-transform: capitalize;
+  }
+}
+
+.bst-kpi-label {
+  font-weight: 700;
+  color: #718096;
+  margin-right: 0.3rem;
+}
+
 // -- Pokemon Lore -------------------------------------------------------------
 
 .pokemon-lore {
@@ -640,6 +763,8 @@ th.sortable.active .sort-indicator {
 }
 
 .encounters-table-wrap {
+  max-height: 900px;
+  overflow-y: auto;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   border-radius: $border-radius-lg;
