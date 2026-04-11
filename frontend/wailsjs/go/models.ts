@@ -579,15 +579,17 @@ export namespace core {
 	export class Location {
 	    Name: string;
 	    Region: string;
-	
+	    Names: {[key: string]: string};
+
 	    static createFrom(source: any = {}) {
 	        return new Location(source);
 	    }
-	
+
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Name = source["Name"];
 	        this.Region = source["Region"];
+	        this.Names = source["Names"] || {};
 	    }
 	}
 	export class PokemonEncounter {

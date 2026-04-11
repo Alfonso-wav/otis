@@ -8,6 +8,7 @@ type Region struct {
 type Location struct {
 	Name   string
 	Region string
+	Names  map[string]string // language code → localized name (e.g., "es" → "Pueblo Paleta")
 }
 
 type Move struct {
