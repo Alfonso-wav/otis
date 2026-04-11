@@ -5,6 +5,7 @@ import { openTypeModal } from "../../components/pokemon-type-modal";
 import { openLocationEncounterModal } from "../../components/location-encounter-modal";
 import { t, getLocale } from "../../i18n";
 import { getLocationNameEs } from "../../data/location-names-es";
+import { showDiglettOverlay, hideSortingOverlay } from "../../components/sorting-overlay";
 
 let initialized = false;
 let lastContainer: HTMLElement | null = null;
@@ -53,6 +54,7 @@ async function loadRegionDetail(
 
   body.innerHTML = `<p class="loading">${t("regions.loadingDetail")}</p>`;
   body.classList.remove("hidden");
+  showDiglettOverlay(t("regions.loadingDetail"));
 
   try {
     const region = await GetRegion(regionName);
@@ -90,6 +92,7 @@ async function loadRegionDetail(
       </div>`;
 
     body.dataset.loaded = "true";
+    hideSortingOverlay();
 
     const items = body.querySelectorAll(".region-location-tag");
     gsap.fromTo(
@@ -134,6 +137,7 @@ async function loadRegionDetail(
       }
     });
   } catch (err: unknown) {
+    hideSortingOverlay();
     body.innerHTML = `<p class="loading" style="color:#e53e3e">${String(err)}</p>`;
   }
 }
