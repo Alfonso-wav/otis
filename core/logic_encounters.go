@@ -14,6 +14,9 @@ func AggregateEncounters(areas []LocationArea) []PokemonEncounter {
 
 	result := make([]PokemonEncounter, 0, len(best))
 	for name, chance := range best {
+		if chance > 100 {
+			chance = 100
+		}
 		result = append(result, PokemonEncounter{
 			PokemonName: name,
 			MaxChance:   chance,
