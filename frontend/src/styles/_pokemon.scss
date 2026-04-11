@@ -809,9 +809,6 @@ th.sortable.active .sort-indicator {
 
 .ability-card {
   padding: 0.75rem 1rem;
-  background: #f7fafc;
-  border-radius: $border-radius-lg;
-  border-left: 3px solid $pokedex-red;
 }
 
 .ability-name {
@@ -834,10 +831,6 @@ th.sortable.active .sort-indicator {
 
 [data-bs-theme="dark"] .pokemon-abilities {
   border-top-color: #4a5568;
-}
-
-[data-bs-theme="dark"] .ability-card {
-  background: #2d3748;
 }
 
 [data-bs-theme="dark"] .ability-name {
