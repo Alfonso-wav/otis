@@ -396,6 +396,101 @@
   }
 }
 
+// ─── Inline Diglett (contained loading indicator) ───────────────────────────
+
+.diglett-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+  width: 100%;
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__text {
+    margin: 0;
+    font-family: $font-body;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4a5568;
+  }
+}
+
+// Smaller variant for inline contexts
+.diglett-hole--sm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.diglett-clip--sm {
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+  position: relative;
+
+  @include mobile {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+.diglett-img--sm {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  margin-left: -36px;
+
+  @include mobile {
+    width: 58px;
+    height: 58px;
+    margin-left: -29px;
+  }
+}
+
+.diglett-ground--sm {
+  width: 90px;
+  height: 12px;
+  background: radial-gradient(ellipse at center, #8b6914 0%, #a57d1a 40%, transparent 70%);
+  border-radius: 50%;
+  margin-top: -4px;
+
+  @include mobile {
+    width: 72px;
+    height: 10px;
+  }
+}
+
+// ─── Heracross loading animation ────────────────────────────────────────────
+
+.heracross-anim {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heracross-img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  image-rendering: auto;
+  transform-origin: bottom center;
+
+  @include mobile {
+    width: 76px;
+    height: 76px;
+  }
+}
+
 .error-text {
   color: #e53e3e;
 }

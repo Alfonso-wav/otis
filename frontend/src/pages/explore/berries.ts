@@ -2,7 +2,7 @@ import gsap from "gsap";
 import { ListBerries, GetBerry } from "../../api";
 import type { core } from "../../../wailsjs/go/models";
 import { SortCache } from "../../utils/sort-cache";
-import { showSortingOverlay, hideSortingOverlay } from "../../components/sorting-overlay";
+import { showSortingOverlay, hideSortingOverlay, createInlineHeracross } from "../../components/sorting-overlay";
 import { t, typeName } from "../../i18n";
 
 type ViewMode = "cards" | "table";
@@ -350,9 +350,13 @@ export async function initBerries(panel: HTMLElement): Promise<void> {
         </div>
       </div>
       <div class="berries-content">
-        <p class="loading">${t("berries.loading")}</p>
+        <div id="berries-loading"></div>
       </div>
     </div>`;
+
+  // Show Heracross loading animation
+  const loadingEl = panel.querySelector<HTMLElement>("#berries-loading");
+  if (loadingEl) createInlineHeracross(loadingEl, t("berries.loading"));
 
   // Toggle view
   panel.querySelectorAll<HTMLButtonElement>("[data-view]").forEach((btn) => {

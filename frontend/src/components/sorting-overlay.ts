@@ -4,6 +4,7 @@ import { t } from "../i18n";
 const MRMIME_SPRITE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/122.png";
 const MACHAMP_SPRITE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/68.png";
 const DIGLETT_SPRITE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/50.png";
+const HERACROSS_SPRITE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/214.png";
 
 let overlayEl: HTMLDivElement | null = null;
 let tween: gsap.core.Tween | null = null;
@@ -96,3 +97,101 @@ export function hideSortingOverlay(): void {
     overlayEl = null;
   }
 }
+
+// ─── Inline Diglett (contained within a parent element) ─────────────────────
+
+const inlineTweens = new Map<HTMLElement, gsap.core.Tween>();
+
+/**
+ * Creates an inline Diglett loading indicator inside the given container.
+ * Unlike the fullscreen overlay, this is a contained element that respects
+ * the parent's size. Returns the wrapper element for later removal.
+ */
+export function createInlineDiglett(container: HTMLElement, text?: string): HTMLDivElement {
+  // Clean up any orphaned inline tweens (elements removed from DOM by innerHTML replacement)
+  for (const [el, tw] of inlineTweens) {
+    if (!el.isConnected) {
+      tw.kill();
+      inlineTweens.delete(el);
+    }
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "diglett-inline";
+  wrapper.innerHTML = `
+    <div class="diglett-inline__content">
+      <div class="diglett-hole diglett-hole--sm">
+        <div class="diglett-clip diglett-clip--sm">
+          <img class="sorting-overlay__img diglett-img diglett-img--sm" src="${DIGLETT_SPRITE}" alt="Diglett loading..." />
+        </div>
+        <div class="diglett-ground diglett-ground--sm"></div>
+      </div>
+      <p class="diglett-inline__text">${text ?? t("common.loading")}</p>
+    </div>`;
+  container.innerHTML = "";
+  container.appendChild(wrapper);
+
+  const img = wrapper.querySelector<HTMLImageElement>(".diglett-img")!;
+  const tl = gsap.timeline({ repeat: -1 });
+  tl.fromTo(img, { y: 40 }, { y: 0, duration: 0.4, ease: "back.out(1.7)" })
+    .to(img, { y: -4, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 3 })
+    .to(img, { y: 40, duration: 0.3, ease: "power2.in" })
+    .to(img, { y: 40, duration: 0.3 });
+  inlineTweens.set(wrapper, tl as unknown as gsap.core.Tween);
+
+  return wrapper;
+}
+
+/**
+ * Removes an inline Diglett element and kills its animation.
+ */
+export function removeInlineDiglett(wrapper: HTMLDivElement | null): void {
+  if (!wrapper) return;
+  const tw = inlineTweens.get(wrapper);
+  if (tw) {
+    tw.kill();
+    inlineTweens.delete(wrapper);
+  }
+  wrapper.remove();
+}
+
+// ─── Inline Heracross (contained within a parent element) ───────────────────
+
+/**
+ * Creates an inline Heracross loading indicator inside the given container.
+ * Heracross performs a headbutt animation (lean forward and back).
+ */
+export function createInlineHeracross(container: HTMLElement, text?: string): HTMLDivElement {
+  // Clean up orphaned tweens
+  for (const [el, tw] of inlineTweens) {
+    if (!el.isConnected) {
+      tw.kill();
+      inlineTweens.delete(el);
+    }
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "diglett-inline";
+  wrapper.innerHTML = `
+    <div class="diglett-inline__content">
+      <div class="heracross-anim">
+        <img class="heracross-img" src="${HERACROSS_SPRITE}" alt="Heracross loading..." />
+      </div>
+      <p class="diglett-inline__text">${text ?? t("common.loading")}</p>
+    </div>`;
+  container.innerHTML = "";
+  container.appendChild(wrapper);
+
+  const img = wrapper.querySelector<HTMLImageElement>(".heracross-img")!;
+  const tl = gsap.timeline({ repeat: -1 });
+  // Headbutt animation: lean forward (rotate), slam, bounce back
+  tl.to(img, { rotation: -15, duration: 0.3, ease: "power2.in" })
+    .to(img, { rotation: 5, x: 8, duration: 0.15, ease: "power3.out" })
+    .to(img, { rotation: 0, x: 0, duration: 0.4, ease: "elastic.out(1, 0.5)" })
+    .to(img, { duration: 0.6 }); // pause before next headbutt
+  inlineTweens.set(wrapper, tl as unknown as gsap.core.Tween);
+
+  return wrapper;
+}
+
+export { removeInlineDiglett as removeInlineHeracross };
