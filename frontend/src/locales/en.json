@@ -6,6 +6,7 @@
     "companionTeam": "Companion Team",
     "companionTeamHint": "Choose up to 6 Pokemon companions for the header",
     "loadFromTeam": "Load from team",
+    "selectTeamPlaceholder": "Select a team...",
     "apply": "Apply"
   },
   "tabs": {

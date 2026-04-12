@@ -6,6 +6,7 @@
     "companionTeam": "Equipo Compañero",
     "companionTeamHint": "Elige hasta 6 Pokemon compañeros para la barra superior",
     "loadFromTeam": "Cargar de equipo",
+    "selectTeamPlaceholder": "Selecciona un equipo...",
     "apply": "Aplicar"
   },
   "tabs": {
