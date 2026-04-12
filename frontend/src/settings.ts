@@ -67,18 +67,6 @@ export function renderCompanion(): void {
     .join("");
 }
 
-function renderCompanionPreview(team: string[]): void {
-  const preview = document.getElementById("companion-preview");
-  if (!preview) return;
-  preview.innerHTML = team
-    .filter((name) => name !== "")
-    .map((name) => {
-      const url = companionSpriteUrl(name);
-      const fallback = companionSpriteFallback(name);
-      return `<img class="companion-sprite" src="${url}" alt="${name}" onerror="this.onerror=null;this.src='${fallback}'" />`;
-    })
-    .join("") || '<span style="color:#a0aec0;font-size:0.8rem">—</span>';
-}
 
 function hasPendingChanges(): boolean {
   if (pending.locale !== null && pending.locale !== getLocale()) return true;
@@ -137,19 +125,16 @@ export function initSettings(): void {
           input.value = name;
           if (!pending.companionTeam) pending.companionTeam = [...getCompanionTeam()];
           pending.companionTeam[i] = name;
-          renderCompanionPreview(pending.companionTeam);
           updateApplyButton();
         });
         input.addEventListener("change", () => {
           const val = input.value.trim().toLowerCase();
           if (!pending.companionTeam) pending.companionTeam = [...getCompanionTeam()];
           pending.companionTeam[i] = val;
-          renderCompanionPreview(pending.companionTeam);
           updateApplyButton();
         });
       });
     });
-    renderCompanionPreview(currentTeam);
   }
 
   // Load from team button
@@ -175,7 +160,6 @@ export function initSettings(): void {
           while (newTeam.length < 6) newTeam.push("");
           pending.companionTeam = newTeam;
           companionSlots.forEach((input, i) => { input.value = newTeam[i] || ""; });
-          renderCompanionPreview(newTeam);
           updateApplyButton();
           teamSelect.classList.add("hidden");
         }, { once: true });
@@ -225,7 +209,6 @@ export function cleanupSettings(): void {
   const companionSlots = document.querySelectorAll<HTMLInputElement>(".companion-slot-input");
   const saved = getCompanionTeam();
   companionSlots.forEach((input, i) => { input.value = saved[i] || ""; });
-  renderCompanionPreview(saved);
 
   updateApplyButton();
 }

@@ -155,6 +155,23 @@
     color: #e2e8f0;
   }
 
+  .bst-diff--pos {
+    background: rgba(56, 161, 105, 0.25);
+  }
+
+  .bst-diff--neg {
+    background: rgba(229, 62, 62, 0.25);
+  }
+
+  .bst-diff--neutral {
+    background: rgba(160, 174, 192, 0.15);
+  }
+
+  .bst-diff-total.bst-diff--pos,
+  .bst-diff-total.bst-diff--neg {
+    background: none;
+  }
+
   .bst-kpis {
     border-top-color: #4a5568;
   }
@@ -165,6 +182,23 @@
 
   .bst-kpi-label {
     color: #718096;
+  }
+
+  .bst-tooltip {
+    background: #1a202c;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  }
+
+  .bst-tooltip-header {
+    color: #e2e8f0;
+  }
+
+  .bst-tooltip-name {
+    color: #a0aec0;
+  }
+
+  .bst-tooltip-val {
+    color: #e2e8f0;
   }
 
   // ─── EV calculator ────────────────────────────────────────────────────
@@ -461,77 +495,6 @@
     color: #e2e8f0;
   }
 
-  .type-chart-labels {
-    color: #48bb78;
-  }
-
-  .type-chart-table {
-    background: #2d3748;
-  }
-
-  .tc-corner,
-  .tc-col-header,
-  .tc-row-header {
-    border-color: #4a5568;
-    color: #e2e8f0;
-  }
-
-  .tc-corner,
-  .tc-col-header:not([data-type]),
-  .tc-row-header:not([data-type]) {
-    background: #1a202c;
-  }
-
-  .tc-restore-btn {
-    border-color: $navy-blue-text;
-    color: $navy-blue-text;
-
-    &:hover {
-      background: $navy-blue;
-      color: white;
-    }
-  }
-
-  .tc-cell {
-    border-color: #4a5568;
-  }
-
-  .tc-neutral {
-    background: #2d3748;
-    color: transparent;
-  }
-
-  .tc-super {
-    background: #276749;
-    color: #c6f6d5;
-  }
-
-  .tc-resisted {
-    background: #822727;
-    color: #fed7d7;
-  }
-
-  .tc-immune {
-    background: #1a202c;
-    color: #718096;
-  }
-
-  // Type chart view toggle
-  .tc-view-btn {
-    background: #2d3748;
-    color: #a0aec0;
-
-    &:hover {
-      background: #4a5568;
-      color: #e2e8f0;
-    }
-
-    &.active {
-      background: $navy-blue;
-      color: white;
-    }
-  }
-
   // Heatmap & radar
   .tc-radar-title {
     color: #e2e8f0;
@@ -736,5 +699,68 @@
   // ─── Inline Diglett ──────────────────────────────────────────────────
   .diglett-inline__text {
     color: #a0aec0;
+  }
+
+  // ─── Maps ─────────────────────────────────────────────────────────────
+  .map-sub-btn {
+    background: #2d3748;
+    color: #a0aec0;
+
+    &:hover {
+      background: #4a5568;
+      color: #e2e8f0;
+    }
+
+    &.active {
+      background: $navy-blue;
+      color: white;
+    }
+  }
+
+  .map-selector-label {
+    color: #a0aec0;
+  }
+
+  .map-region-select {
+    background: #1a202c;
+    border-color: #4a5568;
+    color: #e2e8f0;
+
+    &:focus {
+      border-color: $navy-blue-hover;
+    }
+  }
+
+  .map-viewer {
+    background: #1a202c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .map-viewport {
+    background: #1a202c;
+  }
+
+  .map-loader {
+    background: #1a202c;
+  }
+
+  .map-spinner {
+    border-color: #4a5568;
+    border-top-color: $navy-blue-text;
+  }
+
+  .map-error {
+    color: #718096;
+  }
+
+  .map-ctrl-btn {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: #a0aec0;
+
+    &:hover {
+      background: #4a5568;
+      color: #e2e8f0;
+    }
   }
 }

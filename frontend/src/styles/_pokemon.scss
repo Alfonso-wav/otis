@@ -29,29 +29,6 @@
   justify-content: center;
 }
 
-.header-companion--desktop {
-  // Visible only on desktop (Wails) — hidden on mobile/tablet
-  display: flex;
-
-  @media (max-width: $bp-tablet) {
-    display: none;
-  }
-}
-
-.header-companion-row {
-  display: none;
-  justify-content: flex-end;
-  padding: 0 1rem 0.35rem;
-
-  @media (max-width: $bp-tablet) {
-    display: flex;
-  }
-}
-
-.header-companion--mobile {
-  display: flex;
-}
-
 .companion-sprite {
   width: 40px;
   height: 40px;
@@ -564,22 +541,22 @@ th.sortable.active .sort-indicator {
   line-height: 1;
   border: none;
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.12);
+  background: transparent;
   color: inherit;
   cursor: pointer;
   font-size: 1rem;
   vertical-align: middle;
-  transition: background 0.15s, color 0.15s;
+  transition: color 0.15s;
 
   &:hover {
-    background: $pokedex-red;
-    color: white;
+    color: $pokedex-red;
   }
 }
 
 // -- Stat Totals (comparator) -------------------------------------------------
 
 .stat-totals {
+  position: relative;
   margin-top: 1rem;
   padding: 1rem;
   background: #f7fafc;
@@ -621,11 +598,14 @@ th.sortable.active .sort-indicator {
   border-radius: 2px;
 }
 
+.bst-group {
+  margin-bottom: 0.6rem;
+}
+
 .bst-row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.4rem;
 }
 
 .bst-label {
@@ -661,19 +641,63 @@ th.sortable.active .sort-indicator {
   color: #2d3748;
 }
 
-.bst-diff {
-  flex: 0 0 42px;
+.bst-diff-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2px;
+}
+
+.bst-diff-spacer {
+  flex: 0 0 90px;
+}
+
+.bst-diff-bar {
+  flex: 1;
+  display: flex;
+  height: 14px;
+  border-radius: $border-radius-pill;
+  overflow: hidden;
+}
+
+.bst-diff-segment {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.bst-diff-total {
+  flex: 0 0 36px;
   font-size: 0.78rem;
   font-weight: 700;
   text-align: right;
+}
 
-  &--pos {
-    color: #38a169;
-  }
+.bst-diff--pos {
+  color: #38a169;
+  background: rgba(56, 161, 105, 0.15);
+}
 
-  &--neg {
-    color: #e53e3e;
-  }
+.bst-diff--neg {
+  color: #e53e3e;
+  background: rgba(229, 62, 62, 0.15);
+}
+
+.bst-diff--neutral {
+  color: #718096;
+  background: rgba(113, 128, 150, 0.1);
+}
+
+.bst-diff-total.bst-diff--pos {
+  background: none;
+}
+
+.bst-diff-total.bst-diff--neg {
+  background: none;
 }
 
 .bst-kpis {
@@ -698,6 +722,45 @@ th.sortable.active .sort-indicator {
   font-weight: 700;
   color: #718096;
   margin-right: 0.3rem;
+}
+
+.bst-tooltip {
+  position: absolute;
+  transform: translateX(-50%) translateY(-100%);
+  background: white;
+  border-radius: $border-radius-lg;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  padding: 0.5rem 0.75rem;
+  z-index: 10;
+  min-width: 140px;
+  font-family: $font-body;
+  font-size: 0.82rem;
+}
+
+.bst-tooltip-header {
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid;
+  color: #2d3748;
+}
+
+.bst-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.15rem 0;
+}
+
+.bst-tooltip-name {
+  text-transform: capitalize;
+  color: #4a5568;
+}
+
+.bst-tooltip-val {
+  font-weight: 700;
+  color: #2d3748;
 }
 
 // -- Pokemon Lore -------------------------------------------------------------
