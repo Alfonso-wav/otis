@@ -516,6 +516,31 @@
     color: #718096;
   }
 
+  // Type chart view toggle
+  .tc-view-btn {
+    background: #2d3748;
+    color: #a0aec0;
+
+    &:hover {
+      background: #4a5568;
+      color: #e2e8f0;
+    }
+
+    &.active {
+      background: $navy-blue;
+      color: white;
+    }
+  }
+
+  // Heatmap & radar
+  .tc-radar-title {
+    color: #e2e8f0;
+  }
+
+  .tc-radar-hint {
+    color: #a0aec0;
+  }
+
   // Explore input focus
   .explore-input:focus {
     border-color: $navy-blue-hover;

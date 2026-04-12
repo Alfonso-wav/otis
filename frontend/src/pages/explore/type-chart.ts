@@ -1,15 +1,17 @@
 import { t } from "../../i18n";
+import { renderTypeHeatmap, disposeTypeHeatmap } from "../../charts/type-heatmap";
+import { renderDefenseRadar, disposeDefenseRadar } from "../../charts/type-defense-radar";
 
-const TYPES = [
+export const ALL_TYPES = [
   "normal", "fire", "water", "electric", "grass", "ice",
   "fighting", "poison", "ground", "flying", "psychic", "bug",
   "rock", "ghost", "dragon", "dark", "steel", "fairy",
 ] as const;
 
-type PokemonType = typeof TYPES[number];
+export type PokemonType = typeof ALL_TYPES[number];
 
 // chart[attacker][defender] = multiplier; only non-1 values listed
-const OVERRIDES: Partial<Record<PokemonType, Partial<Record<PokemonType, number>>>> = {
+export const OVERRIDES: Partial<Record<PokemonType, Partial<Record<PokemonType, number>>>> = {
   normal:   { rock: 0.5, ghost: 0, steel: 0.5 },
   fire:     { fire: 0.5, water: 0.5, grass: 2, ice: 2, bug: 2, rock: 0.5, dragon: 0.5, steel: 2 },
   water:    { fire: 2, water: 0.5, grass: 0.5, ground: 2, rock: 2, dragon: 0.5 },
@@ -30,13 +32,21 @@ const OVERRIDES: Partial<Record<PokemonType, Partial<Record<PokemonType, number>
   fairy:    { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 },
 };
 
-function effectiveness(attacker: PokemonType, defender: PokemonType): number {
-  return OVERRIDES[attacker]?.[defender] ?? 1;
+export const TYPE_COLORS: Record<string, string> = {
+  normal: "#a0aec0", fire: "#f6ad55", water: "#63b3ed", grass: "#68d391",
+  electric: "#f6e05e", psychic: "#f687b3", ice: "#76e4f7", fighting: "#c05621",
+  poison: "#9f7aea", ground: "#d69e2e", flying: "#90cdf4", bug: "#a8e063",
+  rock: "#b7791f", ghost: "#553c9a", dragon: "#7f9cf5", dark: "#4a5568",
+  steel: "#718096", fairy: "#fbb6ce",
+};
+
+export function effectiveness(attacker: string, defender: string): number {
+  return (OVERRIDES as Record<string, Record<string, number> | undefined>)[attacker]?.[defender] ?? 1;
 }
 
 function cellLabel(mult: number): string {
-  if (mult === 2) return "2×";
-  if (mult === 0.5) return "½";
+  if (mult === 2) return "2\u00d7";
+  if (mult === 0.5) return "\u00bd";
   if (mult === 0) return "0";
   return "";
 }
@@ -54,14 +64,35 @@ function typeHeader(type: PokemonType): string {
 }
 
 const filteredTypes = new Set<PokemonType>();
+let currentView: "table" | "heatmap" = "table";
+let selectedRadarType: string | null = null;
 
 function renderChart(panel: HTMLElement): void {
   const title = t("typeChart.title");
+
+  const tableActive = currentView === "table" ? "active" : "";
+  const heatmapActive = currentView === "heatmap" ? "active" : "";
+
+  const viewToggle = `
+    <div class="tc-view-toggle">
+      <button class="tc-view-btn ${tableActive}" data-view="table">${t("typeChart.tableView")}</button>
+      <button class="tc-view-btn ${heatmapActive}" data-view="heatmap">${t("typeChart.heatmapView")}</button>
+    </div>
+  `;
+
+  if (currentView === "table") {
+    renderTableContent(panel, title, viewToggle);
+  } else {
+    renderHeatmapContent(panel, title, viewToggle);
+  }
+}
+
+function renderTableContent(panel: HTMLElement, title: string, viewToggle: string): void {
   const attackingLabel = t("typeChart.attackingLabel");
   const defendingLabel = t("typeChart.defendingLabel");
 
-  const visibleCols = TYPES.filter((tp) => !filteredTypes.has(tp));
-  const visibleRows = TYPES.filter((tp) => !filteredTypes.has(tp));
+  const visibleCols = ALL_TYPES.filter((tp) => !filteredTypes.has(tp));
+  const visibleRows = ALL_TYPES.filter((tp) => !filteredTypes.has(tp));
 
   const headerCells = visibleCols.map(
     (def) =>
@@ -84,6 +115,7 @@ function renderChart(panel: HTMLElement): void {
   panel.innerHTML = `
     <div class="type-chart-wrap">
       <h2 class="type-chart-title">${title}</h2>
+      ${viewToggle}
       <div class="type-chart-labels">
         <span class="tc-attacking-label">${attackingLabel}</span>
         <span class="tc-defending-label">${defendingLabel}</span>
@@ -103,10 +135,60 @@ function renderChart(panel: HTMLElement): void {
     </div>
   `;
 
-  attachFilterListeners(panel);
+  attachTableListeners(panel);
+  attachViewToggleListeners(panel);
 }
 
-function attachFilterListeners(panel: HTMLElement): void {
+function renderHeatmapContent(panel: HTMLElement, title: string, viewToggle: string): void {
+  const radarHint = selectedRadarType
+    ? `<h3 class="tc-radar-title">${t("typeChart.defenseRadar")}: ${t(`typeNames.${selectedRadarType}`)}</h3>`
+    : `<p class="tc-radar-hint">${t("typeChart.selectTypeForRadar")}</p>`;
+
+  panel.innerHTML = `
+    <div class="type-chart-wrap">
+      <h2 class="type-chart-title">${title}</h2>
+      ${viewToggle}
+      <div class="tc-heatmap-container" id="tc-heatmap"></div>
+      <div class="tc-radar-section">
+        ${radarHint}
+        <div class="tc-radar-container${selectedRadarType ? "" : " hidden"}" id="tc-radar"></div>
+      </div>
+    </div>
+  `;
+
+  const heatmapEl = panel.querySelector<HTMLElement>("#tc-heatmap");
+  if (heatmapEl) {
+    renderTypeHeatmap(heatmapEl, (type) => {
+      selectedRadarType = type;
+      renderChart(panel);
+    });
+  }
+
+  if (selectedRadarType) {
+    const radarEl = panel.querySelector<HTMLElement>("#tc-radar");
+    if (radarEl) {
+      renderDefenseRadar(radarEl, selectedRadarType);
+    }
+  }
+
+  attachViewToggleListeners(panel);
+}
+
+function attachViewToggleListeners(panel: HTMLElement): void {
+  panel.querySelectorAll<HTMLButtonElement>(".tc-view-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const view = btn.dataset.view as "table" | "heatmap";
+      if (view && view !== currentView) {
+        disposeTypeHeatmap();
+        disposeDefenseRadar();
+        currentView = view;
+        renderChart(panel);
+      }
+    });
+  });
+}
+
+function attachTableListeners(panel: HTMLElement): void {
   const removeBtns = panel.querySelectorAll<HTMLButtonElement>(".tc-remove-btn[data-remove-type]");
 
   removeBtns.forEach((btn) => {
@@ -131,9 +213,13 @@ function attachFilterListeners(panel: HTMLElement): void {
 
 export function initTypeChart(panel: HTMLElement): void {
   filteredTypes.clear();
+  currentView = "table";
+  selectedRadarType = null;
   renderChart(panel);
 
   document.addEventListener("locale-changed", () => {
+    disposeTypeHeatmap();
+    disposeDefenseRadar();
     renderChart(panel);
   });
 }
