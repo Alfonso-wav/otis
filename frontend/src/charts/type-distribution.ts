@@ -22,49 +22,54 @@ export function renderTypeDistributionChart(
     return;
   }
 
-  const chart = echarts.init(el);
+  // Defer init so the container has computed dimensions after DOM insertion
+  requestAnimationFrame(() => {
+    const chart = echarts.init(el);
 
-  const seriesData = Object.entries(data)
-    .sort((a, b) => b[1] - a[1])
-    .map(([type, count]) => ({
-      name: type,
-      value: count,
-      itemStyle: { color: TYPE_COLORS[type] ?? "#718096" },
-    }));
+    const seriesData = Object.entries(data)
+      .sort((a, b) => b[1] - a[1])
+      .map(([type, count]) => ({
+        name: type,
+        value: count,
+        itemStyle: { color: TYPE_COLORS[type] ?? "#718096" },
+      }));
 
-  chart.setOption({
-    tooltip: {
-      trigger: "item",
-      formatter: "{b}: {c} Pokémon ({d}%)",
-    },
-    series: [
-      {
-        type: "pie",
-        radius: ["35%", "65%"],
-        center: ["50%", "50%"],
-        data: seriesData,
-        label: {
-          show: true,
-          formatter: "{b}",
-          fontSize: 11,
-        },
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: "rgba(0,0,0,0.3)",
+    chart.setOption({
+      tooltip: {
+        trigger: "item",
+        formatter: "{b}: {c} Pokémon ({d}%)",
+      },
+      series: [
+        {
+          type: "pie",
+          radius: ["35%", "65%"],
+          center: ["50%", "50%"],
+          data: seriesData,
+          label: {
+            show: true,
+            formatter: "{b}",
+            fontSize: 11,
+          },
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: "rgba(0,0,0,0.3)",
+            },
           },
         },
-      },
-    ],
-  });
-
-  if (onTypeClick) {
-    chart.on("click", (params: { name?: string }) => {
-      if (params.name) onTypeClick(params.name);
+      ],
     });
-    el.style.cursor = "pointer";
-  }
 
-  window.addEventListener("resize", () => chart.resize());
+    chart.resize();
+
+    if (onTypeClick) {
+      chart.on("click", (params: { name?: string }) => {
+        if (params.name) onTypeClick(params.name);
+      });
+      el.style.cursor = "pointer";
+    }
+
+    window.addEventListener("resize", () => chart.resize());
+  });
 }
