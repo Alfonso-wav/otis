@@ -16,12 +16,19 @@ interface PanZoomState {
   initialPinchScale: number;
 }
 
-const REGIONS = [
-  "kanto", "johto", "hoenn", "sinnoh", "unova",
-  "kalos", "alola", "galar", "paldea", "hisui",
-] as const;
+const REGION_FILES: { id: string; ext: string }[] = [
+  { id: "kanto", ext: "png" },
+  { id: "johto", ext: "png" },
+  { id: "hoenn", ext: "png" },
+  { id: "sinnoh", ext: "png" },
+  { id: "unova", ext: "jpg" },
+  { id: "kalos", ext: "jpg" },
+  { id: "alola", ext: "png" },
+  { id: "galar", ext: "jpg" },
+  { id: "paldea", ext: "jpg" },
+  { id: "hisui", ext: "png" },
+];
 
-type Region = typeof REGIONS[number];
 
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
@@ -183,7 +190,7 @@ function buildRegionsSection(): HTMLElement {
   const section = document.createElement("div");
   section.className = "map-section map-section--regions";
 
-  let currentRegion: Region = "kanto";
+  let currentRegion = REGION_FILES[0];
 
   // Region selector
   const selectorRow = document.createElement("div");
@@ -195,11 +202,11 @@ function buildRegionsSection(): HTMLElement {
 
   const select = document.createElement("select");
   select.className = "map-region-select";
-  REGIONS.forEach((r) => {
+  REGION_FILES.forEach((r) => {
     const opt = document.createElement("option");
-    opt.value = r;
-    opt.textContent = r.charAt(0).toUpperCase() + r.slice(1);
-    if (r === currentRegion) opt.selected = true;
+    opt.value = r.id;
+    opt.textContent = r.id.charAt(0).toUpperCase() + r.id.slice(1);
+    if (r.id === currentRegion.id) opt.selected = true;
     select.appendChild(opt);
   });
 
@@ -212,15 +219,15 @@ function buildRegionsSection(): HTMLElement {
   viewerContainer.className = "map-viewer-container";
   section.appendChild(viewerContainer);
 
-  function loadRegion(region: Region): void {
+  function loadRegion(region: typeof REGION_FILES[number]): void {
     viewerContainer.innerHTML = "";
-    const { wrapper } = buildViewer(`/assets/maps/${region}.png`);
+    const { wrapper } = buildViewer(`/assets/maps/${region.id}.${region.ext}`);
     viewerContainer.appendChild(wrapper);
     gsap.fromTo(wrapper, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 });
   }
 
   select.addEventListener("change", () => {
-    currentRegion = select.value as Region;
+    currentRegion = REGION_FILES.find((r) => r.id === select.value) ?? REGION_FILES[0];
     loadRegion(currentRegion);
   });
 
@@ -231,7 +238,7 @@ function buildRegionsSection(): HTMLElement {
 function buildWorldSection(): HTMLElement {
   const section = document.createElement("div");
   section.className = "map-section map-section--world";
-  const { wrapper } = buildViewer("/assets/maps/world.png");
+  const { wrapper } = buildViewer("/assets/maps/world.jpg");
   section.appendChild(wrapper);
   return section;
 }
