@@ -1,4 +1,4 @@
-import { getLocale, setLocale } from "./i18n";
+import { getLocale, setLocale, t } from "./i18n";
 import { ListPokemon, ListTeams } from "./api";
 import { createAutocomplete } from "./autocomplete";
 
@@ -161,12 +161,13 @@ export function initSettings(): void {
         if (teams.length === 0) return;
         const teamSelect = document.getElementById("companion-team-select") as HTMLSelectElement | null;
         if (!teamSelect) return;
-        teamSelect.innerHTML = teams.map((t) =>
-          `<option value="${t.name}">${t.name}</option>`
-        ).join("");
+        teamSelect.innerHTML =
+          `<option value="" disabled selected>${t("settings.selectTeamPlaceholder")}</option>` +
+          teams.map((team) => `<option value="${team.name}">${team.name}</option>`).join("");
         teamSelect.classList.remove("hidden");
         teamSelect.addEventListener("change", () => {
-          const selected = teams.find((t) => t.name === teamSelect.value);
+          if (!teamSelect.value) return;
+          const selected = teams.find((team) => team.name === teamSelect.value);
           if (!selected) return;
           const newTeam = selected.members
             .slice(0, 6)
