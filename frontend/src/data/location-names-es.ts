@@ -383,7 +383,6 @@ const names: Record<string, string> = {
   "slippery-slope": "Ladera Resbalosa",
   "freezington": "Freezington",
   "frostpoint-field": "Campo Punta Helada",
-  "giants-bed": "Cama del Gigante",
   "old-cemetery": "Cementerio Viejo",
   "snowslide-slope": "Ladera Alud",
   "path-to-the-peak": "Camino a la Cima",
@@ -580,7 +579,6 @@ const names: Record<string, string> = {
   "grasswither-shrine": "Santuario Hierba Marchita",
   "icerend-shrine": "Santuario Hielo Hendido",
   "groundblight-shrine": "Santuario Tierra Yerma",
-  "split-decision-ruins": "Ruinas Decisión",
 };
 
 /**

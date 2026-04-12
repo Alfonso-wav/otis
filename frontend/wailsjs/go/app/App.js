@@ -46,6 +46,10 @@ export function GetAllSpeciesClassifications() {
   return window['go']['app']['App']['GetAllSpeciesClassifications']();
 }
 
+export function GetBerry(arg1) {
+  return window['go']['app']['App']['GetBerry'](arg1);
+}
+
 export function GetEggGroup(arg1) {
   return window['go']['app']['App']['GetEggGroup'](arg1);
 }
@@ -122,8 +126,8 @@ export function GetPokemonForm(arg1) {
   return window['go']['app']['App']['GetPokemonForm'](arg1);
 }
 
-export function GetPokemonSpecies(arg1) {
-  return window['go']['app']['App']['GetPokemonSpecies'](arg1);
+export function GetPokemonSpecies(arg1, arg2) {
+  return window['go']['app']['App']['GetPokemonSpecies'](arg1, arg2);
 }
 
 export function GetRegion(arg1) {
@@ -132,6 +136,10 @@ export function GetRegion(arg1) {
 
 export function GetRegionPokemonByType(arg1, arg2) {
   return window['go']['app']['App']['GetRegionPokemonByType'](arg1, arg2);
+}
+
+export function GetRegionTypeDistribution(arg1) {
+  return window['go']['app']['App']['GetRegionTypeDistribution'](arg1);
 }
 
 export function GetStatDetail(arg1) {
@@ -156,6 +164,10 @@ export function InitBattle(arg1, arg2) {
 
 export function ListAbilities(arg1, arg2) {
   return window['go']['app']['App']['ListAbilities'](arg1, arg2);
+}
+
+export function ListBerries() {
+  return window['go']['app']['App']['ListBerries']();
 }
 
 export function ListGenerations() {

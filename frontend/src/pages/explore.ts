@@ -5,8 +5,9 @@ import { initRegions } from "./explore/regions";
 import { initMoves } from "./explore/moves";
 import { initAbilities } from "./explore/abilities";
 import { initBerries } from "./explore/berries";
+import { initMaps } from "./explore/maps";
 
-type ExploreTab = "typeChart" | "regions" | "moves" | "abilities" | "berries";
+type ExploreTab = "typeChart" | "regions" | "moves" | "abilities" | "berries" | "maps";
 
 let initialized = false;
 let activeTab: ExploreTab = "regions";
@@ -16,13 +17,14 @@ const ICON_MAP = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0
 const ICON_BOLT = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="ui-icon" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" /></svg>`;
 const ICON_SPARKLES = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="ui-icon" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" /></svg>`;
 const ICON_LEAF = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="ui-icon" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12.75 3.03v.568c0 .334.148.65.405.864l1.068.89c.442.369.535 1.01.216 1.49l-.51.766a2.25 2.25 0 0 1-1.161.886l-.143.048a1.107 1.107 0 0 0-.57 1.664c.369.555.169 1.307-.427 1.605L9 13.125l.423 1.059a.956.956 0 0 1-1.652.928l-.679-.906a1.125 1.125 0 0 0-1.906.172L4.5 15.75l-.612.153M12.75 3.031a9 9 0 0 0-8.862 12.872M12.75 3.031a9 9 0 0 1 6.69 14.036l-.001.001-1.174 1.174a2.25 2.25 0 0 1-3.182 0l-3.182-3.182a2.25 2.25 0 0 1 0-3.182l3.182-3.182a2.25 2.25 0 0 1 3.182 0l1.174 1.174a9 9 0 0 1-8.19 14.22" /></svg>`;
+const ICON_GLOBE = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="ui-icon" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5a17.92 17.92 0 0 1-8.716-2.247m0 0A8.966 8.966 0 0 1 3 12c0-1.264.26-2.467.732-3.558" /></svg>`;
 
 function tabLabel(tab: ExploreTab): string {
-  const icons: Record<ExploreTab, string> = { typeChart: ICON_CHART, regions: ICON_MAP, moves: ICON_BOLT, abilities: ICON_SPARKLES, berries: ICON_LEAF };
+  const icons: Record<ExploreTab, string> = { typeChart: ICON_CHART, regions: ICON_MAP, moves: ICON_BOLT, abilities: ICON_SPARKLES, berries: ICON_LEAF, maps: ICON_GLOBE };
   return `${icons[tab]} ${t(`explore.tabs.${tab}`)}`;
 }
 
-const TAB_KEYS: ExploreTab[] = ["regions", "typeChart", "moves", "abilities", "berries"];
+const TAB_KEYS: ExploreTab[] = ["regions", "typeChart", "moves", "abilities", "berries", "maps"];
 
 const tabInited: Record<ExploreTab, boolean> = {
   typeChart: false,
@@ -30,6 +32,7 @@ const tabInited: Record<ExploreTab, boolean> = {
   moves: false,
   abilities: false,
   berries: false,
+  maps: false,
 };
 
 function switchTab(tab: ExploreTab, container: HTMLElement): void {
@@ -71,6 +74,9 @@ function initPanel(tab: ExploreTab, panel: HTMLElement): void {
       break;
     case "berries":
       initBerries(panel);
+      break;
+    case "maps":
+      initMaps(panel);
       break;
   }
 }
