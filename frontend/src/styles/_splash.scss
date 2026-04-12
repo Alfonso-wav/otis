@@ -24,7 +24,6 @@
   width: 480px;
   height: auto;
   max-width: 90vw;
-  animation: snorlax-breathe 2.5s ease-in-out infinite;
 }
 
 .splash-zzz-text {
@@ -102,6 +101,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  animation: snorlax-breathe 2.5s ease-in-out infinite;
 }
 
 // SVG eyes overlay — positioned exactly over the Snorlax image
