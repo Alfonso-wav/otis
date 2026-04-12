@@ -140,7 +140,19 @@
     "attackingLabel": "ATK →",
     "defendingLabel": "↓ DEF",
     "restoreTypes": "Restore types",
-    "removeType": "Remove type"
+    "removeType": "Remove type",
+    "typeHeatmap": "Type Heatmap",
+    "defenseRadar": "Defense Radar",
+    "tableView": "Table",
+    "heatmapView": "Heatmap",
+    "attackerType": "Attacker type",
+    "defenderType": "Defender type",
+    "multiplier": "Multiplier",
+    "selectTypeForRadar": "Select a type on the map to view its defense radar",
+    "immune": "Immune",
+    "resisted": "Resisted",
+    "neutral": "Neutral",
+    "superEffective": "Super effective"
   },
   "berries": {
     "title": "Berries",
