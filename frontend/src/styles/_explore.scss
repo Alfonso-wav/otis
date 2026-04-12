@@ -713,6 +713,100 @@
   }
 }
 
+// ─── Type Chart — View Toggle ───────────────────────────────────────────────
+
+.tc-view-toggle {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.tc-view-btn {
+  background: #edf2f7;
+  border: none;
+  padding: 0.35rem 0.875rem;
+  border-radius: $border-radius-pill;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #4a5568;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: #e2e8f0;
+  }
+
+  &.active {
+    background: $pokedex-red;
+    color: white;
+  }
+}
+
+// ─── Type Chart — Heatmap & Radar containers ────────────────────────────────
+
+.tc-heatmap-container {
+  width: 100%;
+  height: 600px;
+  min-height: 400px;
+}
+
+.tc-radar-section {
+  margin-top: 1.5rem;
+}
+
+.tc-radar-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 0.5rem;
+}
+
+.tc-radar-hint {
+  font-size: 0.85rem;
+  color: #718096;
+  font-style: italic;
+  margin: 0;
+}
+
+.tc-radar-container {
+  width: 100%;
+  height: 400px;
+  min-height: 300px;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+@include tablet {
+  .tc-heatmap-container {
+    height: 500px;
+    min-height: 350px;
+  }
+
+  .tc-radar-container {
+    height: 350px;
+    min-height: 260px;
+  }
+}
+
+@include mobile {
+  .tc-heatmap-container {
+    height: 400px;
+    min-height: 300px;
+  }
+
+  .tc-radar-container {
+    height: 300px;
+    min-height: 220px;
+  }
+
+  .tc-view-btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.7rem;
+  }
+}
+
 // ─── Berries ─────────────────────────────────────────────────────────────────
 
 .berries-wrap {

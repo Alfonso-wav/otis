@@ -139,7 +139,19 @@
     "attackingLabel": "ATK →",
     "defendingLabel": "↓ DEF",
     "restoreTypes": "Restaurar tipos",
-    "removeType": "Quitar tipo"
+    "removeType": "Quitar tipo",
+    "typeHeatmap": "Mapa de calor",
+    "defenseRadar": "Radar defensivo",
+    "tableView": "Tabla",
+    "heatmapView": "Mapa de calor",
+    "attackerType": "Tipo atacante",
+    "defenderType": "Tipo defensor",
+    "multiplier": "Multiplicador",
+    "selectTypeForRadar": "Selecciona un tipo en el mapa para ver su radar defensivo",
+    "immune": "Inmune",
+    "resisted": "Resistido",
+    "neutral": "Neutro",
+    "superEffective": "Super eficaz"
   },
   "berries": {
     "title": "Bayas",
