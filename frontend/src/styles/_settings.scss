@@ -85,7 +85,7 @@
   }
 }
 
-// ─── Companion setting ─────────────────────────────────────────────────────
+// ─── Companion team ────────────────────────────────────────────────────────
 
 .settings-row--companion {
   flex-direction: column;
@@ -105,25 +105,14 @@
   color: #a0aec0;
 }
 
-.settings-companion-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.settings-companion-input-wrap {
-  position: relative;
-  flex: 1;
-}
-
 .settings-companion-input {
-  width: 100%;
   font-family: $font-body;
-  font-size: 0.9rem;
-  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.65rem;
   border: 1.5px solid #cbd5e0;
   border-radius: $border-radius-lg;
   outline: none;
+  width: 100%;
   text-transform: capitalize;
   background: white;
   color: #2d3748;
@@ -145,19 +134,69 @@
   }
 }
 
-.settings-companion-preview {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+.settings-companion-input-wrap {
+  position: relative;
+}
+
+.settings-companion-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+
+  @include mobile {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.settings-companion-bottom {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.settings-load-team-btn {
+  background: none;
+  border: 1.5px solid #cbd5e0;
+  border-radius: $border-radius-lg;
+  padding: 0.4rem 0.9rem;
+  font-family: $font-body;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #4a5568;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: $pokedex-red;
+    color: $pokedex-red;
+  }
+}
+
+[data-bs-theme="dark"] .settings-load-team-btn {
+  border-color: #4a5568;
+  color: #a0aec0;
+
+  &:hover {
+    border-color: #63b3ed;
+    color: #63b3ed;
+  }
+}
+
+.settings-companion-preview {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.5rem;
   background: rgba(0, 0, 0, 0.05);
   border-radius: $border-radius-lg;
+  min-height: 48px;
 
   .companion-sprite {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
 }
 
@@ -191,4 +230,3 @@
     cursor: not-allowed;
   }
 }
-

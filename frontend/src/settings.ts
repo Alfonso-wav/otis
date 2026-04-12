@@ -1,26 +1,11 @@
 import { getLocale, setLocale } from "./i18n";
+import { ListPokemon, ListTeams } from "./api";
 import { createAutocomplete } from "./autocomplete";
-import { ListPokemon } from "./api";
 
 const THEME_KEY = "theme";
-const COMPANION_KEY = "companion-pokemon";
-const DEFAULT_COMPANION = "diglett";
-
-interface PendingSettings {
-  locale: string | null;
-  theme: ("dark" | "light") | null;
-  companion: string | null;
-}
-
-const pending: PendingSettings = { locale: null, theme: null, companion: null };
-
-function currentTheme(): "dark" | "light" {
-  return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
-}
-
-export function getCompanion(): string {
-  return localStorage.getItem(COMPANION_KEY) || DEFAULT_COMPANION;
-}
+const COMPANION_TEAM_KEY = "companion-team";
+const COMPANION_KEY = "companion-pokemon"; // old key for migration
+const DEFAULT_COMPANIONS = ["diglett", "", "", "", "", ""];
 
 function companionSpriteUrl(name: string): string {
   const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -32,43 +17,73 @@ function companionSpriteFallback(name: string): string {
   return `https://img.pokemondb.net/sprites/black-white/normal/${safeName}.png`;
 }
 
-export function renderCompanion(): void {
-  const name = getCompanion();
-  const containers = [
-    document.getElementById("header-companion"),
-    document.getElementById("header-companion-mobile"),
-  ];
-
-  for (const container of containers) {
-    if (!container) continue;
-    const url = companionSpriteUrl(name);
-    const fallback = companionSpriteFallback(name);
-    container.innerHTML = `<img
-      class="companion-sprite"
-      src="${url}"
-      alt="${name}"
-      onerror="this.onerror=null;this.src='${fallback}'"
-    />`;
-  }
+interface PendingSettings {
+  locale: string | null;
+  theme: ("dark" | "light") | null;
+  companionTeam: string[] | null;
 }
 
-function renderCompanionPreview(name: string): void {
+const pending: PendingSettings = { locale: null, theme: null, companionTeam: null };
+
+function currentTheme(): "dark" | "light" {
+  return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light";
+}
+
+export function getCompanionTeam(): string[] {
+  const stored = localStorage.getItem(COMPANION_TEAM_KEY);
+  if (stored) {
+    try {
+      const arr = JSON.parse(stored);
+      if (Array.isArray(arr)) {
+        // Ensure exactly 6 slots
+        const team = arr.slice(0, 6).map((s: unknown) => (typeof s === "string" ? s : ""));
+        while (team.length < 6) team.push("");
+        return team;
+      }
+    } catch { /* fallthrough */ }
+  }
+  // Migration: read old single companion
+  const old = localStorage.getItem(COMPANION_KEY);
+  if (old) {
+    const team = [old, "", "", "", "", ""];
+    localStorage.setItem(COMPANION_TEAM_KEY, JSON.stringify(team));
+    localStorage.removeItem(COMPANION_KEY);
+    return team;
+  }
+  return [...DEFAULT_COMPANIONS];
+}
+
+export function renderCompanion(): void {
+  const team = getCompanionTeam();
+  const container = document.getElementById("header-companion");
+  if (!container) return;
+  container.innerHTML = team
+    .filter((name) => name !== "")
+    .map((name) => {
+      const url = companionSpriteUrl(name);
+      const fallback = companionSpriteFallback(name);
+      return `<img class="companion-sprite" src="${url}" alt="${name}" onerror="this.onerror=null;this.src='${fallback}'" />`;
+    })
+    .join("");
+}
+
+function renderCompanionPreview(team: string[]): void {
   const preview = document.getElementById("companion-preview");
   if (!preview) return;
-  const url = companionSpriteUrl(name);
-  const fallback = companionSpriteFallback(name);
-  preview.innerHTML = `<img
-    class="companion-sprite"
-    src="${url}"
-    alt="${name}"
-    onerror="this.onerror=null;this.src='${fallback}'"
-  />`;
+  preview.innerHTML = team
+    .filter((name) => name !== "")
+    .map((name) => {
+      const url = companionSpriteUrl(name);
+      const fallback = companionSpriteFallback(name);
+      return `<img class="companion-sprite" src="${url}" alt="${name}" onerror="this.onerror=null;this.src='${fallback}'" />`;
+    })
+    .join("") || '<span style="color:#a0aec0;font-size:0.8rem">—</span>';
 }
 
 function hasPendingChanges(): boolean {
   if (pending.locale !== null && pending.locale !== getLocale()) return true;
   if (pending.theme !== null && pending.theme !== currentTheme()) return true;
-  if (pending.companion !== null && pending.companion !== getCompanion()) return true;
+  if (pending.companionTeam !== null && JSON.stringify(pending.companionTeam) !== JSON.stringify(getCompanionTeam())) return true;
   return false;
 }
 
@@ -82,6 +97,9 @@ export function initSettings(): void {
   if (saved === "dark") {
     applyTheme("dark");
   }
+
+  // Render companion sprites in the header
+  renderCompanion();
 
   const toggle = document.getElementById(
     "dark-mode-toggle",
@@ -106,30 +124,61 @@ export function initSettings(): void {
     });
   }
 
-  // --- Companion setting ---
-  const companionInput = document.getElementById("companion-input") as HTMLInputElement | null;
-  if (companionInput) {
-    companionInput.value = getCompanion();
-    renderCompanionPreview(getCompanion());
+  // --- Companion team setting (6 slots) ---
+  const companionSlots = document.querySelectorAll<HTMLInputElement>(".companion-slot-input");
+  const currentTeam = getCompanionTeam();
 
-    // Load pokemon names for autocomplete
+  if (companionSlots.length > 0) {
     ListPokemon(0, 2000).then((data) => {
       const names = data.Results.map((r: { Name: string }) => r.Name);
-      createAutocomplete(companionInput, names, (name) => {
-        companionInput.value = name;
-        pending.companion = name;
-        renderCompanionPreview(name);
-        updateApplyButton();
+      companionSlots.forEach((input, i) => {
+        input.value = currentTeam[i] || "";
+        createAutocomplete(input, names, (name) => {
+          input.value = name;
+          if (!pending.companionTeam) pending.companionTeam = [...getCompanionTeam()];
+          pending.companionTeam[i] = name;
+          renderCompanionPreview(pending.companionTeam);
+          updateApplyButton();
+        });
+        input.addEventListener("change", () => {
+          const val = input.value.trim().toLowerCase();
+          if (!pending.companionTeam) pending.companionTeam = [...getCompanionTeam()];
+          pending.companionTeam[i] = val;
+          renderCompanionPreview(pending.companionTeam);
+          updateApplyButton();
+        });
       });
     });
+    renderCompanionPreview(currentTeam);
+  }
 
-    companionInput.addEventListener("change", () => {
-      const val = companionInput.value.trim().toLowerCase();
-      if (val) {
-        pending.companion = val;
-        renderCompanionPreview(val);
-        updateApplyButton();
-      }
+  // Load from team button
+  const loadTeamBtn = document.getElementById("load-team-btn");
+  if (loadTeamBtn) {
+    loadTeamBtn.addEventListener("click", async () => {
+      try {
+        const teams = await ListTeams();
+        if (teams.length === 0) return;
+        const teamSelect = document.getElementById("companion-team-select") as HTMLSelectElement | null;
+        if (!teamSelect) return;
+        teamSelect.innerHTML = teams.map((t) =>
+          `<option value="${t.name}">${t.name}</option>`
+        ).join("");
+        teamSelect.classList.remove("hidden");
+        teamSelect.addEventListener("change", () => {
+          const selected = teams.find((t) => t.name === teamSelect.value);
+          if (!selected) return;
+          const newTeam = selected.members
+            .slice(0, 6)
+            .map((m) => m.pokemonName || "");
+          while (newTeam.length < 6) newTeam.push("");
+          pending.companionTeam = newTeam;
+          companionSlots.forEach((input, i) => { input.value = newTeam[i] || ""; });
+          renderCompanionPreview(newTeam);
+          updateApplyButton();
+          teamSelect.classList.add("hidden");
+        }, { once: true });
+      } catch { /* ignore */ }
     });
   }
 
@@ -143,19 +192,17 @@ export function initSettings(): void {
       if (pending.locale !== null && pending.locale !== getLocale()) {
         setLocale(pending.locale);
       }
-      if (pending.companion !== null && pending.companion !== getCompanion()) {
-        localStorage.setItem(COMPANION_KEY, pending.companion);
+      if (pending.companionTeam !== null && JSON.stringify(pending.companionTeam) !== JSON.stringify(getCompanionTeam())) {
+        localStorage.setItem(COMPANION_TEAM_KEY, JSON.stringify(pending.companionTeam));
         renderCompanion();
       }
+      // reset
       pending.locale = null;
       pending.theme = null;
-      pending.companion = null;
+      pending.companionTeam = null;
       updateApplyButton();
     });
   }
-
-  // Render companion in header on init
-  renderCompanion();
 }
 
 export function cleanupSettings(): void {
@@ -164,7 +211,7 @@ export function cleanupSettings(): void {
   }
   pending.theme = null;
   pending.locale = null;
-  pending.companion = null;
+  pending.companionTeam = null;
 
   const toggle = document.getElementById(
     "dark-mode-toggle",
@@ -173,12 +220,11 @@ export function cleanupSettings(): void {
     toggle.checked = currentTheme() === "dark";
   }
 
-  // Reset companion input to saved value
-  const companionInput = document.getElementById("companion-input") as HTMLInputElement | null;
-  if (companionInput) {
-    companionInput.value = getCompanion();
-    renderCompanionPreview(getCompanion());
-  }
+  // Reset companion inputs to saved values
+  const companionSlots = document.querySelectorAll<HTMLInputElement>(".companion-slot-input");
+  const saved = getCompanionTeam();
+  companionSlots.forEach((input, i) => { input.value = saved[i] || ""; });
+  renderCompanionPreview(saved);
 
   updateApplyButton();
 }

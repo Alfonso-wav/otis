@@ -137,6 +137,7 @@
   <header class="pokedex-header">
     <div class="header-brand px-4 py-3 d-flex align-items-center gap-3">
       <h1 class="mb-0">Pokédex</h1>
+      <div id="header-companion" class="header-companion"></div>
       <div class="ms-auto d-flex gap-2" id="search-bar">
         <input id="search-input" type="text" class="form-control" placeholder="Buscar por nombre o número..." data-i18n-placeholder="common.searchPlaceholder" />
         <button id="search-btn" class="btn btn-light" data-i18n="common.search">Buscar</button>
@@ -226,13 +227,20 @@
         </div>
         <div class="settings-row settings-row--companion">
           <div class="settings-companion-left">
-            <span class="settings-label" data-i18n="settings.companion">Companion</span>
-            <span class="settings-companion-hint" data-i18n="settings.companionHint">Choose a Pok&eacute;mon companion for the header</span>
+            <span class="settings-label" data-i18n="settings.companionTeam">Companion Team</span>
+            <span class="settings-companion-hint" data-i18n="settings.companionTeamHint">Choose up to 6 Pok&eacute;mon companions for the header</span>
           </div>
-          <div class="settings-companion-right">
-            <div class="settings-companion-input-wrap">
-              <input id="companion-input" type="text" class="settings-companion-input" placeholder="diglett" autocomplete="off" />
-            </div>
+          <div class="settings-companion-slots">
+            <div class="settings-companion-input-wrap"><input type="text" class="settings-companion-input companion-slot-input" data-slot="0" placeholder="Slot 1" autocomplete="off" /></div>
+            <div class="settings-companion-input-wrap"><input type="text" class="settings-companion-input companion-slot-input" data-slot="1" placeholder="Slot 2" autocomplete="off" /></div>
+            <div class="settings-companion-input-wrap"><input type="text" class="settings-companion-input companion-slot-input" data-slot="2" placeholder="Slot 3" autocomplete="off" /></div>
+            <div class="settings-companion-input-wrap"><input type="text" class="settings-companion-input companion-slot-input" data-slot="3" placeholder="Slot 4" autocomplete="off" /></div>
+            <div class="settings-companion-input-wrap"><input type="text" class="settings-companion-input companion-slot-input" data-slot="4" placeholder="Slot 5" autocomplete="off" /></div>
+            <div class="settings-companion-input-wrap"><input type="text" class="settings-companion-input companion-slot-input" data-slot="5" placeholder="Slot 6" autocomplete="off" /></div>
+          </div>
+          <div class="settings-companion-bottom">
+            <button id="load-team-btn" type="button" class="settings-load-team-btn" data-i18n="settings.loadFromTeam">Load from team</button>
+            <select id="companion-team-select" class="filter-select hidden"></select>
             <div id="companion-preview" class="settings-companion-preview"></div>
           </div>
         </div>

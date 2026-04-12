@@ -3,8 +3,9 @@
     "title": "Configuración",
     "darkMode": "Modo Oscuro",
     "language": "Idioma",
-    "companion": "Compañero",
-    "companionHint": "Elige un Pokemon compañero para la barra superior",
+    "companionTeam": "Equipo Compañero",
+    "companionTeamHint": "Elige hasta 6 Pokemon compañeros para la barra superior",
+    "loadFromTeam": "Cargar de equipo",
     "apply": "Aplicar"
   },
   "tabs": {
