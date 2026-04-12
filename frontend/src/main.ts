@@ -9,7 +9,7 @@ import { initI18n } from "./i18n";
 import { ListGenerations } from "./api";
 
 // ── Arrow helpers ──────────────────────────────────────────────
-const ARROW_POSITIONS = ["n", "ne", "e", "se", "s", "sw", "w", "nw"] as const;
+const ARROW_POSITIONS = ["n", "ne", "se", "s", "sw", "nw"] as const;
 let arrowInterval: ReturnType<typeof setInterval> | null = null;
 
 function createArrowElements(): void {
