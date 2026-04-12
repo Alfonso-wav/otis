@@ -3,6 +3,9 @@
     "title": "Settings",
     "darkMode": "Dark Mode",
     "language": "Language",
+    "companionTeam": "Companion Team",
+    "companionTeamHint": "Choose up to 6 Pokemon companions for the header",
+    "loadFromTeam": "Load from team",
     "apply": "Apply"
   },
   "tabs": {
