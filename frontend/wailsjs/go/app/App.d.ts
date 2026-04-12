@@ -24,6 +24,8 @@ export function GetAllMoves():Promise<Array<core.Move>>;
 
 export function GetAllSpeciesClassifications():Promise<Record<string, core.SpeciesClassification>>;
 
+export function GetBerry(arg1:string):Promise<core.Berry>;
+
 export function GetEggGroup(arg1:string):Promise<core.EggGroup>;
 
 export function GetEvolutionChain(arg1:number):Promise<core.EvolutionChain>;
@@ -62,11 +64,13 @@ export function GetPokemonEncounters(arg1:string):Promise<Array<core.PokemonLoca
 
 export function GetPokemonForm(arg1:string):Promise<core.PokemonForm>;
 
-export function GetPokemonSpecies(arg1:string):Promise<core.PokemonSpecies>;
+export function GetPokemonSpecies(arg1:string,arg2:string):Promise<core.PokemonSpecies>;
 
 export function GetRegion(arg1:string):Promise<core.Region>;
 
 export function GetRegionPokemonByType(arg1:string,arg2:string):Promise<Array<string>>;
+
+export function GetRegionTypeDistribution(arg1:string):Promise<Record<string, number>>;
 
 export function GetStatDetail(arg1:string):Promise<core.StatDetail>;
 
@@ -79,6 +83,8 @@ export function GetVersionGroup(arg1:string):Promise<core.VersionGroup>;
 export function InitBattle(arg1:number,arg2:number):Promise<core.BattleState>;
 
 export function ListAbilities(arg1:number,arg2:number):Promise<core.AbilityListResponse>;
+
+export function ListBerries():Promise<core.BerryListResponse>;
 
 export function ListGenerations():Promise<Array<core.NamedResource>>;
 

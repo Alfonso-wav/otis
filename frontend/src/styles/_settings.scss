@@ -184,26 +184,6 @@
   }
 }
 
-.settings-companion-preview {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.35rem 0.5rem;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: $border-radius-lg;
-  min-height: 48px;
-
-  .companion-sprite {
-    width: 36px;
-    height: 36px;
-  }
-}
-
-[data-bs-theme="dark"] .settings-companion-preview {
-  background: rgba(255, 255, 255, 0.06);
-}
-
 // ─── Apply button ──────────────────────────────────────────────────────────
 
 .settings-apply-btn {

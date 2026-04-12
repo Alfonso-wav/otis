@@ -669,7 +669,6 @@ async function renderDetail(p: Pokemon): Promise<void> {
     "special-defense": "#a7db8d",
     speed: "#fa92b2",
   };
-  const BST_MAX = 800;
 
   const primarySeries = { label: p.Name, stats: p.Stats || [], color: COMPARE_COLORS[0] };
   const comparedSeries = [primarySeries];
@@ -720,27 +719,38 @@ async function renderDetail(p: Pokemon): Promise<void> {
 
     const baseBst = bst(comparedSeries[0].stats);
 
-    const bars = comparedSeries.map((s) => {
+    const bars = comparedSeries.map((s, idx) => {
       const total = bst(s.stats);
       const diff = total - baseBst;
-      const diffStr =
-        s === comparedSeries[0]
-          ? ""
-          : `<span class="bst-diff ${diff > 0 ? "bst-diff--pos" : diff < 0 ? "bst-diff--neg" : ""}">${diff > 0 ? "+" : ""}${diff}</span>`;
 
       const segments = s.stats
         .map((stat) => {
-          const pct = (stat.BaseStat / BST_MAX) * 100;
+          const pct = (stat.BaseStat / total) * 100;
           const color = STAT_COLORS[stat.Name] || "#999";
-          return `<div class="bst-segment" style="width:${pct}%;background:${color}" title="${statName(stat.Name)}: ${stat.BaseStat}"></div>`;
+          return `<div class="bst-segment" data-stat="${stat.Name}" style="width:${pct}%;background:${color}" title="${statName(stat.Name)}: ${stat.BaseStat}"></div>`;
         })
         .join("");
 
-      return `<div class="bst-row">
-        <span class="bst-label">${s.label}</span>
-        <div class="bst-bar">${segments}</div>
-        <span class="bst-value">${total}</span>
-        ${diffStr}
+      const diffRow = idx === 0
+        ? ""
+        : `<div class="bst-diff-row">
+            <span class="bst-diff-spacer"></span>
+            <div class="bst-diff-bar">${s.stats.map((stat, i) => {
+              const d = stat.BaseStat - comparedSeries[0].stats[i].BaseStat;
+              const pct = (stat.BaseStat / total) * 100;
+              const cls = d > 0 ? "bst-diff--pos" : d < 0 ? "bst-diff--neg" : "bst-diff--neutral";
+              return `<div class="bst-diff-segment ${cls}" style="width:${pct}%">${d !== 0 ? (d > 0 ? "+" : "") + d : ""}</div>`;
+            }).join("")}</div>
+            <span class="bst-diff-total ${diff > 0 ? "bst-diff--pos" : diff < 0 ? "bst-diff--neg" : ""}">${diff > 0 ? "+" : ""}${diff}</span>
+          </div>`;
+
+      return `<div class="bst-group">
+        <div class="bst-row">
+          <span class="bst-label">${s.label}</span>
+          <div class="bst-bar">${segments}</div>
+          <span class="bst-value">${total}</span>
+        </div>
+        ${diffRow}
       </div>`;
     });
 
@@ -783,6 +793,46 @@ async function renderDetail(p: Pokemon): Promise<void> {
       ${kpisHtml}
     `;
     statTotalsEl.classList.remove("hidden");
+
+    // Click on a segment to show stat comparison tooltip
+    statTotalsEl.querySelectorAll<HTMLDivElement>(".bst-segment").forEach((seg) => {
+      seg.style.cursor = "pointer";
+      seg.addEventListener("click", (e) => {
+        const sName = seg.dataset.stat!;
+        const color = STAT_COLORS[sName] || "#999";
+
+        // Remove any existing tooltip
+        statTotalsEl.querySelector(".bst-tooltip")?.remove();
+
+        const rows = comparedSeries.map((s) => {
+          const val = s.stats.find((st) => st.Name === sName)?.BaseStat ?? 0;
+          return `<div class="bst-tooltip-row"><span class="bst-tooltip-name">${s.label}</span><span class="bst-tooltip-val">${val}</span></div>`;
+        }).join("");
+
+        const tooltip = document.createElement("div");
+        tooltip.className = "bst-tooltip";
+        tooltip.innerHTML = `<div class="bst-tooltip-header" style="border-color:${color}">${statName(sName)}</div>${rows}`;
+
+        // Position near the clicked segment
+        const rect = seg.getBoundingClientRect();
+        const parentRect = statTotalsEl.getBoundingClientRect();
+        tooltip.style.left = `${rect.left - parentRect.left + rect.width / 2}px`;
+        tooltip.style.top = `${rect.top - parentRect.top - 4}px`;
+
+        statTotalsEl.appendChild(tooltip);
+
+        // Close on click outside
+        const close = (ev: MouseEvent) => {
+          if (!tooltip.contains(ev.target as Node)) {
+            tooltip.remove();
+            document.removeEventListener("click", close);
+          }
+        };
+        setTimeout(() => document.addEventListener("click", close), 0);
+
+        e.stopPropagation();
+      });
+    });
   }
 
   compareBtn.addEventListener("click", () => {

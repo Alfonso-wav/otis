@@ -132,19 +132,24 @@
       "regions": "Regiones",
       "moves": "Movimientos",
       "abilities": "Habilidades",
-      "berries": "Bayas"
+      "berries": "Bayas",
+      "maps": "Mapas"
     }
+  },
+  "maps": {
+    "title": "Mapas",
+    "regions": "Regiones",
+    "world": "Mapa del Mundo",
+    "retro": "Mapa Retro",
+    "selectRegion": "Selecciona una region",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "reset": "Restablecer"
   },
   "typeChart": {
     "title": "Efectividad de tipos",
-    "attackingLabel": "ATK →",
-    "defendingLabel": "↓ DEF",
-    "restoreTypes": "Restaurar tipos",
-    "removeType": "Quitar tipo",
     "typeHeatmap": "Mapa de calor",
     "defenseRadar": "Radar defensivo",
-    "tableView": "Tabla",
-    "heatmapView": "Mapa de calor",
     "attackerType": "Tipo atacante",
     "defenderType": "Tipo defensor",
     "multiplier": "Multiplicador",

@@ -126,6 +126,123 @@ export namespace core {
 	        this.winner = source["winner"];
 	    }
 	}
+	export class BerryFlavor {
+	    Flavor: string;
+	    Potency: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new BerryFlavor(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Flavor = source["Flavor"];
+	        this.Potency = source["Potency"];
+	    }
+	}
+	export class Berry {
+	    ID: number;
+	    Name: string;
+	    GrowthTime: number;
+	    MaxHarvest: number;
+	    NaturalGiftPower: number;
+	    Size: number;
+	    Smoothness: number;
+	    SoilDryness: number;
+	    Firmness: string;
+	    Flavors: BerryFlavor[];
+	    NaturalGiftType: string;
+	    ItemName: string;
+	    ItemSprite: string;
+	    Effect: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Berry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ID = source["ID"];
+	        this.Name = source["Name"];
+	        this.GrowthTime = source["GrowthTime"];
+	        this.MaxHarvest = source["MaxHarvest"];
+	        this.NaturalGiftPower = source["NaturalGiftPower"];
+	        this.Size = source["Size"];
+	        this.Smoothness = source["Smoothness"];
+	        this.SoilDryness = source["SoilDryness"];
+	        this.Firmness = source["Firmness"];
+	        this.Flavors = this.convertValues(source["Flavors"], BerryFlavor);
+	        this.NaturalGiftType = source["NaturalGiftType"];
+	        this.ItemName = source["ItemName"];
+	        this.ItemSprite = source["ItemSprite"];
+	        this.Effect = source["Effect"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
+	export class BerryListItem {
+	    Name: string;
+	    URL: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new BerryListItem(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Name = source["Name"];
+	        this.URL = source["URL"];
+	    }
+	}
+	export class BerryListResponse {
+	    Count: number;
+	    Results: BerryListItem[];
+	
+	    static createFrom(source: any = {}) {
+	        return new BerryListResponse(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Count = source["Count"];
+	        this.Results = this.convertValues(source["Results"], BerryListItem);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class PokemonType {
 	    Name: string;
 	
@@ -150,11 +267,11 @@ export namespace core {
 	    Description: string;
 	    DescriptionEs: string;
 	    LearnedBy: string[];
-
+	
 	    static createFrom(source: any = {}) {
 	        return new Move(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Name = source["Name"];
@@ -581,17 +698,17 @@ export namespace core {
 	export class Location {
 	    Name: string;
 	    Region: string;
-	    Names: {[key: string]: string};
-
+	    Names: Record<string, string>;
+	
 	    static createFrom(source: any = {}) {
 	        return new Location(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.Name = source["Name"];
 	        this.Region = source["Region"];
-	        this.Names = source["Names"] || {};
+	        this.Names = source["Names"];
 	    }
 	}
 	export class PokemonEncounter {
@@ -924,6 +1041,7 @@ export namespace core {
 	    Height: number;
 	    Weight: number;
 	    Moves: PokemonMoveEntry[];
+	    Abilities: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Pokemon(source);
@@ -939,6 +1057,7 @@ export namespace core {
 	        this.Height = source["Height"];
 	        this.Weight = source["Weight"];
 	        this.Moves = this.convertValues(source["Moves"], PokemonMoveEntry);
+	        this.Abilities = source["Abilities"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1608,112 +1727,6 @@ export namespace core {
 	}
 	
 	
-	export class BerryFlavor {
-	    Flavor: string;
-	    Potency: number;
-
-	    static createFrom(source: any = {}) {
-	        return new BerryFlavor(source);
-	    }
-
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Flavor = source["Flavor"];
-	        this.Potency = source["Potency"];
-	    }
-	}
-
-	export class Berry {
-	    ID: number;
-	    Name: string;
-	    GrowthTime: number;
-	    MaxHarvest: number;
-	    NaturalGiftPower: number;
-	    Size: number;
-	    Smoothness: number;
-	    SoilDryness: number;
-	    Firmness: string;
-	    Flavors: BerryFlavor[];
-	    NaturalGiftType: string;
-	    ItemName: string;
-	    ItemSprite: string;
-	    Effect: string;
-
-	    static createFrom(source: any = {}) {
-	        return new Berry(source);
-	    }
-
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.ID = source["ID"];
-	        this.Name = source["Name"];
-	        this.GrowthTime = source["GrowthTime"];
-	        this.MaxHarvest = source["MaxHarvest"];
-	        this.NaturalGiftPower = source["NaturalGiftPower"];
-	        this.Size = source["Size"];
-	        this.Smoothness = source["Smoothness"];
-	        this.SoilDryness = source["SoilDryness"];
-	        this.Firmness = source["Firmness"];
-	        this.Flavors = this.convertValues(source["Flavors"], BerryFlavor);
-	        this.NaturalGiftType = source["NaturalGiftType"];
-	        this.ItemName = source["ItemName"];
-	        this.ItemSprite = source["ItemSprite"];
-	        this.Effect = source["Effect"];
-	    }
-
-	    convertValues(a: any, classs: any, asMap: boolean = false): any {
-	        if (!a) { return a; }
-	        if (a.slice && a.map) {
-	            return (a as any[]).map(elem => this.convertValues(elem, classs));
-	        } else if ("object" === typeof a) {
-	            if (asMap) { for (const key of Object.keys(a)) { a[key] = new classs(a[key]); } return a; }
-	            return new classs(a);
-	        }
-	        return a;
-	    }
-	}
-
-	export class BerryListItem {
-	    Name: string;
-	    URL: string;
-
-	    static createFrom(source: any = {}) {
-	        return new BerryListItem(source);
-	    }
-
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Name = source["Name"];
-	        this.URL = source["URL"];
-	    }
-	}
-
-	export class BerryListResponse {
-	    Count: number;
-	    Results: BerryListItem[];
-
-	    static createFrom(source: any = {}) {
-	        return new BerryListResponse(source);
-	    }
-
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.Count = source["Count"];
-	        this.Results = this.convertValues(source["Results"], BerryListItem);
-	    }
-
-	    convertValues(a: any, classs: any, asMap: boolean = false): any {
-	        if (!a) { return a; }
-	        if (a.slice && a.map) {
-	            return (a as any[]).map(elem => this.convertValues(elem, classs));
-	        } else if ("object" === typeof a) {
-	            if (asMap) { for (const key of Object.keys(a)) { a[key] = new classs(a[key]); } return a; }
-	            return new classs(a);
-	        }
-	        return a;
-	    }
-	}
-
 	export class VersionGroup {
 	    Name: string;
 	    Order: number;

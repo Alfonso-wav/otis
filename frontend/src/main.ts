@@ -73,16 +73,26 @@ function animateEyesOpen(): Promise<void> {
     const clipRight = document.querySelector("#eye-clip-right ellipse") as SVGEllipseElement | null;
     if (!clipLeft || !clipRight) { resolve(); return; }
 
+    // All eye shapes (inside the clipped groups) scale proportionally
+    const eyeShapes = overlay.querySelectorAll("g[clip-path] ellipse");
+
     // Show overlay
     gsap.set(overlay, { opacity: 1 });
+    gsap.set(eyeShapes, { attr: { transform: "scale(0.5)" }, transformOrigin: "center" });
 
-    // Animate clip ellipses ry from 0 → 10 (eye opening)
-    gsap.to([clipLeft, clipRight], {
+    const tl = gsap.timeline({ onComplete: resolve });
+
+    // Open clip + scale shapes simultaneously
+    tl.to([clipLeft, clipRight], {
       attr: { ry: 10 },
       duration: 0.8,
       ease: "power2.out",
-      onComplete: resolve,
-    });
+    }, 0);
+    tl.to(eyeShapes, {
+      attr: { transform: "scale(1)" },
+      duration: 0.8,
+      ease: "power2.out",
+    }, 0);
   });
 }
 
@@ -95,17 +105,17 @@ function showSplashInteractive(): void {
   if (!splash || !snorlax || !wrapper) return;
 
   if (zzz) gsap.to(zzz, { opacity: 0, duration: 0.4 });
-  snorlax.style.cursor = "pointer";
+  wrapper.style.cursor = "pointer";
 
   // Create arrow elements and start loop after 2 seconds
   createArrowElements();
   setTimeout(() => startArrowLoop(), 2000);
 
-  snorlax.addEventListener("click", () => dismissSplashInteractive(splash, wrapper, snorlax), { once: true });
+  wrapper.addEventListener("click", () => dismissSplashInteractive(splash, wrapper), { once: true });
 }
 
-async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElement, snorlax: HTMLElement): Promise<void> {
-  snorlax.style.pointerEvents = "none";
+async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElement): Promise<void> {
+  wrapper.style.pointerEvents = "none";
 
   // 1. Stop arrows
   stopArrows();
@@ -127,11 +137,8 @@ async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElemen
   // Wait for jiggle to finish
   await tl.then();
 
-  // 3. Eyes opening animation
-  await animateEyesOpen();
-
-  // 4. Existing exit animation — grow Snorlax and fade everything
-  snorlax.style.animation = "none";
+  // 3. Exit animation — grow Snorlax and fade everything
+  wrapper.style.animation = "none";
   gsap.to(wrapper, {
     scale: 3,
     opacity: 0,

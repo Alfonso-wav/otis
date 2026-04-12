@@ -132,19 +132,24 @@
       "regions": "Regions",
       "moves": "Moves",
       "abilities": "Abilities",
-      "berries": "Berries"
+      "berries": "Berries",
+      "maps": "Maps"
     }
+  },
+  "maps": {
+    "title": "Maps",
+    "regions": "Regions",
+    "world": "World Map",
+    "retro": "Retro Map",
+    "selectRegion": "Select a region",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "reset": "Reset"
   },
   "typeChart": {
     "title": "Type Effectiveness",
-    "attackingLabel": "ATK →",
-    "defendingLabel": "↓ DEF",
-    "restoreTypes": "Restore types",
-    "removeType": "Remove type",
     "typeHeatmap": "Type Heatmap",
     "defenseRadar": "Defense Radar",
-    "tableView": "Table",
-    "heatmapView": "Heatmap",
     "attackerType": "Attacker type",
     "defenderType": "Defender type",
     "multiplier": "Multiplier",

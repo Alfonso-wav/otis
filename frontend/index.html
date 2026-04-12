@@ -29,6 +29,12 @@
       width: 480px;
       height: auto;
       max-width: 90vw;
+    }
+    .splash-snorlax-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       animation: snorlax-breathe 2.5s ease-in-out infinite;
     }
     .splash-zzz {
@@ -142,7 +148,6 @@
         <input id="search-input" type="text" class="form-control" placeholder="Buscar por nombre o número..." data-i18n-placeholder="common.searchPlaceholder" />
         <button id="search-btn" class="btn btn-light" data-i18n="common.search">Buscar</button>
       </div>
-      <div id="header-companion" class="header-companion header-companion--desktop"></div>
     </div>
     <nav class="tab-nav px-4" id="tab-nav">
       <button class="tab-btn active" data-tab="pokedex" data-i18n="tabs.pokedex">Pokédex</button>
@@ -154,9 +159,6 @@
         </svg>
       </button>
     </nav>
-    <div id="header-companion-row" class="header-companion-row">
-      <div id="header-companion-mobile" class="header-companion header-companion--mobile"></div>
-    </div>
   </header>
 
   <main class="container-fluid p-4">
@@ -241,7 +243,6 @@
           <div class="settings-companion-bottom">
             <button id="load-team-btn" type="button" class="settings-load-team-btn" data-i18n="settings.loadFromTeam">Load from team</button>
             <select id="companion-team-select" class="filter-select hidden"></select>
-            <div id="companion-preview" class="settings-companion-preview"></div>
           </div>
         </div>
         <button id="settings-apply-btn" class="settings-apply-btn" disabled data-i18n="settings.apply">Aplicar</button>
