@@ -14,6 +14,7 @@
 // ListRegions          → GET  /api/regions
 // GetRegion            → GET  /api/regions/{name}
 // GetRegionPokemonByType → GET /api/regions/{region}/pokemon-by-type/{type}
+// GetRegionTypeDistribution → GET /api/regions/{region}/type-distribution
 // GetMove              → GET  /api/moves/{name}
 // GetAbility           → GET  /api/abilities/{name}
 // GetEvolutionChain    → GET  /api/evolution-chain/{id}
@@ -218,6 +219,15 @@ func RegisterRoutes(mux *http.ServeMux, a *app.App) {
 
 	mux.HandleFunc("GET /api/regions/{region}/pokemon-by-type/{type}", func(w http.ResponseWriter, r *http.Request) {
 		result, err := a.GetRegionPokemonByType(r.PathValue("region"), r.PathValue("type"))
+		if err != nil {
+			jsonError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		jsonResponse(w, result)
+	})
+
+	mux.HandleFunc("GET /api/regions/{region}/type-distribution", func(w http.ResponseWriter, r *http.Request) {
+		result, err := a.GetRegionTypeDistribution(r.PathValue("region"))
 		if err != nil {
 			jsonError(w, err.Error(), http.StatusInternalServerError)
 			return
