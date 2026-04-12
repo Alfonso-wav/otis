@@ -165,26 +165,30 @@ func main() {
 		time.Sleep(2 * time.Second)
 	}
 
-	// Download world map (Reddit source - direct imgur/reddit image)
-	worldDest := filepath.Join(destDir, "world.png")
-	if _, err := os.Stat(worldDest); err == nil {
-		log.Printf("[skip] world.png already exists")
-		skipped++
-	} else {
-		log.Printf("[fetch] world map from Fandom wiki...")
-		worldURL, err := resolveWikiImageURL(client, "Regions.jpg")
-		if err != nil {
-			log.Printf("[FAIL] world: resolve URL: %s", err)
+	// Download world maps from Reddit gallery (4 images)
+	worldMaps := []struct {
+		file string
+		url  string
+	}{
+		{"world-1.png", "https://i.redd.it/1shac9d8qx2a1.png"},
+		{"world-2.png", "https://i.redd.it/8558bo19qx2a1.png"},
+		{"world-3.png", "https://i.redd.it/8jqqclh9qx2a1.png"},
+		{"world-4.png", "https://i.redd.it/fc9hevznqx2a1.png"},
+	}
+	for _, wm := range worldMaps {
+		dest := filepath.Join(destDir, wm.file)
+		if _, err := os.Stat(dest); err == nil {
+			log.Printf("[skip] %s already exists", wm.file)
+			skipped++
+			continue
+		}
+		log.Printf("[download] %s", wm.file)
+		time.Sleep(2 * time.Second)
+		if err := downloadFile(client, wm.url, dest); err != nil {
+			log.Printf("[FAIL] %s: %s", wm.file, err)
 			failed++
 		} else {
-			time.Sleep(2 * time.Second)
-			worldFile := filepath.Join(destDir, "world.jpg")
-			if err := downloadFile(client, worldURL, worldFile); err != nil {
-				log.Printf("[FAIL] world: download: %s", err)
-				failed++
-			} else {
-				downloaded++
-			}
+			downloaded++
 		}
 	}
 

@@ -763,4 +763,19 @@
       color: #e2e8f0;
     }
   }
+
+  .map-gallery-btn {
+    background: #2d3748;
+    color: #a0aec0;
+
+    &:hover {
+      background: #4a5568;
+      color: #e2e8f0;
+    }
+
+    &.active {
+      background: $navy-blue;
+      color: white;
+    }
+  }
 }
