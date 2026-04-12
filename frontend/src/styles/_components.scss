@@ -473,6 +473,28 @@
   }
 }
 
+// ─── Heracross loading animation ────────────────────────────────────────────
+
+.heracross-anim {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.heracross-img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  image-rendering: auto;
+  transform-origin: bottom center;
+
+  @include mobile {
+    width: 76px;
+    height: 76px;
+  }
+}
+
+
 .error-text {
   color: #e53e3e;
 }
