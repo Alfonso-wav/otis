@@ -376,10 +376,13 @@
   object-fit: contain;
   position: absolute;
   bottom: 0;
+  left: 50%;
+  margin-left: -60px;
 
   @include mobile {
     width: 90px;
     height: 90px;
+    margin-left: -45px;
   }
 }
 
@@ -447,10 +450,13 @@
   object-fit: contain;
   position: absolute;
   bottom: 0;
+  left: 50%;
+  margin-left: -36px;
 
   @include mobile {
     width: 58px;
     height: 58px;
+    margin-left: -29px;
   }
 }
 
