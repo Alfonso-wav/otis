@@ -195,4 +195,3 @@ export function createInlineHeracross(container: HTMLElement, text?: string): HT
 }
 
 export { removeInlineDiglett as removeInlineHeracross };
->>>>>>> task/0149-berry-loading-heracross
