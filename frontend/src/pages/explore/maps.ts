@@ -235,11 +235,50 @@ function buildRegionsSection(): HTMLElement {
   return section;
 }
 
+const WORLD_MAPS = [
+  { file: "world-1.png", label: "1" },
+  { file: "world-2.png", label: "2" },
+  { file: "world-3.png", label: "3" },
+  { file: "world-4.png", label: "4" },
+];
+
 function buildWorldSection(): HTMLElement {
   const section = document.createElement("div");
   section.className = "map-section map-section--world";
-  const { wrapper } = buildViewer("/assets/maps/world.jpg");
-  section.appendChild(wrapper);
+
+  // Gallery selector
+  const selectorRow = document.createElement("div");
+  selectorRow.className = "map-gallery-nav";
+
+  WORLD_MAPS.forEach((m, i) => {
+    const btn = document.createElement("button");
+    btn.className = `map-gallery-btn${i === 0 ? " active" : ""}`;
+    btn.textContent = m.label;
+    btn.dataset.idx = String(i);
+    selectorRow.appendChild(btn);
+  });
+
+  section.appendChild(selectorRow);
+
+  const viewerContainer = document.createElement("div");
+  viewerContainer.className = "map-viewer-container";
+  section.appendChild(viewerContainer);
+
+  function loadWorld(idx: number): void {
+    viewerContainer.innerHTML = "";
+    const { wrapper } = buildViewer(`/assets/maps/${WORLD_MAPS[idx].file}`);
+    viewerContainer.appendChild(wrapper);
+    gsap.fromTo(wrapper, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 });
+    selectorRow.querySelectorAll<HTMLButtonElement>(".map-gallery-btn").forEach((b) => {
+      b.classList.toggle("active", Number(b.dataset.idx) === idx);
+    });
+  }
+
+  selectorRow.querySelectorAll<HTMLButtonElement>(".map-gallery-btn").forEach((btn) => {
+    btn.addEventListener("click", () => loadWorld(Number(btn.dataset.idx)));
+  });
+
+  loadWorld(0);
   return section;
 }
 
