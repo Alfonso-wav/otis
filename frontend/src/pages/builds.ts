@@ -2028,7 +2028,7 @@ async function randomFillSlots(prefix: "atk" | "def"): Promise<void> {
   const pokemon = prefix === "atk" ? state.attacker : state.defender;
   if (!pokemon) return;
 
-  const available = pokemon.Moves ?? [];
+  const available = (pokemon.Moves ?? []).filter((m) => m.Method === "level-up");
   if (available.length === 0) return;
 
   // Pick up to 4 random moves (unique).

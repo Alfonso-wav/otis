@@ -2,33 +2,6 @@
   "name": "asas",
   "members": [
     {
-      "pokemonName": "meowth",
-      "moves": [
-        "u-turn",
-        "hypnosis",
-        "knock-off",
-        "rain-dance"
-      ],
-      "level": 50,
-      "nature": "Bold",
-      "ivs": {
-        "hp": 31,
-        "attack": 31,
-        "defense": 31,
-        "spAttack": 31,
-        "spDefense": 31,
-        "speed": 31
-      },
-      "evs": {
-        "hp": 32,
-        "attack": 182,
-        "defense": 33,
-        "spAttack": 132,
-        "spDefense": 88,
-        "speed": 43
-      }
-    },
-    {
       "pokemonName": "lapras",
       "moves": [
         "brine",
@@ -159,6 +132,28 @@
         "attack": 195,
         "defense": 87,
         "spAttack": 14,
+        "spDefense": 0,
+        "speed": 0
+      }
+    },
+    {
+      "pokemonName": "ditto",
+      "moves": [],
+      "level": 50,
+      "nature": "Hardy",
+      "ivs": {
+        "hp": 31,
+        "attack": 31,
+        "defense": 31,
+        "spAttack": 31,
+        "spDefense": 31,
+        "speed": 31
+      },
+      "evs": {
+        "hp": 0,
+        "attack": 0,
+        "defense": 0,
+        "spAttack": 0,
         "spDefense": 0,
         "speed": 0
       }
