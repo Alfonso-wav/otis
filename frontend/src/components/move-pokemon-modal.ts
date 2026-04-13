@@ -1,19 +1,12 @@
-import { GetMove } from "../api";
-import { t } from "../i18n";
+import { GetMove, GetPokemon } from "../api";
+import { t, typeName } from "../i18n";
+import { Pokemon } from "../types";
 import { createInlineDiglett, removeInlineDiglett } from "./sorting-overlay";
 
-const SPRITE_BASE = "/assets/sprites";
-const CDN_FALLBACK = "https://img.pokemondb.net/sprites/home/normal";
+const MAX_POKEMON = 50;
 
 let overlayEl: HTMLDivElement | null = null;
-
-function spriteUrl(name: string): string {
-  return `${SPRITE_BASE}/${name}.png`;
-}
-
-function cdnUrl(name: string): string {
-  return `${CDN_FALLBACK}/${name}.png`;
-}
+let isLoading = false;
 
 function handleKeydown(e: KeyboardEvent): void {
   if (e.key === "Escape") closeMovePokemonModal();
@@ -30,74 +23,146 @@ function navigateToPokemon(name: string): void {
   }
 }
 
+function buildTableHTML(pokemonData: Pokemon[], totalCount: number, shownCount: number): string {
+  const statColKeys = ["hp", "atk", "def", "spa", "spd", "vel"];
+
+  const rows = pokemonData
+    .map((p) => {
+      const sprite = p.Sprites.FrontDefault
+        ? `<img class="poke-table__sprite" src="${p.Sprites.FrontDefault}" alt="${p.Name}" loading="lazy" />`
+        : "";
+      const types = (p.Types || [])
+        .map(
+          (tp) =>
+            `<span class="type-badge type-badge--icon-only type-${tp.Name}" title="${typeName(tp.Name)}"><img src="/assets/types/${tp.Name}.svg" alt="${typeName(tp.Name)}" class="type-icon"></span>`,
+        )
+        .join(" ");
+      const stats = (p.Stats || []).map((s) => s.BaseStat);
+      const total = stats.reduce((a, b) => a + b, 0);
+      const statCells = (p.Stats || [])
+        .map((s, i) => `<td class="stat-cell" data-col="${statColKeys[i]}">${s.BaseStat}</td>`)
+        .join("");
+
+      return `<tr class="poke-table__row" data-name="${p.Name}">
+        <td data-col="sprite">${sprite}</td>
+        <td class="poke-table__name" data-col="name">${p.Name}</td>
+        <td data-col="types">${types}</td>
+        ${statCells}
+        <td class="stat-cell stat-total" data-col="total">${total}</td>
+      </tr>`;
+    })
+    .join("");
+
+  const limitNote =
+    totalCount > shownCount
+      ? `<p class="move-modal-limit-note">${t("modals.moveShowingOf", { shown: shownCount, total: totalCount })}</p>`
+      : "";
+
+  return `${limitNote}<div class="move-modal-table-wrap"><table class="poke-table" data-table-id="move-pokemon-stats">
+    <thead><tr>
+      <th data-col="sprite"></th>
+      <th data-col="name">${t("pokedex.columns.name")}</th>
+      <th data-col="types">${t("pokedex.columns.types")}</th>
+      <th class="stat-cell" data-col="hp">${t("pokedex.columns.hp")}</th>
+      <th class="stat-cell" data-col="atk">${t("pokedex.columns.atk")}</th>
+      <th class="stat-cell" data-col="def">${t("pokedex.columns.def")}</th>
+      <th class="stat-cell" data-col="spa">${t("pokedex.columns.spa")}</th>
+      <th class="stat-cell" data-col="spd">${t("pokedex.columns.spd")}</th>
+      <th class="stat-cell" data-col="vel">${t("pokedex.columns.vel")}</th>
+      <th class="stat-cell" data-col="total">${t("pokedex.columns.total")}</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
 export async function openMovePokemonModal(moveName: string): Promise<void> {
+  if (isLoading) return;
   closeMovePokemonModal();
 
-  const overlay = document.createElement("div");
-  overlay.className = "type-modal-overlay";
-
-  const displayName = moveName.replace(/-/g, " ");
-  const capitalized = displayName.charAt(0).toUpperCase() + displayName.slice(1);
-
-  // Show loading state
-  overlay.innerHTML = `
-    <div class="type-modal">
-      <div class="type-modal-header">
-        <span>${capitalized}</span>
-        <button class="type-modal-close" id="move-modal-close">&times;</button>
-      </div>
-      <div class="type-modal-body"></div>
-    </div>`;
-
-  document.body.appendChild(overlay);
-  overlayEl = overlay;
-
-  const bodyEl = overlay.querySelector<HTMLElement>(".type-modal-body")!;
-  const diglettEl = createInlineDiglett(bodyEl, t("modals.moveLoading"));
-
-  overlay.querySelector("#move-modal-close")!.addEventListener("click", closeMovePokemonModal);
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) closeMovePokemonModal();
-  });
-  document.addEventListener("keydown", handleKeydown);
-
-  // Lazy fetch LearnedBy
+  isLoading = true;
   try {
+    const overlay = document.createElement("div");
+    overlay.className = "type-modal-overlay";
+
+    const displayName = moveName.replace(/-/g, " ");
+    const capitalized =
+      displayName.charAt(0).toUpperCase() + displayName.slice(1);
+
+    overlay.innerHTML = `
+      <div class="type-modal move-modal--wide">
+        <div class="type-modal-header">
+          <span>${capitalized}</span>
+          <button class="type-modal-close" id="move-modal-close">&times;</button>
+        </div>
+        <div class="type-modal-body"></div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+    overlayEl = overlay;
+
+    const bodyEl = overlay.querySelector<HTMLElement>(".type-modal-body")!;
+    const diglettEl = createInlineDiglett(bodyEl, t("modals.moveLoading"));
+
+    overlay
+      .querySelector("#move-modal-close")!
+      .addEventListener("click", closeMovePokemonModal);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeMovePokemonModal();
+    });
+    document.addEventListener("keydown", handleKeydown);
+
     const move = await GetMove(moveName);
-    const pokemonNames = move.LearnedBy ?? [];
+    const allNames = move.LearnedBy ?? [];
+    const totalCount = allNames.length;
+    const namesToFetch = allNames.slice(0, MAX_POKEMON);
+
+    if (totalCount === 0) {
+      removeInlineDiglett(diglettEl);
+      const header = overlay.querySelector<HTMLElement>(
+        ".type-modal-header span",
+      );
+      if (header) header.textContent = `${capitalized} (0)`;
+      bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.moveEmpty", { name: capitalized })}</p>`;
+      return;
+    }
+
+    const pokemonData: Pokemon[] = await Promise.all(
+      namesToFetch.map((name) => GetPokemon(name)),
+    );
     removeInlineDiglett(diglettEl);
 
-    const header = overlay.querySelector<HTMLElement>(".type-modal-header span");
-    if (header) header.textContent = `${capitalized} (${pokemonNames.length})`;
+    const header = overlay.querySelector<HTMLElement>(
+      ".type-modal-header span",
+    );
+    if (header) header.textContent = `${capitalized} (${totalCount})`;
 
-    if (pokemonNames.length === 0) {
-      bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.moveEmpty", { name: capitalized })}</p>`;
-    } else {
-      bodyEl.innerHTML = `<div class="type-modal-grid">${pokemonNames
-        .map(
-          (name) => `
-        <div class="type-modal-pokemon" data-name="${name}">
-          <img
-            src="${spriteUrl(name)}"
-            alt="${name}"
-            loading="lazy"
-            onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='${cdnUrl(name)}'}"
-          />
-          <span class="type-modal-pokemon-name">${name.replace(/-/g, " ")}</span>
-        </div>`,
-        )
-        .join("")}</div>`;
+    bodyEl.innerHTML = buildTableHTML(
+      pokemonData,
+      totalCount,
+      namesToFetch.length,
+    );
 
-      bodyEl.querySelectorAll<HTMLElement>(".type-modal-pokemon").forEach((el) => {
-        el.addEventListener("click", () => {
-          const pName = el.dataset.name;
-          if (pName) navigateToPokemon(pName);
+    bodyEl
+      .querySelectorAll<HTMLTableRowElement>(".poke-table__row")
+      .forEach((row) => {
+        row.addEventListener("click", () => {
+          const name = row.dataset.name;
+          if (name) navigateToPokemon(name);
         });
       });
-    }
   } catch {
-    removeInlineDiglett(diglettEl);
-    bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.moveEmpty", { name: capitalized })}</p>`;
+    if (overlayEl) {
+      const bodyEl =
+        overlayEl.querySelector<HTMLElement>(".type-modal-body");
+      if (bodyEl) {
+        const displayName = moveName.replace(/-/g, " ");
+        const capitalized =
+          displayName.charAt(0).toUpperCase() + displayName.slice(1);
+        bodyEl.innerHTML = `<p class="type-modal-empty">${t("modals.moveEmpty", { name: capitalized })}</p>`;
+      }
+    }
+  } finally {
+    isLoading = false;
   }
 }
 

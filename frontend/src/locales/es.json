@@ -399,6 +399,7 @@
     "locationEmpty": "No se encontraron Pokémon en esta localización.",
     "locationError": "Error al cargar los encounters.",
     "moveLoading": "Cargando Pokémon...",
-    "moveEmpty": "Ningún Pokémon puede aprender {name}."
+    "moveEmpty": "Ningún Pokémon puede aprender {name}.",
+    "moveShowingOf": "Mostrando {shown} de {total} Pokémon."
   }
 }

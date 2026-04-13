@@ -324,6 +324,24 @@
   padding: 1rem 0;
 }
 
+// ─── Move Pokemon Modal (wide table variant) ───────────────────────────────
+
+.move-modal--wide {
+  max-width: 900px;
+}
+
+.move-modal-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.move-modal-limit-note {
+  font-size: 0.8rem;
+  color: #718096;
+  margin: 0 0 0.5rem;
+  font-style: italic;
+}
+
 // ─── Moves ──────────────────────────────────────────────────────────────────
 
 .moves-controls {
@@ -1122,6 +1140,10 @@
   .type-modal {
     max-width: 100%;
     max-height: 85vh;
+  }
+
+  .move-modal--wide {
+    max-width: 100%;
   }
 
   .type-modal-grid {
