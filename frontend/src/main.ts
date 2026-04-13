@@ -7,7 +7,7 @@ import { initBuilds } from "./pages/builds";
 import { initSettings } from "./settings";
 import { initI18n } from "./i18n";
 import { ListGenerations } from "./api";
-import { playTrack } from "./audio";
+import { playTrack, isTrackPlaying } from "./audio";
 
 // ── Typewriter helpers ────────────────────────────────────────
 let typewriterCancelled = false;
@@ -178,20 +178,23 @@ function showSplashInteractive(): void {
 
 /**
  * Start intro music ASAP. Browsers/webviews may block autoplay without a user
- * gesture — arm a one-shot gesture listener so the intro starts on the first
- * interaction (any click, including the Snorlax) if the eager play failed.
- * playTrack is idempotent: the gesture retry is a no-op when audio already
- * plays.
+ * gesture — arm gesture listeners so the intro starts on the first interaction
+ * if the eager play failed. Firefox is stricter than Chrome and rejects
+ * autoplay on `pointerdown` alone; `click` is the only event that reliably
+ * grants activation cross-browser. We listen to several events and retry until
+ * the intro is actually playing, then remove every listener.
  */
 function startIntroWithFallback(): void {
-  void playTrack("intro");
-  const tryStart = (): void => {
-    void playTrack("intro");
+  const EVENTS = ["pointerdown", "click", "keydown", "touchstart"] as const;
+  const opts = { capture: true } as const;
+  const tryStart = async (): Promise<void> => {
+    await playTrack("intro");
+    if (isTrackPlaying("intro")) {
+      for (const ev of EVENTS) window.removeEventListener(ev, tryStart, opts);
+    }
   };
-  const opts = { capture: true, once: true } as const;
-  window.addEventListener("pointerdown", tryStart, opts);
-  window.addEventListener("keydown", tryStart, opts);
-  window.addEventListener("touchstart", tryStart, opts);
+  void tryStart();
+  for (const ev of EVENTS) window.addEventListener(ev, tryStart, opts);
 }
 
 async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElement): Promise<void> {
