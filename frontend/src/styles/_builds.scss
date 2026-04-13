@@ -1565,6 +1565,31 @@
   &:focus { border-color: $pokedex-red; }
 }
 
+.team-member-edit-ability {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem 0.75rem;
+  border-bottom: 1px solid #edf2f7;
+  background: #f7fafc;
+}
+
+.sc-ability {
+  min-height: 44px; // touch target minimum
+}
+
+.ability-hidden-badge {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  background: $pokedex-red;
+  border-radius: 0.25rem;
+  vertical-align: middle;
+}
+
 @include mobile {
   .team-member-edit-moves {
     grid-template-columns: repeat(2, 1fr);
