@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"io/fs"
 	"log"
 	"net/http"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
-//go:embed frontend
+//go:embed all:frontend/dist
 var assets embed.FS
 
 func main() {
@@ -22,12 +23,17 @@ func main() {
 	teams := shell.NewFileTeamStorage("data/teams")
 	a := app.NewApp(fetcher, scraper, teams, scraper)
 
-	err := wails.Run(&options.App{
+	dist, err := fs.Sub(assets, "frontend/dist")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = wails.Run(&options.App{
 		Title:  "Pokédex",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
-			Assets:  assets,
+			Assets:  dist,
 			Handler: http.FileServer(http.Dir(".")),
 		},
 		OnStartup: a.Startup,

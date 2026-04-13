@@ -41,6 +41,8 @@ cd "$PROJECT_ROOT"
 gomobile bind \
   -target=android \
   -androidapi=21 \
+  -ldflags="-s -w" \
+  -trimpath \
   -o "${OUTPUT_DIR}/otis.aar" \
   ./app/mobile
 
