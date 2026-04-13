@@ -1,4 +1,6 @@
 import { t, typeName } from "../i18n";
+import { getActiveId } from "../router";
+import { setDetailOrigin } from "../pages/pokedex";
 
 let overlayEl: HTMLDivElement | null = null;
 
@@ -72,10 +74,12 @@ export function openTypeModal(
       item.addEventListener("click", () => {
         const name = item.dataset.name;
         if (!name) return;
+        const origin = getActiveId();
         closeTypeModal();
         document
           .querySelector<HTMLButtonElement>('[data-tab="pokedex"]')
           ?.click();
+        setDetailOrigin(origin);
         const input = document.getElementById(
           "search-input",
         ) as HTMLInputElement;
