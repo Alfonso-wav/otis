@@ -172,10 +172,26 @@ function showSplashInteractive(): void {
   setTimeout(() => startArrowLoop(), 2000);
 
   wrapper.addEventListener("click", () => {
-    // User gesture — safe to start audio. Autoplay policy allows it here.
-    void playTrack("intro");
     dismissSplashInteractive(splash, wrapper);
   }, { once: true });
+}
+
+/**
+ * Start intro music ASAP. Browsers/webviews may block autoplay without a user
+ * gesture — arm a one-shot gesture listener so the intro starts on the first
+ * interaction (any click, including the Snorlax) if the eager play failed.
+ * playTrack is idempotent: the gesture retry is a no-op when audio already
+ * plays.
+ */
+function startIntroWithFallback(): void {
+  void playTrack("intro");
+  const tryStart = (): void => {
+    void playTrack("intro");
+  };
+  const opts = { capture: true, once: true } as const;
+  window.addEventListener("pointerdown", tryStart, opts);
+  window.addEventListener("keydown", tryStart, opts);
+  window.addEventListener("touchstart", tryStart, opts);
 }
 
 async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElement): Promise<void> {
@@ -223,6 +239,10 @@ async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElemen
     },
   });
 }
+
+// Start intro music as soon as the bundle loads (autoplay may require a
+// gesture — the fallback listener handles that case).
+startIntroWithFallback();
 
 // Ping the API to detect when the server is ready, then show interactive splash.
 ListGenerations()
