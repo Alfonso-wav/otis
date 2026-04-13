@@ -20,6 +20,11 @@ type DamageInput struct {
 	// Stat stages of attacker/defender. Zero value = no stage modifiers.
 	AttackerStages StatStages `json:"attackerStages,omitempty"`
 	DefenderStages StatStages `json:"defenderStages,omitempty"`
+	// Ability slugs. Empty string = no ability.
+	AttackerAbility string `json:"attackerAbility,omitempty"`
+	DefenderAbility string `json:"defenderAbility,omitempty"`
+	// State snapshot so ability hooks can query HP ratios / flags.
+	State BattleState `json:"-"`
 }
 
 // DamageResult contiene el resultado del cálculo de daño
@@ -169,20 +174,44 @@ func CalculateDamage(input DamageInput) DamageResult {
 		return DamageResult{}
 	}
 
+	// Ability lookups (empty name → zero value / no-op).
+	atkAbility, _ := GetAbility(input.AttackerAbility)
+	defAbility, _ := GetAbility(input.DefenderAbility)
+
+	// Defender's ability may grant complete type immunity (Levitate, Water Absorb…).
+	if defAbility.ImmuneToType != nil && defAbility.ImmuneToType(input.Move.Type) {
+		return DamageResult{HasNoEffect: true}
+	}
+
+	// Weather multiplier respects cloud-nine / air-lock flags on either side.
+	effectiveWeather := input.Weather
+	if input.State.AttackerIgnoresWeather || input.State.DefenderIgnoresWeather {
+		effectiveWeather = WeatherNone
+	}
 	weather := input.WeatherBonus
-	if input.Weather != WeatherNone {
-		weather = WeatherDamageMultiplier(input.Weather, input.Move.Type)
+	if effectiveWeather != WeatherNone {
+		weather = WeatherDamageMultiplier(effectiveWeather, input.Move.Type)
 	}
 	if weather == 0 {
 		weather = 1.0
+	}
+
+	// Unaware on the opposite side zeroes out the relevant stat stages.
+	atkStages := input.AttackerStages
+	defStages := input.DefenderStages
+	if defAbility.Name == "unaware" {
+		atkStages.Atk, atkStages.SpA = 0, 0
+	}
+	if atkAbility.Name == "unaware" {
+		defStages.Def, defStages.SpD = 0, 0
 	}
 
 	var atkStat, defStat int
 	// Apply stat-stage multipliers for Atk/Def/SpA/SpD. Crit hits ignore negative
 	// attacker-offensive stages and positive defender-defensive stages (Gen 2+).
 	if input.Move.Category == "special" {
-		atkStage := input.AttackerStages.SpA
-		defStage := input.DefenderStages.SpD
+		atkStage := atkStages.SpA
+		defStage := defStages.SpD
 		if input.IsCritical {
 			if atkStage < 0 {
 				atkStage = 0
@@ -194,12 +223,12 @@ func CalculateDamage(input DamageInput) DamageResult {
 		atkStat = int(math.Floor(float64(input.AttackerStats.SpAttack) * StageMultiplier(atkStage)))
 		defStat = int(math.Floor(float64(input.DefenderStats.SpDefense) * StageMultiplier(defStage)))
 		// Sandstorm boosts Rock-type SpDef ×1.5.
-		if input.Weather == WeatherSandstorm && hasType(input.DefenderTypes, "rock") {
+		if effectiveWeather == WeatherSandstorm && hasType(input.DefenderTypes, "rock") {
 			defStat = int(math.Floor(float64(defStat) * 1.5))
 		}
 	} else {
-		atkStage := input.AttackerStages.Atk
-		defStage := input.DefenderStages.Def
+		atkStage := atkStages.Atk
+		defStage := defStages.Def
 		if input.IsCritical {
 			if atkStage < 0 {
 				atkStage = 0
@@ -253,7 +282,27 @@ func CalculateDamage(input DamageInput) DamageResult {
 		burnApplied = true
 	}
 
-	modifier := stab * typeEff * crit * weather * burn
+	// Ability damage multipliers. Attacker's ModifyAttack and defender's
+	// ModifyDefense are applied as multiplicative modifiers. Adaptability's
+	// STAB bump is baked into its ModifyAttack (2.0/1.5 when STAB applies).
+	abilityMod := 1.0
+	ctx := DamageCtx{
+		State:             input.State,
+		Move:              input.Move,
+		AttackerTypes:     input.AttackerTypes,
+		DefenderTypes:     input.DefenderTypes,
+		TypeEffectiveness: typeEff,
+	}
+	if atkAbility.ModifyAttack != nil {
+		ctx.Side = SideAttacker
+		abilityMod *= atkAbility.ModifyAttack(ctx)
+	}
+	if defAbility.ModifyDefense != nil {
+		ctx.Side = SideDefender
+		abilityMod *= defAbility.ModifyDefense(ctx)
+	}
+
+	modifier := stab * typeEff * crit * weather * burn * abilityMod
 
 	minDmg := int(math.Floor(baseDmg * modifier * 0.85))
 	maxDmg := int(math.Floor(baseDmg * modifier * 1.00))
@@ -270,7 +319,7 @@ func CalculateDamage(input DamageInput) DamageResult {
 		Multiplier:         typeEff,
 		IsSuperEffective:   typeEff > 1,
 		IsNotVeryEffective: typeEff > 0 && typeEff < 1,
-		HasNoEffect:        typeEff == 0,
+		HasNoEffect:        typeEff == 0 || abilityMod == 0,
 		HasSTAB:            hasSTAB,
 		STABMultiplier:     stab,
 		BurnApplied:        burnApplied,

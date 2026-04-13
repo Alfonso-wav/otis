@@ -352,7 +352,12 @@
     "statFell": "¡{stat} de {name} bajó!",
     "statFellHarshly": "¡{stat} de {name} bajó mucho!",
     "statCannotGoHigher": "¡{stat} de {name} no puede subir más!",
-    "statCannotGoLower": "¡{stat} de {name} no puede bajar más!"
+    "statCannotGoLower": "¡{stat} de {name} no puede bajar más!",
+    "abilityActivated": "¡{ability} de {name}!",
+    "abilityAbsorbedWater": "¡{name} absorbió el agua!",
+    "abilityAbsorbedElectric": "¡{name} absorbió la electricidad!",
+    "abilityFlashFireCharged": "¡Los movimientos de Fuego de {name} se cargaron!",
+    "abilityImmune": "¡No afecta a {name}..."
   },
   "teams": {
     "myTeams": "Mis equipos ({count})",
