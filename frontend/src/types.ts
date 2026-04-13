@@ -18,6 +18,11 @@ export interface PokemonMoveEntry {
   Level: number;
 }
 
+export interface PokemonAbilityEntry {
+  name: string;
+  isHidden: boolean;
+}
+
 export interface Pokemon {
   ID: number;
   Name: string;
@@ -27,7 +32,7 @@ export interface Pokemon {
   Height: number;
   Weight: number;
   Moves: PokemonMoveEntry[];
-  Abilities: string[];
+  Abilities: PokemonAbilityEntry[];
 }
 
 export interface PokemonListItem {
