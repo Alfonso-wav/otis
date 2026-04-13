@@ -1016,7 +1016,7 @@ th.sortable.active .sort-indicator {
 }
 
 .moves-table {
-  min-width: 300px;
+  min-width: 420px;
 
   thead th {
     position: sticky;
@@ -1070,6 +1070,47 @@ th.sortable.active .sort-indicator {
     color: #718096;
     white-space: nowrap;
   }
+
+  .move-power {
+    width: 3.5rem;
+    text-align: center;
+    font-family: $font-body;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #4a5568;
+    white-space: nowrap;
+  }
+
+  .move-category {
+    width: 5.5rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
+.move-cat-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: $font-body;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.move-cat-physical {
+  background: #c43b2f;
+  color: #fff;
+}
+
+.move-cat-special {
+  background: #4a79d0;
+  color: #fff;
+}
+
+.move-cat-status {
+  background: #8a8a8a;
+  color: #fff;
 }
 
 .moves-empty {
@@ -1092,6 +1133,10 @@ th.sortable.active .sort-indicator {
 }
 
 [data-bs-theme="dark"] .moves-table .move-level {
+  color: #e2e8f0;
+}
+
+[data-bs-theme="dark"] .moves-table .move-power {
   color: #e2e8f0;
 }
 
