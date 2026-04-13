@@ -341,6 +341,7 @@
     "ability": "Habilidad",
     "abilityNone": "Ninguna",
     "abilityHidden": "HO",
+    "abilityLoading": "Cargando...",
     "weatherRainStart": "¡Empezó a llover!",
     "weatherSunStart": "¡La luz solar se hizo intensa!",
     "weatherSandstormStart": "¡Se desató una tormenta de arena!",

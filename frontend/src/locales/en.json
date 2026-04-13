@@ -341,6 +341,7 @@
     "ability": "Ability",
     "abilityNone": "None",
     "abilityHidden": "HA",
+    "abilityLoading": "Loading...",
     "weatherRainStart": "It started to rain!",
     "weatherSunStart": "The sunlight grew intense!",
     "weatherSandstormStart": "A sandstorm kicked up!",
