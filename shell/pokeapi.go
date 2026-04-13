@@ -156,9 +156,9 @@ func toDomainPokemon(raw apiPokemon) core.Pokemon {
 		moves = append(moves, entry)
 	}
 
-	abilities := make([]string, len(raw.Abilities))
+	abilities := make([]core.PokemonAbilityEntry, len(raw.Abilities))
 	for i, a := range raw.Abilities {
-		abilities[i] = a.Ability.Name
+		abilities[i] = core.PokemonAbilityEntry{Name: a.Ability.Name, IsHidden: a.IsHidden}
 	}
 
 	return core.Pokemon{

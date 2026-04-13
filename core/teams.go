@@ -29,6 +29,21 @@ func ValidateTeam(team Team) error {
 	return nil
 }
 
+// ValidateTeamMemberAbility checks that the member's ability (if any) is one
+// of the abilities available on the given Pokémon. An empty ability ("") is
+// always valid (no ability selected).
+func ValidateTeamMemberAbility(member TeamMember, pokemon Pokemon) error {
+	if member.Ability == "" {
+		return nil
+	}
+	for _, a := range pokemon.Abilities {
+		if a.Name == member.Ability {
+			return nil
+		}
+	}
+	return fmt.Errorf("ability %q is not available on %s", member.Ability, pokemon.Name)
+}
+
 // ValidateTeamMember checks that a member has valid EVs, IVs, and level.
 func ValidateTeamMember(member TeamMember) error {
 	if member.PokemonName == "" {
