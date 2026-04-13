@@ -51,7 +51,8 @@ Todo el backend es Go puro con arquitectura funcional (Core / Shell / App). El f
 - Regiones y localizaciones
 - Catalogo completo de movimientos (poder, precision, PP, prioridad)
 - Catalogo de habilidades con efectos
-- Tabla de tipos y efectividades
+- Tabla de tipos: heatmap + radar ofensivo/defensivo
+- Mapas de regiones con visor pan/zoom
 
 </td>
 </tr>
@@ -78,6 +79,8 @@ Todo el backend es Go puro con arquitectura funcional (Core / Shell / App). El f
 - Auto-simulacion (hasta 200 turnos)
 - Batch mode: 1 a 10.000 combates con estadisticas
 - Combates de equipo 6v6 con HP arrastrado y cambios
+- Fondo de combate seleccionable desde mapas de Explorar
+- Ditto: Transform replica especie, stats, tipos y movimientos
 
 </td>
 </tr>
@@ -100,6 +103,29 @@ Todo el backend es Go puro con arquitectura funcional (Core / Shell / App). El f
 - Estimar EVs a partir de stats actuales
 - Calcular stats finales con base, IVs, EVs, nivel y naturaleza
 - Preview de spreads de EVs
+
+</td>
+</tr>
+<tr>
+<td>
+
+### Audio y splash
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/143.png" width="40" />
+
+- Musica de fondo distinta por pestaña con crossfade
+- Controles de volumen y mute en settings
+- Splash interactivo de Snorlax con typewriter "OTIS / POKéDEX"
+- Animaciones de carga tematicas (Heracross, Diglett...)
+
+</td>
+<td>
+
+### Header companion
+<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/151.png" width="40" />
+
+- Hasta 6 Pokemon companions visibles en cabecera
+- Cargados desde el equipo activo
+- Cambian segun la pestaña actual
 
 </td>
 </tr>
