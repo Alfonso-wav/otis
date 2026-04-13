@@ -1,6 +1,6 @@
 import { t } from "../../i18n";
 import { renderTypeHeatmap, disposeTypeHeatmap } from "../../charts/type-heatmap";
-import { renderDefenseRadar, disposeDefenseRadar } from "../../charts/type-defense-radar";
+import { renderTypeRadar, disposeDefenseRadar } from "../../charts/type-defense-radar";
 
 export const ALL_TYPES = [
   "normal", "fire", "water", "electric", "grass", "ice",
@@ -45,12 +45,33 @@ export function effectiveness(attacker: string, defender: string): number {
 }
 
 let selectedRadarType: string | null = null;
+let showDefense = true;
+let showOffense = true;
 
 function renderChart(panel: HTMLElement): void {
   const title = t("typeChart.title");
   const radarHint = selectedRadarType
-    ? `<h3 class="tc-radar-title">${t("typeChart.defenseRadar")}: ${t(`typeNames.${selectedRadarType}`)}</h3>`
+    ? `<h3 class="tc-radar-title">${t("typeChart.radarTitle")}: ${t(`typeNames.${selectedRadarType}`)}</h3>`
     : `<p class="tc-radar-hint">${t("typeChart.selectTypeForRadar")}</p>`;
+
+  const togglesHtml = selectedRadarType
+    ? `
+      <div class="tc-radar-toggles" role="group" aria-label="${t("typeChart.radarToggles")}">
+        <label class="tc-radar-toggle tc-radar-toggle--defense">
+          <input type="checkbox" id="tc-toggle-defense" ${showDefense ? "checked" : ""} />
+          <span class="tc-radar-toggle-dot tc-radar-toggle-dot--defense"></span>
+          <span class="tc-radar-toggle-label">${t("typeChart.toggleDefensive")}</span>
+        </label>
+        <label class="tc-radar-toggle tc-radar-toggle--offense">
+          <input type="checkbox" id="tc-toggle-offense" ${showOffense ? "checked" : ""} />
+          <span class="tc-radar-toggle-dot tc-radar-toggle-dot--offense"></span>
+          <span class="tc-radar-toggle-label">${t("typeChart.toggleOffensive")}</span>
+        </label>
+      </div>
+    `
+    : "";
+
+  const anyVisible = showDefense || showOffense;
 
   panel.innerHTML = `
     <div class="type-chart-wrap">
@@ -58,7 +79,8 @@ function renderChart(panel: HTMLElement): void {
       <div class="tc-heatmap-container" id="tc-heatmap"></div>
       <div class="tc-radar-section">
         ${radarHint}
-        <div class="tc-radar-container${selectedRadarType ? "" : " hidden"}" id="tc-radar"></div>
+        ${togglesHtml}
+        <div class="tc-radar-container${selectedRadarType && anyVisible ? "" : " hidden"}" id="tc-radar"></div>
       </div>
     </div>
   `;
@@ -71,16 +93,36 @@ function renderChart(panel: HTMLElement): void {
     });
   }
 
-  if (selectedRadarType) {
+  if (selectedRadarType && anyVisible) {
     const radarEl = panel.querySelector<HTMLElement>("#tc-radar");
     if (radarEl) {
-      renderDefenseRadar(radarEl, selectedRadarType);
+      renderTypeRadar(radarEl, selectedRadarType, { showDefense, showOffense });
     }
+  } else {
+    disposeDefenseRadar();
+  }
+
+  const defenseToggle = panel.querySelector<HTMLInputElement>("#tc-toggle-defense");
+  const offenseToggle = panel.querySelector<HTMLInputElement>("#tc-toggle-offense");
+
+  if (defenseToggle) {
+    defenseToggle.addEventListener("change", () => {
+      showDefense = defenseToggle.checked;
+      renderChart(panel);
+    });
+  }
+  if (offenseToggle) {
+    offenseToggle.addEventListener("change", () => {
+      showOffense = offenseToggle.checked;
+      renderChart(panel);
+    });
   }
 }
 
 export function initTypeChart(panel: HTMLElement): void {
   selectedRadarType = null;
+  showDefense = true;
+  showOffense = true;
   renderChart(panel);
 
   document.addEventListener("locale-changed", () => {
