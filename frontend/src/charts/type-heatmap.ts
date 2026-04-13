@@ -18,6 +18,16 @@ echarts.use([
 ]);
 
 let chartInstance: echarts.ECharts | null = null;
+let resizeHandler: (() => void) | null = null;
+
+const MIN_CELL_PX = 44;
+const LABEL_RESERVE_PX = 96;
+const MOBILE_BREAKPOINT = 768;
+const TYPE_COUNT = 18;
+
+function isMobile(): boolean {
+  return window.innerWidth < MOBILE_BREAKPOINT;
+}
 
 function multiplierLabel(mult: number): string {
   if (mult === 0) return t("typeChart.immune");
@@ -27,131 +37,177 @@ function multiplierLabel(mult: number): string {
   return `${mult}`;
 }
 
+function applyMobileLayout(container: HTMLElement): void {
+  const mobile = isMobile();
+  if (mobile) {
+    const canvasWidth = LABEL_RESERVE_PX + TYPE_COUNT * MIN_CELL_PX;
+    const canvasHeight = LABEL_RESERVE_PX + TYPE_COUNT * MIN_CELL_PX;
+    container.style.width = `${canvasWidth}px`;
+    container.style.height = `${canvasHeight}px`;
+    container.style.minWidth = `${canvasWidth}px`;
+  } else {
+    container.style.width = "";
+    container.style.height = "";
+    container.style.minWidth = "";
+  }
+}
+
 export function renderTypeHeatmap(
   container: HTMLElement,
   onTypeSelect: (type: string) => void,
 ): void {
   if (chartInstance) {
     chartInstance.dispose();
+    chartInstance = null;
+  }
+  if (resizeHandler) {
+    window.removeEventListener("resize", resizeHandler);
+    resizeHandler = null;
   }
 
-  chartInstance = echarts.init(container);
+  const mobile = isMobile();
 
-  const types = [...ALL_TYPES];
-  const typeLabels = types.map((tp) => t(`typeNames.${tp}`));
+  // Apply mobile sizing before ECharts init so the container has real dimensions
+  applyMobileLayout(container);
 
-  // Build data: [xIndex (defender), yIndex (attacker), multiplier]
-  const data: [number, number, number][] = [];
-  for (let y = 0; y < types.length; y++) {
-    for (let x = 0; x < types.length; x++) {
-      data.push([x, y, effectiveness(types[y], types[x])]);
+  // Defer init to next frame so container dimensions are resolved
+  requestAnimationFrame(() => {
+    chartInstance = echarts.init(container);
+
+    const types = [...ALL_TYPES];
+    const typeLabels = types.map((tp) => t(`typeNames.${tp}`));
+
+    // Build data: [xIndex (defender), yIndex (attacker), multiplier]
+    const data: [number, number, number][] = [];
+    for (let y = 0; y < types.length; y++) {
+      for (let x = 0; x < types.length; x++) {
+        data.push([x, y, effectiveness(types[y], types[x])]);
+      }
     }
-  }
 
-  chartInstance.setOption({
-    tooltip: {
-      position: "top",
-      formatter(params: { data: [number, number, number] }) {
-        const [x, y, val] = params.data;
-        const atk = t(`typeNames.${types[y]}`);
-        const def = t(`typeNames.${types[x]}`);
-        return [
-          `<strong>${t("typeChart.attackerType")}:</strong> ${atk}`,
-          `<strong>${t("typeChart.defenderType")}:</strong> ${def}`,
-          `<strong>${t("typeChart.multiplier")}:</strong> ${val}x (${multiplierLabel(val)})`,
-        ].join("<br>");
-      },
-    },
-    grid: {
-      top: 80,
-      bottom: 40,
-      left: 80,
-      right: 40,
-      containLabel: false,
-    },
-    xAxis: {
-      type: "category",
-      data: typeLabels,
-      position: "top",
-      axisLabel: {
-        rotate: 45,
-        fontSize: 10,
-        color: "#4a5568",
-      },
-      splitArea: { show: false },
-      axisTick: { show: false },
-      axisLine: { show: false },
-    },
-    yAxis: {
-      type: "category",
-      data: typeLabels,
-      inverse: true,
-      axisLabel: {
-        fontSize: 10,
-        color: "#4a5568",
-      },
-      splitArea: { show: false },
-      axisTick: { show: false },
-      axisLine: { show: false },
-    },
-    visualMap: {
-      type: "piecewise",
-      pieces: [
-        { value: 0, label: t("typeChart.immune"), color: "#4a5568" },
-        { value: 0.5, label: t("typeChart.resisted"), color: "#fc8181" },
-        { value: 1, label: t("typeChart.neutral"), color: "#e2e8f0" },
-        { value: 2, label: t("typeChart.superEffective"), color: "#68d391" },
-      ],
-      orient: "horizontal",
-      left: "center",
-      top: 0,
-      textStyle: {
-        color: "#4a5568",
-        fontSize: 11,
-      },
-    },
-    series: [
-      {
-        type: "heatmap",
-        data,
-        label: {
-          show: true,
-          formatter(params: { data: [number, number, number] }) {
-            const val = params.data[2];
-            if (val === 2) return "2x";
-            if (val === 0.5) return "\u00BD";
-            if (val === 0) return "0";
-            return "";
-          },
-          fontSize: 10,
-          color: "#2d3748",
+    const labelFontSize = mobile ? 12 : 10;
+    const cellLabelFontSize = mobile ? 12 : 10;
+    const gridTop = mobile ? 100 : 80;
+    const gridLeft = mobile ? 96 : 80;
+
+    chartInstance.setOption({
+      tooltip: {
+        position: "top",
+        formatter(params: { data: [number, number, number] }) {
+          const [x, y, val] = params.data;
+          const atk = t(`typeNames.${types[y]}`);
+          const def = t(`typeNames.${types[x]}`);
+          return [
+            `<strong>${t("typeChart.attackerType")}:</strong> ${atk}`,
+            `<strong>${t("typeChart.defenderType")}:</strong> ${def}`,
+            `<strong>${t("typeChart.multiplier")}:</strong> ${val}x (${multiplierLabel(val)})`,
+          ].join("<br>");
         },
-        emphasis: {
+      },
+      grid: {
+        top: gridTop,
+        bottom: 40,
+        left: gridLeft,
+        right: 40,
+        containLabel: false,
+      },
+      xAxis: {
+        type: "category",
+        data: typeLabels,
+        position: "top",
+        axisLabel: {
+          rotate: 45,
+          fontSize: labelFontSize,
+          color: "#4a5568",
+        },
+        splitArea: { show: false },
+        axisTick: { show: false },
+        axisLine: { show: false },
+      },
+      yAxis: {
+        type: "category",
+        data: typeLabels,
+        inverse: true,
+        axisLabel: {
+          fontSize: labelFontSize,
+          color: "#4a5568",
+        },
+        splitArea: { show: false },
+        axisTick: { show: false },
+        axisLine: { show: false },
+      },
+      visualMap: {
+        type: "piecewise",
+        pieces: [
+          { value: 0, label: t("typeChart.immune"), color: "#4a5568" },
+          { value: 0.5, label: t("typeChart.resisted"), color: "#fc8181" },
+          { value: 1, label: t("typeChart.neutral"), color: "#e2e8f0" },
+          { value: 2, label: t("typeChart.superEffective"), color: "#68d391" },
+        ],
+        orient: "horizontal",
+        left: "center",
+        top: 0,
+        textStyle: {
+          color: "#4a5568",
+          fontSize: 11,
+        },
+      },
+      series: [
+        {
+          type: "heatmap",
+          data,
+          label: {
+            show: true,
+            formatter(params: { data: [number, number, number] }) {
+              const val = params.data[2];
+              if (val === 2) return "2x";
+              if (val === 0.5) return "\u00BD";
+              if (val === 0) return "0";
+              return "";
+            },
+            fontSize: cellLabelFontSize,
+            color: "#2d3748",
+          },
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 6,
+              shadowColor: "rgba(0,0,0,0.3)",
+            },
+          },
           itemStyle: {
-            shadowBlur: 6,
-            shadowColor: "rgba(0,0,0,0.3)",
+            borderWidth: 1,
+            borderColor: "#fff",
           },
         },
-        itemStyle: {
-          borderWidth: 1,
-          borderColor: "#fff",
-        },
-      },
-    ],
-  });
+      ],
+    });
 
-  chartInstance.on("click", (params) => {
-    const d = (params as { data?: unknown }).data;
-    if (Array.isArray(d) && d.length >= 3) {
-      const yIdx = d[1] as number;
-      onTypeSelect(types[yIdx]);
-    }
-  });
+    chartInstance.on("click", (params) => {
+      const d = (params as { data?: unknown }).data;
+      if (Array.isArray(d) && d.length >= 3) {
+        const yIdx = d[1] as number;
+        onTypeSelect(types[yIdx]);
+      }
+    });
 
-  window.addEventListener("resize", () => chartInstance?.resize());
+    // Debounced resize handler that recalculates mobile layout
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+    resizeHandler = () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        applyMobileLayout(container);
+        chartInstance?.resize();
+      }, 150);
+    };
+    window.addEventListener("resize", resizeHandler);
+  });
 }
 
 export function disposeTypeHeatmap(): void {
+  if (resizeHandler) {
+    window.removeEventListener("resize", resizeHandler);
+    resizeHandler = null;
+  }
   if (chartInstance) {
     chartInstance.dispose();
     chartInstance = null;
