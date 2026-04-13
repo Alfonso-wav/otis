@@ -83,6 +83,13 @@
     "moveName": "Nombre",
     "moveMethodCol": "Método",
     "moveLevelCol": "Nivel",
+    "movePowerCol": "Poder",
+    "moveCategoryCol": "Clase",
+    "moveCategory": {
+      "physical": "F\u00edsico",
+      "special": "Especial",
+      "status": "Estado"
+    },
     "moveMethod": {
       "all": "Todos",
       "levelUp": "Subida de nivel",
