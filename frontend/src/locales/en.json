@@ -83,6 +83,13 @@
     "moveName": "Name",
     "moveMethodCol": "Method",
     "moveLevelCol": "Level",
+    "movePowerCol": "Power",
+    "moveCategoryCol": "Class",
+    "moveCategory": {
+      "physical": "Physical",
+      "special": "Special",
+      "status": "Status"
+    },
     "moveMethod": {
       "all": "All",
       "levelUp": "Level-up",

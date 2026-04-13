@@ -17,7 +17,7 @@ import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "..
 import { SortCache } from "../utils/sort-cache";
 import { showSortingOverlay, updateSortingOverlayText, hideSortingOverlay, createInlineDiglett } from "../components/sorting-overlay";
 import { createAutocomplete } from "../autocomplete";
-import { loadMoveNames, getLocalizedMoveName } from "../utils/move-names";
+import { loadMoveNames, getLocalizedMoveName, getMovePower, getMoveCategory } from "../utils/move-names";
 
 const LIMIT_STEP = 50;
 let rowLimit = 50;
@@ -1150,7 +1150,7 @@ async function renderMoves(moves: PokemonMoveEntry[]): Promise<void> {
   await loadMoveNames();
 
   let activeFilters: Set<MoveMethodFilter> = new Set();
-  type SortCol = "name" | "method" | "level" | null;
+  type SortCol = "name" | "method" | "level" | "power" | null;
   let sortCol: SortCol = null;
   let sortDir: "asc" | "desc" = "asc";
 
@@ -1193,6 +1193,10 @@ async function renderMoves(moves: PokemonMoveEntry[]): Promise<void> {
           const la = a.Method === "level-up" && a.Level > 0 ? a.Level : Infinity;
           const lb = b.Method === "level-up" && b.Level > 0 ? b.Level : Infinity;
           cmp = la - lb;
+        } else if (sortCol === "power") {
+          const pa = getMovePower(a.Name) ?? Infinity;
+          const pb = getMovePower(b.Name) ?? Infinity;
+          cmp = pa - pb;
         }
         return sortDir === "asc" ? cmp : -cmp;
       });
@@ -1204,8 +1208,14 @@ async function renderMoves(moves: PokemonMoveEntry[]): Promise<void> {
 
     const rows = sorted.map((m) => {
       const levelCell = m.Method === "level-up" && m.Level > 0 ? String(m.Level) : "\u2014";
+      const power = getMovePower(m.Name);
+      const powerCell = power !== null ? String(power) : "\u2014";
+      const category = getMoveCategory(m.Name);
+      const categoryLabel = t("detail.moveCategory." + category);
       return `<tr>
         <td class="move-name">${getLocalizedMoveName(m.Name)}</td>
+        <td class="move-power">${powerCell}</td>
+        <td class="move-category"><span class="move-cat-badge move-cat-${category}">${categoryLabel}</span></td>
         <td class="move-level">${levelCell}</td>
         <td class="move-method">${getMethodLabel(m.Method)}</td>
       </tr>`;
@@ -1220,6 +1230,8 @@ async function renderMoves(moves: PokemonMoveEntry[]): Promise<void> {
       <table class="poke-table moves-table">
         <thead><tr>
           <th ${thClass("name")} data-sort="name">${t("detail.moveName")}</th>
+          <th ${thClass("power")} data-sort="power">${t("detail.movePowerCol")}</th>
+          <th class="sort-none">${t("detail.moveCategoryCol")}</th>
           <th ${thClass("level")} data-sort="level">${t("detail.moveLevelCol")}</th>
           <th ${thClass("method")} data-sort="method">${t("detail.moveMethodCol")}</th>
         </tr></thead>

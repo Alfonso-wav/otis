@@ -1,28 +1,36 @@
-// move-names.ts — Lazy-loaded cache of move slug → localized name (NameEs).
-// Uses GetAllMoves() to build a Map<slug, NameEs> once, then resolves
-// localized names without extra network calls.
+// move-names.ts — Lazy-loaded cache of move slug → localized name, power & category.
+// Uses GetAllMoves() to build lookup maps once, then resolves data without extra
+// network calls.
 
 import { GetAllMoves } from "../api";
 import { getLocale } from "../i18n";
 
-let moveNameCache: Map<string, string> | null = null;
+interface MoveData {
+  nameEs: string;
+  power: number;
+  category: string; // "physical" | "special" | "status"
+}
+
+let moveCache: Map<string, MoveData> | null = null;
 let loadPromise: Promise<void> | null = null;
 
 /**
- * Loads the move-name cache (idempotent).
+ * Loads the move cache (idempotent).
  * Safe to call multiple times — only the first call fetches.
  */
 export function loadMoveNames(): Promise<void> {
-  if (moveNameCache) return Promise.resolve();
+  if (moveCache) return Promise.resolve();
   if (loadPromise) return loadPromise;
 
   loadPromise = GetAllMoves()
     .then((moves) => {
-      moveNameCache = new Map();
+      moveCache = new Map();
       for (const m of moves) {
-        if (m.NameEs) {
-          moveNameCache.set(m.Name, m.NameEs);
-        }
+        moveCache.set(m.Name, {
+          nameEs: m.NameEs || "",
+          power: m.Power ?? 0,
+          category: m.Category || "status",
+        });
       }
     })
     .catch(() => {
@@ -41,8 +49,32 @@ export function loadMoveNames(): Promise<void> {
 export function getLocalizedMoveName(slug: string): string {
   const fallback = capitalize(slug.replace(/-/g, " "));
   if (getLocale() !== "es") return fallback;
-  if (!moveNameCache) return fallback;
-  return moveNameCache.get(slug) || fallback;
+  if (!moveCache) return fallback;
+  const data = moveCache.get(slug);
+  return data?.nameEs || fallback;
+}
+
+/**
+ * Returns the power of a move, or null if it's a status move / unknown.
+ */
+export function getMovePower(slug: string): number | null {
+  if (!moveCache) return null;
+  const data = moveCache.get(slug);
+  if (!data) return null;
+  return data.power > 0 ? data.power : null;
+}
+
+/**
+ * Returns the category of a move: "physical", "special", or "status".
+ * Falls back to "status" for unknown moves.
+ */
+export function getMoveCategory(slug: string): "physical" | "special" | "status" {
+  if (!moveCache) return "status";
+  const data = moveCache.get(slug);
+  if (!data) return "status";
+  const cat = data.category.toLowerCase();
+  if (cat === "physical" || cat === "special") return cat;
+  return "status";
 }
 
 function capitalize(s: string): string {
