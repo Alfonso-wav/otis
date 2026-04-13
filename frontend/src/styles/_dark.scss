@@ -647,6 +647,36 @@
     color: $navy-blue-text;
   }
 
+  // ─── Type / Move modal ─────────────────────────────────────────────────
+  .type-modal {
+    background: #1a202c;
+  }
+
+  .type-modal-header {
+    border-bottom-color: #4a5568;
+    color: #e2e8f0;
+  }
+
+  .type-modal-close {
+    color: #a0aec0;
+
+    &:hover {
+      color: #e2e8f0;
+    }
+  }
+
+  .type-modal-empty {
+    color: #a0aec0;
+  }
+
+  .move-modal-limit-note {
+    color: #a0aec0;
+  }
+
+  .move-modal-table-wrap {
+    background: #1a202c;
+  }
+
   // ─── Explore table wrappers ────────────────────────────────────────────
   .moves-table-wrap,
   .abilities-table-wrap,
