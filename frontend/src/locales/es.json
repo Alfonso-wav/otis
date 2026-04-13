@@ -346,7 +346,13 @@
     "weatherSunEnd": "La luz solar volvió a la normalidad.",
     "weatherSandstormEnd": "La tormenta de arena amainó.",
     "weatherHailEnd": "El granizo cesó.",
-    "weatherResidualDamage": "{name} sufrió daño por el clima."
+    "weatherResidualDamage": "{name} sufrió daño por el clima.",
+    "statRose": "¡{stat} de {name} subió!",
+    "statRoseSharply": "¡{stat} de {name} subió mucho!",
+    "statFell": "¡{stat} de {name} bajó!",
+    "statFellHarshly": "¡{stat} de {name} bajó mucho!",
+    "statCannotGoHigher": "¡{stat} de {name} no puede subir más!",
+    "statCannotGoLower": "¡{stat} de {name} no puede bajar más!"
   },
   "teams": {
     "myTeams": "Mis equipos ({count})",

@@ -346,7 +346,13 @@
     "weatherSunEnd": "The sunlight returned to normal.",
     "weatherSandstormEnd": "The sandstorm subsided.",
     "weatherHailEnd": "The hail stopped.",
-    "weatherResidualDamage": "{name} was hurt by the weather."
+    "weatherResidualDamage": "{name} was hurt by the weather.",
+    "statRose": "{stat} of {name} rose!",
+    "statRoseSharply": "{stat} of {name} rose sharply!",
+    "statFell": "{stat} of {name} fell!",
+    "statFellHarshly": "{stat} of {name} harshly fell!",
+    "statCannotGoHigher": "{stat} of {name} won't go any higher!",
+    "statCannotGoLower": "{stat} of {name} won't go any lower!"
   },
   "teams": {
     "myTeams": "My teams ({count})",
