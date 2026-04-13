@@ -1,41 +1,85 @@
 import * as echarts from "echarts/core";
 import { RadarChart } from "echarts/charts";
-import { TooltipComponent, RadarComponent } from "echarts/components";
+import { TooltipComponent, RadarComponent, LegendComponent } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
 import { ALL_TYPES, effectiveness, TYPE_COLORS } from "../pages/explore/type-chart";
 import { t } from "../i18n";
 
-echarts.use([RadarChart, RadarComponent, TooltipComponent, CanvasRenderer]);
+echarts.use([RadarChart, RadarComponent, TooltipComponent, LegendComponent, CanvasRenderer]);
 
 let radarInstance: echarts.ECharts | null = null;
+let resizeHandler: (() => void) | null = null;
 
-export function renderDefenseRadar(
+export interface RadarOptions {
+  showDefense: boolean;
+  showOffense: boolean;
+}
+
+export function renderTypeRadar(
   container: HTMLElement,
   typeName: string,
+  options: RadarOptions = { showDefense: true, showOffense: true },
 ): void {
   if (radarInstance) {
     radarInstance.dispose();
+    radarInstance = null;
+  }
+  if (resizeHandler) {
+    window.removeEventListener("resize", resizeHandler);
+    resizeHandler = null;
   }
 
   radarInstance = echarts.init(container);
 
-  const color = TYPE_COLORS[typeName] ?? "#718096";
+  const defenseColor = TYPE_COLORS[typeName] ?? "#718096";
+  const offenseColor = "#2d3748";
 
-  // For the selected type as defender, show how each attacker fares
-  const indicators = ALL_TYPES.map((atk) => ({
-    name: t(`typeNames.${atk}`),
+  const indicators = ALL_TYPES.map((type) => ({
+    name: t(`typeNames.${type}`),
     max: 2,
   }));
 
-  const values = ALL_TYPES.map((atk) => effectiveness(atk, typeName));
+  const defenseValues = ALL_TYPES.map((atk) => effectiveness(atk, typeName));
+  const offenseValues = ALL_TYPES.map((def) => effectiveness(typeName, def));
+
+  const defenseName = t("typeChart.defenseRadar");
+  const offenseName = t("typeChart.offensiveRadar");
+
+  const data: Array<Record<string, unknown>> = [];
+  if (options.showDefense) {
+    data.push({
+      value: defenseValues,
+      name: defenseName,
+      areaStyle: { color: hexToRgba(defenseColor, 0.25) },
+      lineStyle: { color: defenseColor, width: 2, type: "solid" },
+      itemStyle: { color: defenseColor },
+      symbol: "circle",
+      symbolSize: 6,
+    });
+  }
+  if (options.showOffense) {
+    data.push({
+      value: offenseValues,
+      name: offenseName,
+      areaStyle: { color: hexToRgba(offenseColor, 0.15) },
+      lineStyle: { color: offenseColor, width: 2, type: "dashed" },
+      itemStyle: { color: offenseColor },
+      symbol: "diamond",
+      symbolSize: 7,
+    });
+  }
 
   radarInstance.setOption({
     tooltip: {
       trigger: "item",
     },
+    legend: {
+      show: false,
+      data: [defenseName, offenseName],
+    },
     radar: {
       indicator: indicators,
-      radius: "70%",
+      radius: "65%",
       center: ["50%", "55%"],
       shape: "polygon",
       axisName: {
@@ -56,26 +100,28 @@ export function renderDefenseRadar(
     series: [
       {
         type: "radar",
-        data: [
-          {
-            value: values,
-            name: t(`typeNames.${typeName}`),
-            areaStyle: { color: hexToRgba(color, 0.25) },
-            lineStyle: { color, width: 2 },
-            itemStyle: { color },
-          },
-        ],
+        data,
       },
     ],
   });
 
-  window.addEventListener("resize", () => radarInstance?.resize());
+  resizeHandler = () => radarInstance?.resize();
+  window.addEventListener("resize", resizeHandler);
 }
+
+// Backwards-compatible alias
+export const renderDefenseRadar = (container: HTMLElement, typeName: string): void => {
+  renderTypeRadar(container, typeName);
+};
 
 export function disposeDefenseRadar(): void {
   if (radarInstance) {
     radarInstance.dispose();
     radarInstance = null;
+  }
+  if (resizeHandler) {
+    window.removeEventListener("resize", resizeHandler);
+    resizeHandler = null;
   }
 }
 
