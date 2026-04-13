@@ -195,16 +195,12 @@
 
 // ── Typewriter labels ("OTIS" / "POKéDEX") ───────────────────
 .splash-otis {
-  position: absolute;
-  top: -2rem;
-  left: 50%;
-  transform: translateX(-50%);
   font-family: "Press Start 2P", monospace;
   font-size: 1.8rem;
   color: #fff;
   text-shadow: 2px 2px 0 #000;
   white-space: nowrap;
-  z-index: 1;
+  margin-bottom: 1.25rem;
   pointer-events: none;
 }
 
@@ -237,7 +233,7 @@
 @media (max-width: 400px) {
   .splash-otis {
     font-size: 1.2rem;
-    top: -1.5rem;
+    margin-bottom: 0.9rem;
   }
 
   .splash-pokedex-label {
