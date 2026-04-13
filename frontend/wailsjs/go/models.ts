@@ -537,11 +537,13 @@ export namespace core {
 	    defenderMoves: Move[];
 	    attackerName: string;
 	    defenderName: string;
-	
+	    attackerAbility?: string;
+	    defenderAbility?: string;
+
 	    static createFrom(source: any = {}) {
 	        return new FullBattleInput(source);
 	    }
-	
+
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.attackerStats = this.convertValues(source["attackerStats"], Stats);
@@ -554,6 +556,8 @@ export namespace core {
 	        this.defenderMoves = this.convertValues(source["defenderMoves"], Move);
 	        this.attackerName = source["attackerName"];
 	        this.defenderName = source["defenderName"];
+	        this.attackerAbility = source["attackerAbility"] ?? "";
+	        this.defenderAbility = source["defenderAbility"] ?? "";
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1032,6 +1036,21 @@ export namespace core {
 	        this.BaseStat = source["BaseStat"];
 	    }
 	}
+	export class PokemonAbilityEntry {
+	    name: string;
+	    isHidden: boolean;
+
+	    static createFrom(source: any = {}) {
+	        return new PokemonAbilityEntry(source);
+	    }
+
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.isHidden = source["isHidden"];
+	    }
+	}
+
 	export class Pokemon {
 	    ID: number;
 	    Name: string;
@@ -1041,12 +1060,12 @@ export namespace core {
 	    Height: number;
 	    Weight: number;
 	    Moves: PokemonMoveEntry[];
-	    Abilities: string[];
-	
+	    Abilities: PokemonAbilityEntry[];
+
 	    static createFrom(source: any = {}) {
 	        return new Pokemon(source);
 	    }
-	
+
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.ID = source["ID"];
@@ -1057,7 +1076,7 @@ export namespace core {
 	        this.Height = source["Height"];
 	        this.Weight = source["Weight"];
 	        this.Moves = this.convertValues(source["Moves"], PokemonMoveEntry);
-	        this.Abilities = source["Abilities"];
+	        this.Abilities = this.convertValues(source["Abilities"], PokemonAbilityEntry);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1473,11 +1492,12 @@ export namespace core {
 	    nature: string;
 	    ivs: Stats;
 	    evs: Stats;
-	
+	    ability?: string;
+
 	    static createFrom(source: any = {}) {
 	        return new TeamMember(source);
 	    }
-	
+
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.pokemonName = source["pokemonName"];
@@ -1486,6 +1506,7 @@ export namespace core {
 	        this.nature = source["nature"];
 	        this.ivs = this.convertValues(source["ivs"], Stats);
 	        this.evs = this.convertValues(source["evs"], Stats);
+	        this.ability = source["ability"] ?? "";
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
