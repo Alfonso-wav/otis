@@ -18,6 +18,9 @@ type FullBattleInput struct {
 	DefenderMoves []Move        `json:"defenderMoves"`
 	AttackerName  string        `json:"attackerName"`
 	DefenderName  string        `json:"defenderName"`
+	// Ability slugs (kebab-case). Empty string = no ability / unknown.
+	AttackerAbility string `json:"attackerAbility"`
+	DefenderAbility string `json:"defenderAbility"`
 }
 
 // resolveOrder determines who attacks first based on move priority, then speed.
@@ -42,6 +45,15 @@ func SimulateFullBattle(input FullBattleInput, randSource func(n int) int) Battl
 	}
 
 	state := InitBattle(input.AttackerStats.HP, input.DefenderStats.HP)
+	// Record ability slugs on state and fire OnSwitchIn hooks for both sides.
+	state.AttackerAbility = normalizeAbilityName(input.AttackerAbility)
+	state.DefenderAbility = normalizeAbilityName(input.DefenderAbility)
+	if ab, ok := GetAbility(state.AttackerAbility); ok && ab.OnSwitchIn != nil {
+		state = ab.OnSwitchIn(state, SideAttacker)
+	}
+	if ab, ok := GetAbility(state.DefenderAbility); ok && ab.OnSwitchIn != nil {
+		state = ab.OnSwitchIn(state, SideDefender)
+	}
 	const maxTurns = 200
 
 	for !state.IsOver && state.TurnCount < maxTurns {
@@ -69,6 +81,13 @@ func SimulateFullBattle(input FullBattleInput, randSource func(n int) int) Battl
 		// Apply Spe stage multipliers so Agility / String Shot affect turn order.
 		atkSpeed = int(float64(atkSpeed) * StageMultiplier(state.AttackerStages.Spe))
 		defSpeed = int(float64(defSpeed) * StageMultiplier(state.DefenderStages.Spe))
+		// Ability speed modifiers (Chlorophyll / Swift Swim / etc.).
+		if ab, ok := GetAbility(state.AttackerAbility); ok && ab.SpeedMultiplier != nil {
+			atkSpeed = int(float64(atkSpeed) * ab.SpeedMultiplier(state, SideAttacker))
+		}
+		if ab, ok := GetAbility(state.DefenderAbility); ok && ab.SpeedMultiplier != nil {
+			defSpeed = int(float64(defSpeed) * ab.SpeedMultiplier(state, SideDefender))
+		}
 
 		attackerFirst := resolveOrder(
 			atkSpeed, defSpeed,
@@ -98,6 +117,26 @@ func SimulateFullBattle(input FullBattleInput, randSource func(n int) int) Battl
 				defTypes = state.DefenderTypesOverride
 			}
 			state = tickWeather(state, atkTypes, defTypes, input.AttackerName, input.DefenderName)
+		}
+
+		// End-of-turn ability hooks (Solar Power self-damage, Speed Boost, Rain Dish…).
+		if !state.IsOver {
+			if ab, ok := GetAbility(state.AttackerAbility); ok && ab.EndOfTurn != nil {
+				state = ab.EndOfTurn(state, SideAttacker)
+			}
+			if state.AttackerHP <= 0 {
+				state.IsOver = true
+				state.Winner = "defender"
+			}
+		}
+		if !state.IsOver {
+			if ab, ok := GetAbility(state.DefenderAbility); ok && ab.EndOfTurn != nil {
+				state = ab.EndOfTurn(state, SideDefender)
+			}
+			if state.DefenderHP <= 0 {
+				state.IsOver = true
+				state.Winner = "attacker"
+			}
 		}
 	}
 
@@ -177,6 +216,12 @@ func executeDefenderTurn(state BattleState, input FullBattleInput, move Move, ra
 		WeatherTurnsLeft:      state.WeatherTurnsLeft,
 		AttackerStages:        state.DefenderStages,
 		DefenderStages:        state.AttackerStages,
+		AttackerAbility:         state.DefenderAbility,
+		DefenderAbility:         state.AttackerAbility,
+		AttackerFlashFireActive: state.DefenderFlashFireActive,
+		DefenderFlashFireActive: state.AttackerFlashFireActive,
+		AttackerIgnoresWeather:  state.DefenderIgnoresWeather,
+		DefenderIgnoresWeather:  state.AttackerIgnoresWeather,
 	}
 
 	// Resolve effective stats/types using Transform overrides (from swapped perspective).
@@ -235,6 +280,12 @@ func executeDefenderTurn(state BattleState, input FullBattleInput, move Move, ra
 		WeatherTurnsLeft:      ns.WeatherTurnsLeft,
 		AttackerStages:        ns.DefenderStages,
 		DefenderStages:        ns.AttackerStages,
+		AttackerAbility:         ns.DefenderAbility,
+		DefenderAbility:         ns.AttackerAbility,
+		AttackerFlashFireActive: ns.DefenderFlashFireActive,
+		DefenderFlashFireActive: ns.AttackerFlashFireActive,
+		AttackerIgnoresWeather:  ns.DefenderIgnoresWeather,
+		DefenderIgnoresWeather:  ns.AttackerIgnoresWeather,
 	}
 	if state.IsOver {
 		state.Winner = "defender"
@@ -271,6 +322,14 @@ type BattleState struct {
 	// Persist across turns in the same battle, reset by InitBattle.
 	AttackerStages StatStages `json:"attackerStages,omitempty"`
 	DefenderStages StatStages `json:"defenderStages,omitempty"`
+
+	// Ability-related persistent flags (set by OnSwitchIn / OnTakeHit hooks).
+	AttackerAbility         string `json:"attackerAbility,omitempty"`
+	DefenderAbility         string `json:"defenderAbility,omitempty"`
+	AttackerFlashFireActive bool   `json:"attackerFlashFireActive,omitempty"`
+	DefenderFlashFireActive bool   `json:"defenderFlashFireActive,omitempty"`
+	AttackerIgnoresWeather  bool   `json:"attackerIgnoresWeather,omitempty"`
+	DefenderIgnoresWeather  bool   `json:"defenderIgnoresWeather,omitempty"`
 }
 
 // TurnInput contains everything needed to simulate one turn.
@@ -414,35 +473,27 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 		}
 	}
 
+	dmgInput := DamageInput{
+		AttackerStats:   input.AttackerStats,
+		DefenderStats:   input.DefenderStats,
+		Move:            input.Move,
+		AttackerTypes:   input.AttackerTypes,
+		DefenderTypes:   input.DefenderTypes,
+		Level:           input.AttackerLevel,
+		IsCritical:      false,
+		WeatherBonus:    1.0,
+		Weather:         state.Weather,
+		AttackerStages:  state.AttackerStages,
+		DefenderStages:  state.DefenderStages,
+		AttackerAbility: state.AttackerAbility,
+		DefenderAbility: state.DefenderAbility,
+		State:           state,
+	}
 	var dmg DamageResult
 	if randSource != nil {
-		dmg = CalculateBattleDamage(DamageInput{
-			AttackerStats:  input.AttackerStats,
-			DefenderStats:  input.DefenderStats,
-			Move:           input.Move,
-			AttackerTypes:  input.AttackerTypes,
-			DefenderTypes:  input.DefenderTypes,
-			Level:          input.AttackerLevel,
-			IsCritical:     false,
-			WeatherBonus:   1.0,
-			Weather:        state.Weather,
-			AttackerStages: state.AttackerStages,
-			DefenderStages: state.DefenderStages,
-		}, randSource)
+		dmg = CalculateBattleDamage(dmgInput, randSource)
 	} else {
-		dmg = CalculateDamage(DamageInput{
-			AttackerStats:  input.AttackerStats,
-			DefenderStats:  input.DefenderStats,
-			Move:           input.Move,
-			AttackerTypes:  input.AttackerTypes,
-			DefenderTypes:  input.DefenderTypes,
-			Level:          input.AttackerLevel,
-			IsCritical:     false,
-			WeatherBonus:   1.0,
-			Weather:        state.Weather,
-			AttackerStages: state.AttackerStages,
-			DefenderStages: state.DefenderStages,
-		})
+		dmg = CalculateDamage(dmgInput)
 	}
 
 	var logEntry string
@@ -454,6 +505,15 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 		applied := dmg.ActualDamage
 		if applied < 1 && !dmg.HasNoEffect {
 			applied = 1
+		}
+
+		// Defender's OnTakeHit can heal (Water Absorb), activate flags
+		// (Flash Fire) or zero out incoming damage. Attacker's OnTakeHit
+		// also runs for recoil-style abilities on the attacker side (Rough
+		// Skin style), but here we only invoke the defender's hook since
+		// attacker-side reactions belong to the *defender's* ability.
+		if ab, ok := GetAbility(state.DefenderAbility); ok && ab.OnTakeHit != nil {
+			state, applied = ab.OnTakeHit(state, SideDefender, input.Move, applied)
 		}
 
 		newHP := state.DefenderHP - applied
