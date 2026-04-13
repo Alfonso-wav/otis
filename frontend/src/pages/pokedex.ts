@@ -17,6 +17,7 @@ import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "..
 import { SortCache } from "../utils/sort-cache";
 import { showSortingOverlay, updateSortingOverlayText, hideSortingOverlay, createInlineDiglett } from "../components/sorting-overlay";
 import { createAutocomplete } from "../autocomplete";
+import { loadMoveNames, getLocalizedMoveName } from "../utils/move-names";
 
 const LIMIT_STEP = 50;
 let rowLimit = 50;
@@ -1137,7 +1138,7 @@ async function loadAbilities(abilityNames: string[]): Promise<void> {
 
 type MoveMethodFilter = "all" | "level-up" | "machine" | "egg" | "tutor";
 
-function renderMoves(moves: PokemonMoveEntry[]): void {
+async function renderMoves(moves: PokemonMoveEntry[]): Promise<void> {
   const el = document.getElementById("pokemon-moves") as HTMLDivElement;
   if (!el) return;
 
@@ -1145,6 +1146,8 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
     el.innerHTML = "";
     return;
   }
+
+  await loadMoveNames();
 
   let activeFilters: Set<MoveMethodFilter> = new Set();
   type SortCol = "name" | "method" | "level" | null;
@@ -1183,7 +1186,7 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
       sorted.sort((a, b) => {
         let cmp = 0;
         if (sortCol === "name") {
-          cmp = a.Name.localeCompare(b.Name);
+          cmp = getLocalizedMoveName(a.Name).localeCompare(getLocalizedMoveName(b.Name));
         } else if (sortCol === "method") {
           cmp = a.Method.localeCompare(b.Method);
         } else if (sortCol === "level") {
@@ -1202,7 +1205,7 @@ function renderMoves(moves: PokemonMoveEntry[]): void {
     const rows = sorted.map((m) => {
       const levelCell = m.Method === "level-up" && m.Level > 0 ? String(m.Level) : "\u2014";
       return `<tr>
-        <td class="move-name">${capitalize(m.Name.replace(/-/g, " "))}</td>
+        <td class="move-name">${getLocalizedMoveName(m.Name)}</td>
         <td class="move-level">${levelCell}</td>
         <td class="move-method">${getMethodLabel(m.Method)}</td>
       </tr>`;
