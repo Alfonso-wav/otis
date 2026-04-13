@@ -12,8 +12,11 @@ type DamageInput struct {
 	Level         int           `json:"level"`
 	IsCritical    bool          `json:"isCritical"`
 	CriticalStage int           `json:"criticalStage"`
-	WeatherBonus  float64       `json:"weatherBonus"`
-	IsBurned      bool          `json:"isBurned"`
+	// WeatherBonus is a direct numeric multiplier override (legacy). Weather is preferred.
+	WeatherBonus float64 `json:"weatherBonus"`
+	// Weather active during the move. If set, overrides WeatherBonus via WeatherDamageMultiplier.
+	Weather  Weather `json:"weather,omitempty"`
+	IsBurned bool    `json:"isBurned"`
 }
 
 // DamageResult contiene el resultado del cálculo de daño
@@ -124,6 +127,39 @@ func TypeEffectiveness(moveType string, defenderTypes []PokemonType) float64 {
 	return mult
 }
 
+// WeatherDamageMultiplier returns the damage multiplier on a move given active weather.
+// Rain: Water ×1.5, Fire ×0.5. Sun: Fire ×1.5, Water ×0.5.
+// Hail/Sandstorm: no damage multiplier (Sandstorm SpD boost is applied separately).
+func WeatherDamageMultiplier(weather Weather, moveType string) float64 {
+	switch weather {
+	case WeatherRain:
+		switch moveType {
+		case "water":
+			return 1.5
+		case "fire":
+			return 0.5
+		}
+	case WeatherSun:
+		switch moveType {
+		case "fire":
+			return 1.5
+		case "water":
+			return 0.5
+		}
+	}
+	return 1.0
+}
+
+// hasType reports whether types contains a type with the given name.
+func hasType(types []PokemonType, name string) bool {
+	for _, t := range types {
+		if t.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
 // CalculateDamage calcula el rango de daño usando la fórmula Gen 5+
 func CalculateDamage(input DamageInput) DamageResult {
 	if input.Move.Power <= 0 || input.Move.Category == "status" {
@@ -131,6 +167,9 @@ func CalculateDamage(input DamageInput) DamageResult {
 	}
 
 	weather := input.WeatherBonus
+	if input.Weather != WeatherNone {
+		weather = WeatherDamageMultiplier(input.Weather, input.Move.Type)
+	}
 	if weather == 0 {
 		weather = 1.0
 	}
@@ -139,6 +178,10 @@ func CalculateDamage(input DamageInput) DamageResult {
 	if input.Move.Category == "special" {
 		atkStat = input.AttackerStats.SpAttack
 		defStat = input.DefenderStats.SpDefense
+		// Sandstorm boosts Rock-type SpDef ×1.5.
+		if input.Weather == WeatherSandstorm && hasType(input.DefenderTypes, "rock") {
+			defStat = int(math.Floor(float64(defStat) * 1.5))
+		}
 	} else {
 		atkStat = input.AttackerStats.Attack
 		defStat = input.DefenderStats.Defense
