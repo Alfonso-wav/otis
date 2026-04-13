@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { t, typeName, applyTranslations } from "../i18n";
+import { t, typeName, applyTranslations, getLocale } from "../i18n";
 import {
   GetPokemon,
   GetMove,
@@ -20,6 +20,7 @@ import {
   SimulateTeamBattle,
   SimulateMultipleTeamBattles,
   UpdateTeamMember,
+  GetAbility,
 } from "../api";
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
@@ -370,9 +371,44 @@ function renderMoveSlots(moves: core.PokemonMoveEntry[], prefix: "atk" | "def"):
     .join("");
 }
 
+// Module-scope cache for ability metadata fetched via GetAbility. Keyed by slug.
+const abilityDescCache: Map<string, core.Ability> = new Map();
+
+// fetchAbilityInfo returns the localized description for an ability slug.
+// Caches the response in abilityDescCache. Returns empty string on failure.
+async function fetchAbilityInfo(slug: string): Promise<string> {
+  if (!slug) return "";
+  if (!abilityDescCache.has(slug)) {
+    try {
+      const ab = await GetAbility(slug);
+      abilityDescCache.set(slug, ab);
+    } catch {
+      return "";
+    }
+  }
+  const ab = abilityDescCache.get(slug)!;
+  const lang = getLocale() === "es" ? "es" : "en";
+  return (lang === "es" && ab.DescriptionEs ? ab.DescriptionEs : ab.Description) ?? "";
+}
+
+// updateAbilityDescEl populates a `<p>` element with the localized ability
+// description. Hides the element when there's no ability or description.
+async function updateAbilityDescEl(el: HTMLElement, slug: string): Promise<void> {
+  if (!slug) {
+    el.textContent = "";
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+  el.textContent = t("builds.abilityLoading");
+  const desc = await fetchAbilityInfo(slug);
+  el.textContent = desc;
+  if (!desc) el.hidden = true;
+}
+
 // renderAbilitySelect builds the ability <select> for a given Pokémon, marking
-// hidden abilities with [HA] and offering an explicit "none" option.
-// dataContext encodes the owner so handlers can dispatch by data-* attributes.
+// hidden abilities with [HA] and offering an explicit "none" option. A sibling
+// <p> receives the localized combat description; descriptionId links them.
 function renderAbilitySelect(
   dataContext: string,
   pokemon: core.Pokemon | null,
@@ -383,10 +419,16 @@ function renderAbilitySelect(
   const dataAttrs = Object.entries({ prefix: dataContext, ...extraData })
     .map(([k, v]) => `data-${k}="${v}"`)
     .join(" ");
+  const descDataAttrs = Object.entries(extraData)
+    .map(([k, v]) => `data-${k}="${v}"`)
+    .join(" ");
   if (!pokemon || abilities.length === 0) {
-    return `<select class="sc-select sc-ability" ${dataAttrs} disabled>
-      <option value="">${t("builds.abilityNone")}</option>
-    </select>`;
+    return `<div class="sc-ability-wrap">
+      <select class="sc-select sc-ability" ${dataAttrs} disabled>
+        <option value="">${t("builds.abilityNone")}</option>
+      </select>
+      <p class="sc-ability-desc" data-prefix="${dataContext}" ${descDataAttrs} hidden></p>
+    </div>`;
   }
   const placeholderSel = currentAbility === "" ? "" : "";
   const noneSel = currentAbility === "" ? " selected" : "";
@@ -404,7 +446,10 @@ function renderAbilitySelect(
       return `<option value="${name}"${sel}>${label}</option>`;
     })
     .join("");
-  return `<select class="sc-select sc-ability" ${dataAttrs}>${placeholderOpt}${noneOpt}${opts}</select>`;
+  return `<div class="sc-ability-wrap">
+    <select class="sc-select sc-ability" ${dataAttrs}>${placeholderOpt}${noneOpt}${opts}</select>
+    <p class="sc-ability-desc" data-prefix="${dataContext}" ${descDataAttrs} hidden></p>
+  </div>`;
 }
 
 function renderStatsConfig(prefix: "atk" | "def", level: number, nature: string): string {
@@ -1730,6 +1775,7 @@ function buildLayout(): void {
   bindTeamEvents();
   bindTeamBattleEvents();
   bindSaveModalEvents();
+  hydrateAbilityDescriptions();
 
   if (state.attacker) initColumnToggle("sc-atk", scTableAtkColumns());
   if (state.defender) initColumnToggle("sc-def", scTableDefColumns());
@@ -1900,6 +1946,32 @@ function handleAbilitySelect(sel: HTMLSelectElement): void {
   const value = sel.value === "__ab_placeholder__" ? "" : sel.value;
   if (prefix === "atk") state.attackerAbility = value;
   else state.defenderAbility = value;
+  // Refresh the sibling description <p>.
+  const descEl = sel.parentElement?.querySelector<HTMLParagraphElement>(
+    `.sc-ability-desc[data-prefix="${prefix}"]`,
+  );
+  if (descEl) void updateAbilityDescEl(descEl, value);
+}
+
+// hydrateAbilityDescriptions fills in each visible ability-desc <p> with the
+// localized description for the currently selected ability. Called after every
+// layout rebuild since innerHTML wipes async-populated content.
+function hydrateAbilityDescriptions(): void {
+  container
+    .querySelectorAll<HTMLParagraphElement>(".sc-ability-desc")
+    .forEach((el) => {
+      const prefix = el.dataset.prefix;
+      let value = "";
+      if (prefix === "atk") value = state.attackerAbility;
+      else if (prefix === "def") value = state.defenderAbility;
+      else if (prefix === "member") {
+        const teamName = el.dataset.team;
+        const idx = el.dataset.idx ? parseInt(el.dataset.idx) : -1;
+        const team = cachedTeams.find((tm) => tm.name === teamName);
+        value = (team?.members?.[idx] as any)?.ability ?? "";
+      }
+      void updateAbilityDescEl(el, value);
+    });
 }
 
 // ─── Async actions ────────────────────────────────────────────────────────────

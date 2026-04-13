@@ -1578,6 +1578,27 @@
   min-height: 44px; // touch target minimum
 }
 
+.sc-ability-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.sc-ability-desc {
+  margin: 0;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #4a5568;
+  background: #f7fafc;
+  border-left: 3px solid $pokedex-red;
+  border-radius: 0 $border-radius $border-radius 0;
+
+  &[hidden] { display: none; }
+}
+
 .ability-hidden-badge {
   display: inline-block;
   margin-left: 0.4rem;
