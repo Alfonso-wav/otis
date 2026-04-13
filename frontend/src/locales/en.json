@@ -399,6 +399,7 @@
     "locationEmpty": "No Pokémon found in this location.",
     "locationError": "Error loading encounters.",
     "moveLoading": "Loading Pokémon...",
-    "moveEmpty": "No Pokémon can learn {name}."
+    "moveEmpty": "No Pokémon can learn {name}.",
+    "moveShowingOf": "Showing {shown} of {total} Pokémon."
   }
 }
