@@ -352,7 +352,12 @@
     "statFell": "{stat} of {name} fell!",
     "statFellHarshly": "{stat} of {name} harshly fell!",
     "statCannotGoHigher": "{stat} of {name} won't go any higher!",
-    "statCannotGoLower": "{stat} of {name} won't go any lower!"
+    "statCannotGoLower": "{stat} of {name} won't go any lower!",
+    "abilityActivated": "{name}'s {ability}!",
+    "abilityAbsorbedWater": "{name} absorbed the water!",
+    "abilityAbsorbedElectric": "{name} absorbed the electricity!",
+    "abilityFlashFireCharged": "{name}'s Fire moves were charged up!",
+    "abilityImmune": "It doesn't affect {name}..."
   },
   "teams": {
     "myTeams": "My teams ({count})",
