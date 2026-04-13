@@ -66,6 +66,9 @@ func SimulateFullBattle(input FullBattleInput, randSource func(n int) int) Battl
 		if state.DefenderStatsOverride != nil {
 			defSpeed = state.DefenderStatsOverride.Speed
 		}
+		// Apply Spe stage multipliers so Agility / String Shot affect turn order.
+		atkSpeed = int(float64(atkSpeed) * StageMultiplier(state.AttackerStages.Spe))
+		defSpeed = int(float64(defSpeed) * StageMultiplier(state.DefenderStages.Spe))
 
 		attackerFirst := resolveOrder(
 			atkSpeed, defSpeed,
@@ -172,6 +175,8 @@ func executeDefenderTurn(state BattleState, input FullBattleInput, move Move, ra
 		DefenderTypesOverride: state.AttackerTypesOverride,
 		Weather:               state.Weather,
 		WeatherTurnsLeft:      state.WeatherTurnsLeft,
+		AttackerStages:        state.DefenderStages,
+		DefenderStages:        state.AttackerStages,
 	}
 
 	// Resolve effective stats/types using Transform overrides (from swapped perspective).
@@ -228,6 +233,8 @@ func executeDefenderTurn(state BattleState, input FullBattleInput, move Move, ra
 		DefenderTypesOverride: ns.AttackerTypesOverride,
 		Weather:               ns.Weather,
 		WeatherTurnsLeft:      ns.WeatherTurnsLeft,
+		AttackerStages:        ns.DefenderStages,
+		DefenderStages:        ns.AttackerStages,
 	}
 	if state.IsOver {
 		state.Winner = "defender"
@@ -259,6 +266,11 @@ type BattleState struct {
 	// Weather field: active weather and turns remaining. WeatherNone + 0 when clear.
 	Weather          Weather `json:"weather,omitempty"`
 	WeatherTurnsLeft int     `json:"weatherTurnsLeft,omitempty"`
+
+	// Stat stages per side. Zero value = no boosts / no debuffs.
+	// Persist across turns in the same battle, reset by InitBattle.
+	AttackerStages StatStages `json:"attackerStages,omitempty"`
+	DefenderStages StatStages `json:"defenderStages,omitempty"`
 }
 
 // TurnInput contains everything needed to simulate one turn.
@@ -363,6 +375,32 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 		return TurnResult{NewState: state, LogEntry: logEntry}
 	}
 
+	// Stat-stage moves: Swords Dance / Growl / etc. No damage, just stage changes.
+	if effects, ok := StatStageEffects(input.Move.Name); ok {
+		logs := make([]string, len(state.Log), len(state.Log)+1+len(effects))
+		copy(logs, state.Log)
+		logs = append(logs, fmt.Sprintf("[T%d] %s usó %s",
+			state.TurnCount, input.AttackerName, input.Move.Name))
+		for _, e := range effects {
+			var target string
+			var prev int
+			if e.Target == "self" {
+				prev = GetStage(state.AttackerStages, e.Stat)
+				state.AttackerStages = ApplyStage(state.AttackerStages, e.Stat, e.Delta)
+				target = input.AttackerName
+			} else {
+				prev = GetStage(state.DefenderStages, e.Stat)
+				state.DefenderStages = ApplyStage(state.DefenderStages, e.Stat, e.Delta)
+				target = input.DefenderName
+			}
+			fragment := StageChangeLogFragment(prev, e.Delta)
+			logs = append(logs, fmt.Sprintf("%s de %s %s",
+				StatLabelEs(e.Stat), target, fragment))
+		}
+		state.Log = logs
+		return TurnResult{NewState: state, LogEntry: logs[len(logs)-1]}
+	}
+
 	// Accuracy check
 	if randSource != nil && input.Move.Power > 0 && input.Move.Category != "status" {
 		if !CheckAccuracy(input.Move.Accuracy, randSource) {
@@ -379,27 +417,31 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 	var dmg DamageResult
 	if randSource != nil {
 		dmg = CalculateBattleDamage(DamageInput{
-			AttackerStats: input.AttackerStats,
-			DefenderStats: input.DefenderStats,
-			Move:          input.Move,
-			AttackerTypes: input.AttackerTypes,
-			DefenderTypes: input.DefenderTypes,
-			Level:         input.AttackerLevel,
-			IsCritical:    false,
-			WeatherBonus:  1.0,
-			Weather:       state.Weather,
+			AttackerStats:  input.AttackerStats,
+			DefenderStats:  input.DefenderStats,
+			Move:           input.Move,
+			AttackerTypes:  input.AttackerTypes,
+			DefenderTypes:  input.DefenderTypes,
+			Level:          input.AttackerLevel,
+			IsCritical:     false,
+			WeatherBonus:   1.0,
+			Weather:        state.Weather,
+			AttackerStages: state.AttackerStages,
+			DefenderStages: state.DefenderStages,
 		}, randSource)
 	} else {
 		dmg = CalculateDamage(DamageInput{
-			AttackerStats: input.AttackerStats,
-			DefenderStats: input.DefenderStats,
-			Move:          input.Move,
-			AttackerTypes: input.AttackerTypes,
-			DefenderTypes: input.DefenderTypes,
-			Level:         input.AttackerLevel,
-			IsCritical:    false,
-			WeatherBonus:  1.0,
-			Weather:       state.Weather,
+			AttackerStats:  input.AttackerStats,
+			DefenderStats:  input.DefenderStats,
+			Move:           input.Move,
+			AttackerTypes:  input.AttackerTypes,
+			DefenderTypes:  input.DefenderTypes,
+			Level:          input.AttackerLevel,
+			IsCritical:     false,
+			WeatherBonus:   1.0,
+			Weather:        state.Weather,
+			AttackerStages: state.AttackerStages,
+			DefenderStages: state.DefenderStages,
 		})
 	}
 

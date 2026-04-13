@@ -15,6 +15,18 @@ const (
 // WeatherDefaultTurns is the fixed duration (in turns) a weather condition lasts.
 const WeatherDefaultTurns = 5
 
+// StatStages holds the per-battle stat stages (-6..+6) of a single Pokémon.
+// Zero value means no boosts / no debuffs.
+type StatStages struct {
+	Atk int `json:"atk,omitempty"`
+	Def int `json:"def,omitempty"`
+	SpA int `json:"spa,omitempty"`
+	SpD int `json:"spd,omitempty"`
+	Spe int `json:"spe,omitempty"`
+	Acc int `json:"acc,omitempty"`
+	Eva int `json:"eva,omitempty"`
+}
+
 type Region struct {
 	Name      string
 	Locations []Location

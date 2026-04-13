@@ -17,6 +17,9 @@ type DamageInput struct {
 	// Weather active during the move. If set, overrides WeatherBonus via WeatherDamageMultiplier.
 	Weather  Weather `json:"weather,omitempty"`
 	IsBurned bool    `json:"isBurned"`
+	// Stat stages of attacker/defender. Zero value = no stage modifiers.
+	AttackerStages StatStages `json:"attackerStages,omitempty"`
+	DefenderStages StatStages `json:"defenderStages,omitempty"`
 }
 
 // DamageResult contiene el resultado del cálculo de daño
@@ -175,18 +178,43 @@ func CalculateDamage(input DamageInput) DamageResult {
 	}
 
 	var atkStat, defStat int
+	// Apply stat-stage multipliers for Atk/Def/SpA/SpD. Crit hits ignore negative
+	// attacker-offensive stages and positive defender-defensive stages (Gen 2+).
 	if input.Move.Category == "special" {
-		atkStat = input.AttackerStats.SpAttack
-		defStat = input.DefenderStats.SpDefense
+		atkStage := input.AttackerStages.SpA
+		defStage := input.DefenderStages.SpD
+		if input.IsCritical {
+			if atkStage < 0 {
+				atkStage = 0
+			}
+			if defStage > 0 {
+				defStage = 0
+			}
+		}
+		atkStat = int(math.Floor(float64(input.AttackerStats.SpAttack) * StageMultiplier(atkStage)))
+		defStat = int(math.Floor(float64(input.DefenderStats.SpDefense) * StageMultiplier(defStage)))
 		// Sandstorm boosts Rock-type SpDef ×1.5.
 		if input.Weather == WeatherSandstorm && hasType(input.DefenderTypes, "rock") {
 			defStat = int(math.Floor(float64(defStat) * 1.5))
 		}
 	} else {
-		atkStat = input.AttackerStats.Attack
-		defStat = input.DefenderStats.Defense
+		atkStage := input.AttackerStages.Atk
+		defStage := input.DefenderStages.Def
+		if input.IsCritical {
+			if atkStage < 0 {
+				atkStage = 0
+			}
+			if defStage > 0 {
+				defStage = 0
+			}
+		}
+		atkStat = int(math.Floor(float64(input.AttackerStats.Attack) * StageMultiplier(atkStage)))
+		defStat = int(math.Floor(float64(input.DefenderStats.Defense) * StageMultiplier(defStage)))
 	}
 
+	if atkStat <= 0 {
+		atkStat = 1
+	}
 	if defStat <= 0 {
 		defStat = 1
 	}
