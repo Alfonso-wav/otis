@@ -192,3 +192,55 @@
     transform: translate(10px, -20px);
   }
 }
+
+// ── Typewriter labels ("OTIS" / "POKéDEX") ───────────────────
+.splash-otis {
+  position: absolute;
+  top: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Press Start 2P", monospace;
+  font-size: 1.8rem;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+  white-space: nowrap;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.splash-pokedex-label {
+  display: block;
+  margin-top: 0.75rem;
+  font-family: "Press Start 2P", monospace;
+  font-size: 1.4rem;
+  color: #f5c518;
+  text-align: center;
+  text-shadow: 2px 2px 0 #000;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.splash-caret {
+  animation: splash-blink 1s step-end infinite;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+@keyframes splash-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+// ── Mobile 360px ──────────────────────────────────────────────
+@media (max-width: 400px) {
+  .splash-otis {
+    font-size: 1.2rem;
+    top: -1.5rem;
+  }
+
+  .splash-pokedex-label {
+    font-size: 1rem;
+  }
+}
