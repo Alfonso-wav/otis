@@ -1,4 +1,9 @@
-import * as echarts from "echarts";
+import * as echarts from "echarts/core";
+import { PieChart } from "echarts/charts";
+import { TooltipComponent } from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
+
+echarts.use([PieChart, TooltipComponent, CanvasRenderer]);
 
 const TYPE_COLORS: Record<string, string> = {
   normal: "#a0aec0", fire: "#f6ad55", water: "#63b3ed", grass: "#68d391",
