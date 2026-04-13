@@ -72,7 +72,7 @@ func TestExecuteTurn_StatusMoveNoDamage(t *testing.T) {
 		AttackerStats: Stats{Attack: 100, HP: 200},
 		DefenderStats: Stats{Defense: 80, HP: 200},
 		AttackerLevel: 50,
-		Move:          Move{Name: "Swords Dance", Type: "normal", Power: 0, Category: "status"},
+		Move:          Move{Name: "Protect", Type: "normal", Power: 0, Category: "status"},
 		AttackerName:  "Scizor",
 	}
 	result := ExecuteTurn(input, nil)
@@ -1266,5 +1266,135 @@ func TestSimulateFullBattle_WeatherExpiresAfter5Turns(t *testing.T) {
 	}
 	if !cleared {
 		t.Error("expected rain to expire and log end message")
+	}
+}
+
+// --- Stat stages ---
+
+func TestExecuteTurn_SwordsDanceRaisesAtkStage(t *testing.T) {
+	state := InitBattle(200, 200)
+	in := TurnInput{
+		State:         state,
+		AttackerStats: Stats{Attack: 100, HP: 200},
+		DefenderStats: Stats{Defense: 100, HP: 200},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		AttackerLevel: 50,
+		Move:          Move{Name: "swords-dance", Category: "status", Power: 0},
+		AttackerName:  "Scyther",
+		DefenderName:  "Chansey",
+	}
+	r := ExecuteTurn(in, nil).NewState
+	if r.AttackerStages.Atk != 2 {
+		t.Errorf("Atk stage: want 2, got %d", r.AttackerStages.Atk)
+	}
+	if r.DefenderHP != 200 {
+		t.Errorf("Swords Dance must not damage: got %d", r.DefenderHP)
+	}
+}
+
+func TestCalculateDamage_AtkStageDoublesDamage(t *testing.T) {
+	base := DamageInput{
+		AttackerStats: Stats{Attack: 100},
+		DefenderStats: Stats{Defense: 100},
+		Move:          Move{Name: "tackle", Type: "normal", Power: 40, Category: "physical"},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+	}
+	noStage := CalculateDamage(base)
+	boosted := base
+	boosted.AttackerStages.Atk = 2
+	withBoost := CalculateDamage(boosted)
+	ratio := float64(withBoost.Max) / float64(noStage.Max)
+	if ratio < 1.95 || ratio > 2.05 {
+		t.Errorf("+2 Atk ratio = %.3f, want ≈2.0 (dmg boosted=%d base=%d)", ratio, withBoost.Max, noStage.Max)
+	}
+}
+
+func TestCalculateDamage_GrowlReducesDamage(t *testing.T) {
+	base := DamageInput{
+		AttackerStats: Stats{Attack: 100},
+		DefenderStats: Stats{Defense: 100},
+		Move:          Move{Name: "tackle", Type: "normal", Power: 40, Category: "physical"},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+	}
+	noStage := CalculateDamage(base)
+	growled := base
+	growled.AttackerStages.Atk = -1
+	withGrowl := CalculateDamage(growled)
+	ratio := float64(withGrowl.Max) / float64(noStage.Max)
+	// -1 Atk → ×2/3
+	if ratio < 0.6 || ratio > 0.73 {
+		t.Errorf("-1 Atk ratio = %.3f, want ≈0.67", ratio)
+	}
+}
+
+func TestResolveOrder_SpeStagesChangeOrder(t *testing.T) {
+	// Attacker base Spe = 60, defender base Spe = 80. Without stages, defender first.
+	// If attacker uses Agility (+2 Spe), its effective Spe = 60*2 = 120, attacker first.
+	input := FullBattleInput{
+		AttackerStats: Stats{Attack: 10, Defense: 200, SpAttack: 10, SpDefense: 200, Speed: 60, HP: 500},
+		DefenderStats: Stats{Attack: 10, Defense: 200, SpAttack: 10, SpDefense: 200, Speed: 80, HP: 500},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		AttackerMoves: []Move{
+			{Name: "agility", Category: "status", Power: 0},
+			{Name: "tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100},
+		},
+		DefenderMoves: []Move{
+			{Name: "tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100},
+		},
+		AttackerName: "Jolteon",
+		DefenderName: "Raichu",
+	}
+	// randSource: picks 0 first (attacker's agility, then tackle) deterministically
+	callCount := 0
+	randSource := func(n int) int {
+		if n == 2 {
+			callCount++
+			if callCount == 1 {
+				return 0 // agility
+			}
+			return 1 // tackle
+		}
+		return 0
+	}
+	r := SimulateFullBattle(input, randSource)
+	if r.AttackerStages.Spe != 2 {
+		t.Errorf("Agility should leave +2 Spe stage, got %d", r.AttackerStages.Spe)
+	}
+}
+
+func TestInitBattle_StagesAreZero(t *testing.T) {
+	s := InitBattle(200, 200)
+	if s.AttackerStages != (StatStages{}) {
+		t.Errorf("AttackerStages must init to zero, got %+v", s.AttackerStages)
+	}
+	if s.DefenderStages != (StatStages{}) {
+		t.Errorf("DefenderStages must init to zero, got %+v", s.DefenderStages)
+	}
+}
+
+func TestExecuteTurn_GrowlDebuffsDefenderAtk(t *testing.T) {
+	state := InitBattle(200, 200)
+	in := TurnInput{
+		State:         state,
+		AttackerStats: Stats{Attack: 100, HP: 200},
+		DefenderStats: Stats{Attack: 100, Defense: 100, HP: 200},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		AttackerLevel: 50,
+		Move:          Move{Name: "growl", Category: "status", Power: 0},
+		AttackerName:  "Pidgey",
+		DefenderName:  "Rattata",
+	}
+	r := ExecuteTurn(in, nil).NewState
+	if r.DefenderStages.Atk != -1 {
+		t.Errorf("Growl: defender Atk stage want -1, got %d", r.DefenderStages.Atk)
 	}
 }
