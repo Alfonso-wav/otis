@@ -17,6 +17,7 @@ import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "..
 import { SortCache } from "../utils/sort-cache";
 import { showSortingOverlay, updateSortingOverlayText, hideSortingOverlay, createInlineDiglett } from "../components/sorting-overlay";
 import { createAutocomplete } from "../autocomplete";
+import { navigate } from "../router";
 import { loadMoveNames, getLocalizedMoveName, getMovePower, getMoveCategory } from "../utils/move-names";
 
 const LIMIT_STEP = 50;
@@ -181,6 +182,14 @@ let filterLegendaryBtn: HTMLButtonElement;
 let filterMythicalBtn: HTMLButtonElement;
 let filterResetBtn: HTMLButtonElement;
 let viewToggleBtn: HTMLButtonElement;
+
+// Tab origin when detail was opened from another tab (e.g. Explore).
+// null = opened from within Pokedex (default back behavior applies).
+let detailOriginTab: string | null = null;
+
+export function setDetailOrigin(tab: string | null): void {
+  detailOriginTab = tab && tab !== "pokedex" ? tab : null;
+}
 
 function hasFilter(): boolean {
   return (
@@ -1665,6 +1674,16 @@ export function initPokedex(): void {
     hideSortingOverlay();
     const { disposeChart } = await import("../charts/stats-chart");
     disposeChart();
+    if (detailOriginTab) {
+      // Reset detail/list state instantly so next Pokedex visit is clean.
+      detailView.style.display = "none";
+      listView.style.display = "";
+      listView.classList.remove("hidden");
+      const origin = detailOriginTab;
+      detailOriginTab = null;
+      navigate(origin);
+      return;
+    }
     await showView(listView, detailView);
   });
 
@@ -1729,6 +1748,13 @@ export function initPokedex(): void {
       searchInput.value = name;
       showDetail(name);
     });
+  });
+
+  document.addEventListener("tab-changed", (e) => {
+    const to = (e as CustomEvent<{ from: string | null; to: string }>).detail?.to;
+    // If leaving Pokedex while detail was open with origin, the user is
+    // navigating somewhere else manually — drop the stale origin.
+    if (to && to !== "pokedex") detailOriginTab = null;
   });
 
   document.addEventListener("locale-changed", () => {
