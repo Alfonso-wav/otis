@@ -2,6 +2,7 @@ package shell
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/alfon/pokemon-app/core"
@@ -81,6 +82,56 @@ func TestFileTeamStorage_GetNonExistent(t *testing.T) {
 	_, err := storage.GetTeam("nonexistent")
 	if !os.IsNotExist(err) {
 		t.Errorf("expected not-exist error, got %v", err)
+	}
+}
+
+func TestFileTeamStorage_RoundTripWithAbility(t *testing.T) {
+	dir := t.TempDir()
+	storage := NewFileTeamStorage(dir)
+	team := core.Team{
+		Name: "weather-squad",
+		Members: []core.TeamMember{
+			{PokemonName: "politoed", Level: 50, Nature: "Hardy", Ability: "drizzle"},
+			{PokemonName: "kingdra", Level: 50, Nature: "Hardy", Ability: "swift-swim"},
+			{PokemonName: "ludicolo", Level: 50, Nature: "Hardy"}, // no ability
+		},
+	}
+	if err := storage.SaveTeam(team); err != nil {
+		t.Fatalf("SaveTeam: %v", err)
+	}
+	got, err := storage.GetTeam("weather-squad")
+	if err != nil {
+		t.Fatalf("GetTeam: %v", err)
+	}
+	if got.Members[0].Ability != "drizzle" {
+		t.Errorf("member[0] ability: want drizzle, got %q", got.Members[0].Ability)
+	}
+	if got.Members[1].Ability != "swift-swim" {
+		t.Errorf("member[1] ability: want swift-swim, got %q", got.Members[1].Ability)
+	}
+	if got.Members[2].Ability != "" {
+		t.Errorf("member[2] ability: want empty, got %q", got.Members[2].Ability)
+	}
+}
+
+func TestFileTeamStorage_LoadLegacyFileWithoutAbility(t *testing.T) {
+	dir := t.TempDir()
+	legacy := `{
+  "name": "legacy",
+  "members": [
+    {"pokemonName": "pikachu", "level": 50, "nature": "Hardy", "moves": [], "ivs": {}, "evs": {}}
+  ]
+}`
+	if err := os.WriteFile(filepath.Join(dir, "legacy.json"), []byte(legacy), 0644); err != nil {
+		t.Fatal(err)
+	}
+	storage := NewFileTeamStorage(dir)
+	got, err := storage.GetTeam("legacy")
+	if err != nil {
+		t.Fatalf("GetTeam legacy: %v", err)
+	}
+	if got.Members[0].Ability != "" {
+		t.Errorf("legacy member ability: want empty, got %q", got.Members[0].Ability)
 	}
 }
 

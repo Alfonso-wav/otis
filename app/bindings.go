@@ -283,6 +283,7 @@ func (a *App) resolveTeamBattleMembers(teamName string) ([]core.TeamBattleMember
 			Types:       pokemon.Types,
 			Moves:       moves,
 			Level:       m.Level,
+			Ability:     m.Ability,
 		})
 	}
 	return members, nil
@@ -515,7 +516,11 @@ func (a *App) CreateTeam(name string) error {
 }
 
 // SaveToTeam agrega un miembro a un equipo existente o crea uno nuevo.
+// If member.Ability is non-empty it must be one of the Pokémon's abilities.
 func (a *App) SaveToTeam(teamName string, member core.TeamMember) error {
+	if err := a.validateMemberAbility(member); err != nil {
+		return err
+	}
 	team, err := a.teams.GetTeam(teamName)
 	if err != nil {
 		team = core.Team{Name: teamName}
@@ -525,6 +530,19 @@ func (a *App) SaveToTeam(teamName string, member core.TeamMember) error {
 		return err
 	}
 	return a.teams.SaveTeam(team)
+}
+
+// validateMemberAbility checks that member.Ability (if non-empty) is one of
+// the abilities declared on the Pokémon. Returns nil for empty ability.
+func (a *App) validateMemberAbility(member core.TeamMember) error {
+	if member.Ability == "" {
+		return nil
+	}
+	pokemon, err := a.fetcher.FetchPokemon(core.NormalizeName(member.PokemonName))
+	if err != nil {
+		return fmt.Errorf("fetching %s: %w", member.PokemonName, err)
+	}
+	return core.ValidateTeamMemberAbility(member, pokemon)
 }
 
 // ListTeams retorna todos los equipos guardados.
@@ -543,7 +561,11 @@ func (a *App) DeleteTeam(name string) error {
 }
 
 // UpdateTeamMember updates a member of a team at the given index.
+// Enforces that member.Ability belongs to the Pokémon (or is empty).
 func (a *App) UpdateTeamMember(teamName string, memberIndex int, member core.TeamMember) error {
+	if err := a.validateMemberAbility(member); err != nil {
+		return err
+	}
 	team, err := a.teams.GetTeam(teamName)
 	if err != nil {
 		return err
