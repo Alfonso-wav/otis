@@ -8,6 +8,61 @@ import { initSettings } from "./settings";
 import { initI18n } from "./i18n";
 import { ListGenerations } from "./api";
 
+// ── Typewriter helpers ────────────────────────────────────────
+let typewriterCancelled = false;
+let typewriterRunning = false;
+
+/** Simple promise-based sleep. */
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Write text one char at a time into el. Cancelled flag completes instantly. */
+async function typewrite(el: HTMLElement, text: string, perChar = 200): Promise<void> {
+  for (const ch of text) {
+    if (typewriterCancelled) {
+      el.textContent = text;
+      return;
+    }
+    el.textContent = (el.textContent || "") + ch;
+    await sleep(perChar);
+  }
+}
+
+/** Force-complete any running typewriter and hide carets. */
+function cancelTypewriter(): void {
+  typewriterCancelled = true;
+  const otisTyped = document.querySelector(".splash-otis .splash-typed") as HTMLElement | null;
+  const pokedexTyped = document.querySelector(".splash-pokedex-label .splash-typed") as HTMLElement | null;
+  if (otisTyped) otisTyped.textContent = "OTIS";
+  if (pokedexTyped) pokedexTyped.textContent = "POK\u00e9DEX";
+  // Hide all carets
+  document.querySelectorAll<HTMLElement>(".splash-caret").forEach((c) => c.classList.add("hidden"));
+}
+
+/** Run the full typewriter sequence: OTIS then POKeDEX. */
+async function runTypewriterSequence(): Promise<void> {
+  typewriterCancelled = false;
+  typewriterRunning = true;
+
+  const otisTyped = document.querySelector(".splash-otis .splash-typed") as HTMLElement | null;
+  const otisCaret = document.querySelector(".splash-otis .splash-caret") as HTMLElement | null;
+  const pokedexTyped = document.querySelector(".splash-pokedex-label .splash-typed") as HTMLElement | null;
+  const pokedexCaret = document.querySelector(".splash-pokedex-label .splash-caret") as HTMLElement | null;
+
+  if (otisTyped && otisCaret) {
+    await typewrite(otisTyped, "OTIS");
+    if (!typewriterCancelled) otisCaret.classList.add("hidden");
+  }
+
+  if (pokedexTyped && pokedexCaret) {
+    await typewrite(pokedexTyped, "POK\u00e9DEX");
+    if (!typewriterCancelled) pokedexCaret.classList.add("hidden");
+  }
+
+  typewriterRunning = false;
+}
+
 // ── Arrow helpers ──────────────────────────────────────────────
 const ARROW_POSITIONS = ["n", "ne", "se", "s", "sw", "nw"] as const;
 let arrowInterval: ReturnType<typeof setInterval> | null = null;
@@ -64,6 +119,7 @@ function stopArrows(): void {
 }
 
 // ── Eyes animation ─────────────────────────────────────────────
+// @ts-expect-error — kept for future splash wake-up sequence
 function animateEyesOpen(): Promise<void> {
   return new Promise((resolve) => {
     const overlay = document.querySelector<SVGElement>(".splash-eyes-overlay");
@@ -107,6 +163,9 @@ function showSplashInteractive(): void {
   if (zzz) gsap.to(zzz, { opacity: 0, duration: 0.4 });
   wrapper.style.cursor = "pointer";
 
+  // Start typewriter sequence
+  runTypewriterSequence();
+
   // Create arrow elements and start loop after 2 seconds
   createArrowElements();
   setTimeout(() => startArrowLoop(), 2000);
@@ -117,10 +176,13 @@ function showSplashInteractive(): void {
 async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElement): Promise<void> {
   wrapper.style.pointerEvents = "none";
 
-  // 1. Stop arrows
+  // 1. Complete typewriter instantly if still running
+  if (typewriterRunning) cancelTypewriter();
+
+  // 2. Stop arrows
   stopArrows();
 
-  // 2. Quick jiggle reaction
+  // 3. Quick jiggle reaction
   const tl = gsap.timeline();
   tl.to(wrapper, { scale: 1.15, duration: 0.1 })
     .to(wrapper, {
@@ -137,7 +199,7 @@ async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElemen
   // Wait for jiggle to finish
   await tl.then();
 
-  // 3. Exit animation — grow Snorlax and fade everything
+  // 4. Exit animation — grow Snorlax and fade everything
   wrapper.style.animation = "none";
   gsap.to(wrapper, {
     scale: 3,
