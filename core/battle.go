@@ -648,16 +648,18 @@ func SimulateTeamBattle(input TeamBattleInput, randSource func(int) int) TeamBat
 		m2 := avail2[0]
 
 		bi := FullBattleInput{
-			AttackerStats: m1.Stats,
-			DefenderStats: m2.Stats,
-			AttackerTypes: m1.Types,
-			DefenderTypes: m2.Types,
-			AttackerLevel: m1.Level,
-			DefenderLevel: m2.Level,
-			AttackerMoves: m1.Moves,
-			DefenderMoves: m2.Moves,
-			AttackerName:  m1.PokemonName,
-			DefenderName:  m2.PokemonName,
+			AttackerStats:   m1.Stats,
+			DefenderStats:   m2.Stats,
+			AttackerTypes:   m1.Types,
+			DefenderTypes:   m2.Types,
+			AttackerLevel:   m1.Level,
+			DefenderLevel:   m2.Level,
+			AttackerMoves:   m1.Moves,
+			DefenderMoves:   m2.Moves,
+			AttackerName:    m1.PokemonName,
+			DefenderName:    m2.PokemonName,
+			AttackerAbility: m1.Ability,
+			DefenderAbility: m2.Ability,
 		}
 
 		// Apply carry-over HP

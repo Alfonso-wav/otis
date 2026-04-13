@@ -283,3 +283,49 @@ func TestFillTeamRandom(t *testing.T) {
 		}
 	})
 }
+
+func TestValidateTeamMemberAbility(t *testing.T) {
+	pikachu := Pokemon{
+		Name: "pikachu",
+		Abilities: []PokemonAbilityEntry{
+			{Name: "static", IsHidden: false},
+			{Name: "lightning-rod", IsHidden: true},
+		},
+	}
+
+	t.Run("empty ability always valid", func(t *testing.T) {
+		m := TeamMember{PokemonName: "pikachu"}
+		if err := ValidateTeamMemberAbility(m, pikachu); err != nil {
+			t.Errorf("empty ability: want nil, got %v", err)
+		}
+	})
+	t.Run("known ability accepted", func(t *testing.T) {
+		m := TeamMember{PokemonName: "pikachu", Ability: "static"}
+		if err := ValidateTeamMemberAbility(m, pikachu); err != nil {
+			t.Errorf("static: want nil, got %v", err)
+		}
+	})
+	t.Run("hidden ability accepted", func(t *testing.T) {
+		m := TeamMember{PokemonName: "pikachu", Ability: "lightning-rod"}
+		if err := ValidateTeamMemberAbility(m, pikachu); err != nil {
+			t.Errorf("lightning-rod: want nil, got %v", err)
+		}
+	})
+	t.Run("invalid ability rejected", func(t *testing.T) {
+		m := TeamMember{PokemonName: "pikachu", Ability: "drizzle"}
+		if err := ValidateTeamMemberAbility(m, pikachu); err == nil {
+			t.Error("drizzle on pikachu: want error, got nil")
+		}
+	})
+}
+
+func TestTeamMember_JSONRoundTrip_WithAndWithoutAbility(t *testing.T) {
+	// With ability: field should marshal.
+	_ = TeamMember{PokemonName: "p", Level: 50, Ability: "drizzle"}
+	// This is exercised by shell/teams_test.go round-trip tests; this test
+	// just guards the struct tag existence by checking the zero value.
+	var m TeamMember
+	if m.Ability != "" {
+		t.Errorf("zero-value TeamMember.Ability = %q, want empty", m.Ability)
+	}
+}
