@@ -112,3 +112,7 @@ export function getVolume(): number {
 export function getMuted(): boolean {
   return muted;
 }
+
+export function isTrackPlaying(id: TrackId): boolean {
+  return currentTrack === id && currentAudio !== null && !currentAudio.paused;
+}
