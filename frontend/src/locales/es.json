@@ -337,7 +337,16 @@
     "newTeamPlaceholder": "Nombre del nuevo equipo...",
     "createTeam": "Crear equipo",
     "battleBackground": "Fondo",
-    "noBackground": "Sin fondo"
+    "noBackground": "Sin fondo",
+    "weatherRainStart": "¡Empezó a llover!",
+    "weatherSunStart": "¡La luz solar se hizo intensa!",
+    "weatherSandstormStart": "¡Se desató una tormenta de arena!",
+    "weatherHailStart": "¡Empezó a granizar!",
+    "weatherRainEnd": "La lluvia cesó.",
+    "weatherSunEnd": "La luz solar volvió a la normalidad.",
+    "weatherSandstormEnd": "La tormenta de arena amainó.",
+    "weatherHailEnd": "El granizo cesó.",
+    "weatherResidualDamage": "{name} sufrió daño por el clima."
   },
   "teams": {
     "myTeams": "Mis equipos ({count})",
