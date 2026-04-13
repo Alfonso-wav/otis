@@ -128,13 +128,13 @@ func GenerateRandomTeamMember(pokemon Pokemon, rng func(int) int) TeamMember {
 	names := natureNames()
 	nature := names[rng(len(names))]
 
-	// Moves: prefer damaging moves (power > 0), pick up to 4
-	var damagingMoves, otherMoves []string
+	// Moves: only pick from level-up pool (exclude TM/egg/tutor).
+	var movePool []string
 	for _, m := range pokemon.Moves {
-		damagingMoves = append(damagingMoves, m.Name)
-		_ = otherMoves // all moves go into one pool for simplicity
+		if m.Method == "level-up" {
+			movePool = append(movePool, m.Name)
+		}
 	}
-	movePool := damagingMoves
 	moves := pickRandomUnique(movePool, 4, rng)
 
 	// EVs: distribute 510 across 6 stats, max 252 each
