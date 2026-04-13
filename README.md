@@ -1,7 +1,7 @@
 # Otis
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/149.png" width="180" alt="Dragonite" />
+  <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/073.png" width="180" alt="Dragonite" />
 </p>
 
 <p align="center">
