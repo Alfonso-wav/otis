@@ -337,7 +337,16 @@
     "newTeamPlaceholder": "New team name...",
     "createTeam": "Create team",
     "battleBackground": "Background",
-    "noBackground": "No background"
+    "noBackground": "No background",
+    "weatherRainStart": "It started to rain!",
+    "weatherSunStart": "The sunlight grew intense!",
+    "weatherSandstormStart": "A sandstorm kicked up!",
+    "weatherHailStart": "It started to hail!",
+    "weatherRainEnd": "The rain stopped.",
+    "weatherSunEnd": "The sunlight returned to normal.",
+    "weatherSandstormEnd": "The sandstorm subsided.",
+    "weatherHailEnd": "The hail stopped.",
+    "weatherResidualDamage": "{name} was hurt by the weather."
   },
   "teams": {
     "myTeams": "My teams ({count})",

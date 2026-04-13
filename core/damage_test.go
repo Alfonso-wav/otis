@@ -377,3 +377,110 @@ func TestCheckAccuracy(t *testing.T) {
 		t.Error("Accuracy 70, roll 99 should miss")
 	}
 }
+
+// --- Weather damage multiplier ---
+
+func TestWeatherDamageMultiplier(t *testing.T) {
+	cases := []struct {
+		w        Weather
+		moveType string
+		want     float64
+	}{
+		{WeatherRain, "water", 1.5},
+		{WeatherRain, "fire", 0.5},
+		{WeatherRain, "grass", 1.0},
+		{WeatherSun, "fire", 1.5},
+		{WeatherSun, "water", 0.5},
+		{WeatherSun, "electric", 1.0},
+		{WeatherSandstorm, "rock", 1.0},
+		{WeatherSandstorm, "water", 1.0},
+		{WeatherHail, "ice", 1.0},
+		{WeatherNone, "water", 1.0},
+	}
+	for _, c := range cases {
+		got := WeatherDamageMultiplier(c.w, c.moveType)
+		if math.Abs(got-c.want) > 1e-9 {
+			t.Errorf("WeatherDamageMultiplier(%q,%q) = %v, want %v", c.w, c.moveType, got, c.want)
+		}
+	}
+}
+
+func TestCalculateDamage_RainBoostsWater(t *testing.T) {
+	base := DamageInput{
+		AttackerStats: Stats{Attack: 100, SpAttack: 100},
+		DefenderStats: Stats{Defense: 100, SpDefense: 100},
+		Move:          Move{Name: "surf", Type: "water", Power: 90, Category: "special"},
+		AttackerTypes: []PokemonType{{Name: "normal"}}, // disable STAB
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+	}
+	clear := CalculateDamage(base)
+	rainy := base
+	rainy.Weather = WeatherRain
+	rainInRain := CalculateDamage(rainy)
+	if rainInRain.Max <= clear.Max {
+		t.Errorf("Water in Rain should deal more than in clear: rain=%d clear=%d", rainInRain.Max, clear.Max)
+	}
+	// Expect approx ×1.5
+	ratio := float64(rainInRain.Max) / float64(clear.Max)
+	if ratio < 1.4 || ratio > 1.6 {
+		t.Errorf("Rain/Water ratio = %.2f, want ≈1.5", ratio)
+	}
+}
+
+func TestCalculateDamage_RainWeakensFire(t *testing.T) {
+	base := DamageInput{
+		AttackerStats: Stats{SpAttack: 100},
+		DefenderStats: Stats{SpDefense: 100},
+		Move:          Move{Name: "flamethrower", Type: "fire", Power: 90, Category: "special"},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		Level:         50,
+	}
+	clear := CalculateDamage(base)
+	base.Weather = WeatherRain
+	rainy := CalculateDamage(base)
+	ratio := float64(rainy.Max) / float64(clear.Max)
+	if ratio < 0.4 || ratio > 0.6 {
+		t.Errorf("Rain/Fire ratio = %.2f, want ≈0.5", ratio)
+	}
+}
+
+func TestCalculateDamage_SandstormBoostsRockSpD(t *testing.T) {
+	base := DamageInput{
+		AttackerStats: Stats{SpAttack: 100},
+		DefenderStats: Stats{SpDefense: 100},
+		Move:          Move{Name: "surf", Type: "water", Power: 90, Category: "special"},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "rock"}},
+		Level:         50,
+	}
+	clear := CalculateDamage(base)
+	base.Weather = WeatherSandstorm
+	sand := CalculateDamage(base)
+	if sand.Max >= clear.Max {
+		t.Errorf("Sandstorm should reduce special damage vs Rock: sand=%d clear=%d", sand.Max, clear.Max)
+	}
+	ratio := float64(sand.Max) / float64(clear.Max)
+	// SpD ×1.5 ⇒ damage ×~0.666
+	if ratio < 0.6 || ratio > 0.75 {
+		t.Errorf("Sandstorm SpD ratio = %.2f, want ≈0.67", ratio)
+	}
+}
+
+func TestCalculateDamage_SandstormDoesNotAffectPhysicalVsRock(t *testing.T) {
+	base := DamageInput{
+		AttackerStats: Stats{Attack: 100},
+		DefenderStats: Stats{Defense: 100, SpDefense: 100},
+		Move:          Move{Name: "earthquake", Type: "ground", Power: 100, Category: "physical"},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "rock"}},
+		Level:         50,
+	}
+	clear := CalculateDamage(base)
+	base.Weather = WeatherSandstorm
+	sand := CalculateDamage(base)
+	if sand.Max != clear.Max {
+		t.Errorf("Sandstorm must not affect physical damage: sand=%d clear=%d", sand.Max, clear.Max)
+	}
+}

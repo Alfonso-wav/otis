@@ -83,6 +83,19 @@ func SimulateFullBattle(input FullBattleInput, randSource func(n int) int) Battl
 				state = executeAttackerTurn(state, input, atkMove, randSource)
 			}
 		}
+
+		// End-of-round weather tick: residual damage + duration decrement.
+		if !state.IsOver {
+			atkTypes := input.AttackerTypes
+			if len(state.AttackerTypesOverride) > 0 {
+				atkTypes = state.AttackerTypesOverride
+			}
+			defTypes := input.DefenderTypes
+			if len(state.DefenderTypesOverride) > 0 {
+				defTypes = state.DefenderTypesOverride
+			}
+			state = tickWeather(state, atkTypes, defTypes, input.AttackerName, input.DefenderName)
+		}
 	}
 
 	// Resolve draw by max turns: whoever has more HP wins.
@@ -157,6 +170,8 @@ func executeDefenderTurn(state BattleState, input FullBattleInput, move Move, ra
 		DefenderStatsOverride: state.AttackerStatsOverride,
 		DefenderMovesOverride: state.AttackerMovesOverride,
 		DefenderTypesOverride: state.AttackerTypesOverride,
+		Weather:               state.Weather,
+		WeatherTurnsLeft:      state.WeatherTurnsLeft,
 	}
 
 	// Resolve effective stats/types using Transform overrides (from swapped perspective).
@@ -211,6 +226,8 @@ func executeDefenderTurn(state BattleState, input FullBattleInput, move Move, ra
 		DefenderStatsOverride: ns.AttackerStatsOverride,
 		DefenderMovesOverride: ns.AttackerMovesOverride,
 		DefenderTypesOverride: ns.AttackerTypesOverride,
+		Weather:               ns.Weather,
+		WeatherTurnsLeft:      ns.WeatherTurnsLeft,
 	}
 	if state.IsOver {
 		state.Winner = "defender"
@@ -238,6 +255,10 @@ type BattleState struct {
 	DefenderStatsOverride *Stats        `json:"defenderStatsOverride,omitempty"`
 	DefenderMovesOverride []Move        `json:"defenderMovesOverride,omitempty"`
 	DefenderTypesOverride []PokemonType `json:"defenderTypesOverride,omitempty"`
+
+	// Weather field: active weather and turns remaining. WeatherNone + 0 when clear.
+	Weather          Weather `json:"weather,omitempty"`
+	WeatherTurnsLeft int     `json:"weatherTurnsLeft,omitempty"`
 }
 
 // TurnInput contains everything needed to simulate one turn.
@@ -328,6 +349,20 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 		return TurnResult{NewState: state, LogEntry: logEntry}
 	}
 
+	// Weather-setting moves: Rain Dance / Sunny Day / Sandstorm / Hail.
+	// Always succeed, set weather for WeatherDefaultTurns turns. No damage.
+	if w, ok := weatherFromMoveName(input.Move.Name); ok {
+		state.Weather = w
+		state.WeatherTurnsLeft = WeatherDefaultTurns
+		logEntry := fmt.Sprintf("[T%d] %s usó %s → %s",
+			state.TurnCount, input.AttackerName, input.Move.Name, weatherStartMessage(w))
+		newLog := make([]string, len(state.Log)+1)
+		copy(newLog, state.Log)
+		newLog[len(state.Log)] = logEntry
+		state.Log = newLog
+		return TurnResult{NewState: state, LogEntry: logEntry}
+	}
+
 	// Accuracy check
 	if randSource != nil && input.Move.Power > 0 && input.Move.Category != "status" {
 		if !CheckAccuracy(input.Move.Accuracy, randSource) {
@@ -352,6 +387,7 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 			Level:         input.AttackerLevel,
 			IsCritical:    false,
 			WeatherBonus:  1.0,
+			Weather:       state.Weather,
 		}, randSource)
 	} else {
 		dmg = CalculateDamage(DamageInput{
@@ -363,6 +399,7 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 			Level:         input.AttackerLevel,
 			IsCritical:    false,
 			WeatherBonus:  1.0,
+			Weather:       state.Weather,
 		})
 	}
 
@@ -681,4 +718,138 @@ func SimulateMultipleBattles(input FullBattleInput, n int, randSource func(int) 
 	}
 
 	return report
+}
+
+// weatherFromMoveName maps a weather-setting move to the Weather it applies.
+// Accepts PokéAPI slugs (e.g. "rain-dance") case-insensitively.
+func weatherFromMoveName(name string) (Weather, bool) {
+	switch strings.ToLower(strings.TrimSpace(name)) {
+	case "rain-dance", "rain dance":
+		return WeatherRain, true
+	case "sunny-day", "sunny day":
+		return WeatherSun, true
+	case "sandstorm":
+		return WeatherSandstorm, true
+	case "hail":
+		return WeatherHail, true
+	}
+	return WeatherNone, false
+}
+
+// weatherStartMessage returns the Spanish log line when a weather becomes active.
+func weatherStartMessage(w Weather) string {
+	switch w {
+	case WeatherRain:
+		return "¡Empezó a llover!"
+	case WeatherSun:
+		return "¡La luz solar se hizo intensa!"
+	case WeatherSandstorm:
+		return "¡Se desató una tormenta de arena!"
+	case WeatherHail:
+		return "¡Empezó a granizar!"
+	}
+	return ""
+}
+
+// weatherEndMessage returns the Spanish log line when a weather expires.
+func weatherEndMessage(w Weather) string {
+	switch w {
+	case WeatherRain:
+		return "La lluvia cesó."
+	case WeatherSun:
+		return "La luz solar volvió a la normalidad."
+	case WeatherSandstorm:
+		return "La tormenta de arena amainó."
+	case WeatherHail:
+		return "El granizo cesó."
+	}
+	return "El clima ha vuelto a la normalidad."
+}
+
+// sandstormImmune reports whether a Pokémon is immune to Sandstorm residual damage.
+// Rock, Ground and Steel types take no Sandstorm chip damage.
+func sandstormImmune(types []PokemonType) bool {
+	return hasType(types, "rock") || hasType(types, "ground") || hasType(types, "steel")
+}
+
+// hailImmune reports whether a Pokémon is immune to Hail residual damage. Only Ice.
+func hailImmune(types []PokemonType) bool {
+	return hasType(types, "ice")
+}
+
+// residualWeatherDamage returns the residual HP damage a Pokémon suffers under
+// the given weather. Sandstorm/Hail: 1/16 of max HP (min 1) unless immune.
+func residualWeatherDamage(w Weather, maxHP int, types []PokemonType) int {
+	switch w {
+	case WeatherSandstorm:
+		if sandstormImmune(types) {
+			return 0
+		}
+	case WeatherHail:
+		if hailImmune(types) {
+			return 0
+		}
+	default:
+		return 0
+	}
+	dmg := maxHP / 16
+	if dmg < 1 {
+		dmg = 1
+	}
+	return dmg
+}
+
+// tickWeather is a pure end-of-round helper. Given the current battle state and
+// both sides' effective types/names, it applies residual weather damage to both
+// sides, decrements WeatherTurnsLeft, and clears weather when it expires.
+// Returns the new state. Marks the battle over if residual damage faints someone.
+func tickWeather(state BattleState, atkTypes, defTypes []PokemonType, atkName, defName string) BattleState {
+	if state.IsOver || state.Weather == WeatherNone {
+		return state
+	}
+
+	logs := state.Log
+	// Residual damage to attacker
+	if d := residualWeatherDamage(state.Weather, state.AttackerMaxHP, atkTypes); d > 0 {
+		newHP := state.AttackerHP - d
+		if newHP < 0 {
+			newHP = 0
+		}
+		state.AttackerHP = newHP
+		logs = append(logs, fmt.Sprintf("[T%d] %s sufrió %d de daño por el clima | HP: %d/%d",
+			state.TurnCount, atkName, d, state.AttackerHP, state.AttackerMaxHP))
+		if state.AttackerHP == 0 {
+			state.IsOver = true
+			state.Winner = "defender"
+		}
+	}
+	// Residual damage to defender
+	if !state.IsOver {
+		if d := residualWeatherDamage(state.Weather, state.DefenderMaxHP, defTypes); d > 0 {
+			newHP := state.DefenderHP - d
+			if newHP < 0 {
+				newHP = 0
+			}
+			state.DefenderHP = newHP
+			logs = append(logs, fmt.Sprintf("[T%d] %s sufrió %d de daño por el clima | HP: %d/%d",
+				state.TurnCount, defName, d, state.DefenderHP, state.DefenderMaxHP))
+			if state.DefenderHP == 0 {
+				state.IsOver = true
+				state.Winner = "attacker"
+			}
+		}
+	}
+
+	// Decrement duration
+	if state.WeatherTurnsLeft > 0 {
+		state.WeatherTurnsLeft--
+	}
+	if state.WeatherTurnsLeft <= 0 {
+		logs = append(logs, fmt.Sprintf("[T%d] %s", state.TurnCount, weatherEndMessage(state.Weather)))
+		state.Weather = WeatherNone
+		state.WeatherTurnsLeft = 0
+	}
+
+	state.Log = logs
+	return state
 }
