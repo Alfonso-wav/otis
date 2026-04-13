@@ -2,6 +2,8 @@ import { GetMove, GetPokemon } from "../api";
 import { t, typeName } from "../i18n";
 import { Pokemon } from "../types";
 import { createInlineDiglett, removeInlineDiglett } from "./sorting-overlay";
+import { getActiveId } from "../router";
+import { setDetailOrigin } from "../pages/pokedex";
 
 const MAX_POKEMON = 50;
 
@@ -13,8 +15,10 @@ function handleKeydown(e: KeyboardEvent): void {
 }
 
 function navigateToPokemon(name: string): void {
+  const origin = getActiveId();
   closeMovePokemonModal();
   (document.querySelector('[data-tab="pokedex"]') as HTMLElement)?.click();
+  setDetailOrigin(origin);
   const input = document.getElementById("search-input") as HTMLInputElement;
   const btn = document.getElementById("search-btn") as HTMLButtonElement;
   if (input && btn) {

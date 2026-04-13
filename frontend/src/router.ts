@@ -21,11 +21,19 @@ export function registerPage(page: Page): void {
   pages.push(page);
 }
 
+export function getActiveId(): string | null {
+  return activeId;
+}
+
 export function navigate(id: string): void {
   if (id === activeId) return;
 
   const next = pages.find((p) => p.id === id);
   if (!next) return;
+
+  document.dispatchEvent(
+    new CustomEvent("tab-changed", { detail: { from: activeId, to: id } }),
+  );
 
   if (activeId === "settings") {
     cleanupSettings();
