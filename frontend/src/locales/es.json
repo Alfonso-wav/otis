@@ -7,7 +7,10 @@
     "companionTeamHint": "Elige hasta 6 Pokemon compañeros para la barra superior",
     "loadFromTeam": "Cargar de equipo",
     "selectTeamPlaceholder": "Selecciona un equipo...",
-    "apply": "Aplicar"
+    "apply": "Aplicar",
+    "musicSection": "Música",
+    "musicVolume": "Volumen",
+    "musicMuted": "Silenciar música"
   },
   "tabs": {
     "pokedex": "Pokédex",

@@ -1,5 +1,12 @@
 import gsap from "gsap";
 import { cleanupSettings } from "./settings";
+import { playTrack, type TrackId } from "./audio";
+
+const TAB_TRACK: Record<string, TrackId> = {
+  pokedex: "pokedex",
+  explore: "explore",
+  builds: "simulations",
+};
 
 export interface Page {
   id: string;
@@ -34,6 +41,10 @@ export function navigate(id: string): void {
   if (searchBar) {
     searchBar.classList.toggle("hidden", id !== "pokedex");
   }
+
+  // Swap background track for tabs that own one. Settings keeps the prev track.
+  const track = TAB_TRACK[id];
+  if (track) void playTrack(track);
 
   activeId = id;
 

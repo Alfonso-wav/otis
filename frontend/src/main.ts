@@ -7,6 +7,7 @@ import { initBuilds } from "./pages/builds";
 import { initSettings } from "./settings";
 import { initI18n } from "./i18n";
 import { ListGenerations } from "./api";
+import { playTrack } from "./audio";
 
 // ── Typewriter helpers ────────────────────────────────────────
 let typewriterCancelled = false;
@@ -170,7 +171,11 @@ function showSplashInteractive(): void {
   createArrowElements();
   setTimeout(() => startArrowLoop(), 2000);
 
-  wrapper.addEventListener("click", () => dismissSplashInteractive(splash, wrapper), { once: true });
+  wrapper.addEventListener("click", () => {
+    // User gesture — safe to start audio. Autoplay policy allows it here.
+    void playTrack("intro");
+    dismissSplashInteractive(splash, wrapper);
+  }, { once: true });
 }
 
 async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElement): Promise<void> {
@@ -211,7 +216,11 @@ async function dismissSplashInteractive(splash: HTMLElement, wrapper: HTMLElemen
     opacity: 0,
     duration: 3.5,
     ease: "power1.inOut",
-    onComplete: () => splash.remove(),
+    onComplete: () => {
+      splash.remove();
+      // Transition from intro to pokedex track once the splash is gone.
+      void playTrack("pokedex");
+    },
   });
 }
 

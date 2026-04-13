@@ -1,6 +1,7 @@
 import { getLocale, setLocale, t } from "./i18n";
 import { ListPokemon, ListTeams } from "./api";
 import { createAutocomplete } from "./autocomplete";
+import { getMuted, getVolume, setMuted, setVolume } from "./audio";
 
 const THEME_KEY = "theme";
 const COMPANION_TEAM_KEY = "companion-team";
@@ -164,6 +165,28 @@ export function initSettings(): void {
           teamSelect.classList.add("hidden");
         }, { once: true });
       } catch { /* ignore */ }
+    });
+  }
+
+  // --- Music volume / mute (live, no Apply needed) ---
+  const musicVolume = document.getElementById(
+    "settings-music-volume",
+  ) as HTMLInputElement | null;
+  const musicMuted = document.getElementById(
+    "settings-music-muted",
+  ) as HTMLInputElement | null;
+  if (musicVolume) {
+    musicVolume.value = String(Math.round(getVolume() * 100));
+    musicVolume.addEventListener("input", () => {
+      const v = parseInt(musicVolume.value, 10);
+      if (!Number.isFinite(v)) return;
+      setVolume(v / 100);
+    });
+  }
+  if (musicMuted) {
+    musicMuted.checked = getMuted();
+    musicMuted.addEventListener("change", () => {
+      setMuted(musicMuted.checked);
     });
   }
 
