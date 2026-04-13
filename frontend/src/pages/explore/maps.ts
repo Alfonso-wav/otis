@@ -282,6 +282,27 @@ function buildWorldSection(): HTMLElement {
   return section;
 }
 
+// ─── Exposed list for reuse (e.g. battle background selector) ────────────────
+export interface BattleBgMap {
+  id: string;
+  file: string;
+  labelKey: string;
+}
+
+export const BATTLE_BG_MAPS: BattleBgMap[] = [
+  ...REGION_FILES.map<BattleBgMap>((r) => ({
+    id: r.id,
+    file: `${r.id}.${r.ext}`,
+    labelKey: `regions.labels.${r.id}`,
+  })),
+  ...WORLD_MAPS.map<BattleBgMap>((m, i) => ({
+    id: `world-${i + 1}`,
+    file: m.file,
+    labelKey: `maps.bgLabels.world${i + 1}`,
+  })),
+  { id: "retro-blue", file: "retro-blue.png", labelKey: "maps.bgLabels.retroBlue" },
+];
+
 function buildRetroSection(): HTMLElement {
   const section = document.createElement("div");
   section.className = "map-section map-section--retro";

@@ -154,7 +154,14 @@
     "selectRegion": "Selecciona una region",
     "zoomIn": "Acercar",
     "zoomOut": "Alejar",
-    "reset": "Restablecer"
+    "reset": "Restablecer",
+    "bgLabels": {
+      "world1": "Mundo 1",
+      "world2": "Mundo 2",
+      "world3": "Mundo 3",
+      "world4": "Mundo 4",
+      "retroBlue": "Retro (Azul)"
+    }
   },
   "typeChart": {
     "title": "Efectividad de tipos",
@@ -328,7 +335,9 @@
     "selectDefender": "Selecciona un Pokémon defensor",
     "savePokemon": "Guardar {name} en equipo",
     "newTeamPlaceholder": "Nombre del nuevo equipo...",
-    "createTeam": "Crear equipo"
+    "createTeam": "Crear equipo",
+    "battleBackground": "Fondo",
+    "noBackground": "Sin fondo"
   },
   "teams": {
     "myTeams": "Mis equipos ({count})",

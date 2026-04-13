@@ -154,7 +154,14 @@
     "selectRegion": "Select a region",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
-    "reset": "Reset"
+    "reset": "Reset",
+    "bgLabels": {
+      "world1": "World 1",
+      "world2": "World 2",
+      "world3": "World 3",
+      "world4": "World 4",
+      "retroBlue": "Retro (Blue)"
+    }
   },
   "typeChart": {
     "title": "Type Effectiveness",
@@ -328,7 +335,9 @@
     "selectDefender": "Select a defender Pokémon",
     "savePokemon": "Save {name} to team",
     "newTeamPlaceholder": "New team name...",
-    "createTeam": "Create team"
+    "createTeam": "Create team",
+    "battleBackground": "Background",
+    "noBackground": "No background"
   },
   "teams": {
     "myTeams": "My teams ({count})",
