@@ -285,6 +285,19 @@
             <select id="companion-team-select" class="filter-select hidden"></select>
           </div>
         </div>
+        <div class="settings-row settings-row--music">
+          <span class="settings-label" data-i18n="settings.musicSection">Música</span>
+          <div class="settings-music-controls">
+            <label class="settings-music-mute">
+              <input type="checkbox" id="settings-music-muted" />
+              <span data-i18n="settings.musicMuted">Silenciar música</span>
+            </label>
+            <label class="settings-music-volume">
+              <span data-i18n="settings.musicVolume">Volumen</span>
+              <input type="range" id="settings-music-volume" min="0" max="100" step="1" />
+            </label>
+          </div>
+        </div>
         <button id="settings-apply-btn" class="settings-apply-btn" disabled data-i18n="settings.apply">Aplicar</button>
       </div>
     </div>
