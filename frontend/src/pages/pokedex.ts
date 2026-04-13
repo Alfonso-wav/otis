@@ -10,7 +10,7 @@ import {
   GetAllSpeciesClassifications,
   GetAbility,
 } from "../api";
-import type { Pokemon, PokemonListItem, PokemonMoveEntry } from "../types";
+import type { Pokemon, PokemonListItem, PokemonMoveEntry, PokemonAbilityEntry } from "../types";
 import { t, typeName, statName, getLocale } from "../i18n";
 import { showView, staggerCards, morphToTable, morphToGrid } from "../animations/transitions";
 import { initColumnToggle, reapplyColumnVisibility, type ColumnConfig } from "../components/column-toggle";
@@ -1112,24 +1112,27 @@ async function loadEncounters(name: string): Promise<void> {
 
 // -- Abilities section -------------------------------------------------------
 
-async function loadAbilities(abilityNames: string[]): Promise<void> {
+async function loadAbilities(entries: PokemonAbilityEntry[]): Promise<void> {
   const el = document.getElementById("pokemon-abilities") as HTMLDivElement;
   if (!el) return;
 
-  if (!abilityNames || abilityNames.length === 0) {
+  if (!entries || entries.length === 0) {
     el.innerHTML = "";
     return;
   }
 
   try {
-    const abilities = await Promise.all(abilityNames.map((name) => GetAbility(name)));
+    const abilities = await Promise.all(entries.map((e) => GetAbility(e.name)));
     const lang = getLocale() === "es" ? "es" : "en";
 
-    const cards = abilities.map((ab) => {
+    const cards = abilities.map((ab, i) => {
       const name = lang === "es" && ab.NameEs ? ab.NameEs : ab.Name;
       const desc = lang === "es" && ab.DescriptionEs ? ab.DescriptionEs : ab.Description;
+      const hiddenBadge = entries[i]?.isHidden
+        ? ` <span class="ability-hidden-badge">[${t("builds.abilityHidden")}]</span>`
+        : "";
       return `<div class="ability-card">
-        <span class="ability-name">${capitalize(name)}</span>
+        <span class="ability-name">${capitalize(name)}${hiddenBadge}</span>
         ${desc ? `<p class="ability-desc">${desc}</p>` : ""}
       </div>`;
     }).join("");

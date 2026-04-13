@@ -41,6 +41,7 @@ interface BuildState {
   attackerNature: string;
   attackerIVs: core.Stats;
   attackerEVs: core.Stats;
+  attackerAbility: string;
 
   defender: core.Pokemon | null;
   defenderStats: core.Stats | null;
@@ -48,6 +49,7 @@ interface BuildState {
   defenderNature: string;
   defenderIVs: core.Stats;
   defenderEVs: core.Stats;
+  defenderAbility: string;
 
   slots: [BuildSlot, BuildSlot, BuildSlot, BuildSlot];
   defenderSlots: [BuildSlot, BuildSlot, BuildSlot, BuildSlot];
@@ -149,6 +151,7 @@ let state: BuildState = {
   attackerNature: "Hardy",
   attackerIVs: defaultIVs(),
   attackerEVs: defaultStats(),
+  attackerAbility: "",
 
   defender: null,
   defenderStats: null,
@@ -156,6 +159,7 @@ let state: BuildState = {
   defenderNature: "Hardy",
   defenderIVs: defaultIVs(),
   defenderEVs: defaultStats(),
+  defenderAbility: "",
 
   slots: [emptySlot(), emptySlot(), emptySlot(), emptySlot()],
   defenderSlots: [emptySlot(), emptySlot(), emptySlot(), emptySlot()],
@@ -206,6 +210,7 @@ let saveModalPrefix: "atk" | "def" | null = null;
 let addMemberTeamName: string | null = null;
 let editingMemberKey: string | null = null; // "teamName:idx" of member being edited
 let editingMemberMoves: string[] = []; // cached available move names for editing member
+let editingMemberPokemon: core.Pokemon | null = null; // pokemon of the currently editing member (for abilities etc.)
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -365,6 +370,43 @@ function renderMoveSlots(moves: core.PokemonMoveEntry[], prefix: "atk" | "def"):
     .join("");
 }
 
+// renderAbilitySelect builds the ability <select> for a given Pokémon, marking
+// hidden abilities with [HA] and offering an explicit "none" option.
+// dataContext encodes the owner so handlers can dispatch by data-* attributes.
+function renderAbilitySelect(
+  dataContext: string,
+  pokemon: core.Pokemon | null,
+  currentAbility: string,
+  extraData: Record<string, string> = {},
+): string {
+  const abilities = pokemon?.Abilities ?? [];
+  const dataAttrs = Object.entries({ prefix: dataContext, ...extraData })
+    .map(([k, v]) => `data-${k}="${v}"`)
+    .join(" ");
+  if (!pokemon || abilities.length === 0) {
+    return `<select class="sc-select sc-ability" ${dataAttrs} disabled>
+      <option value="">${t("builds.abilityNone")}</option>
+    </select>`;
+  }
+  const placeholderSel = currentAbility === "" ? "" : "";
+  const noneSel = currentAbility === "" ? " selected" : "";
+  const placeholderOpt = `<option value="__ab_placeholder__" disabled${placeholderSel}>-- ${t("builds.ability")} --</option>`;
+  const noneOpt = `<option value=""${noneSel}>${t("builds.abilityNone")}</option>`;
+  const opts = abilities
+    .map((a: any) => {
+      const name = a?.name ?? "";
+      const hidden = !!a?.isHidden;
+      if (!name) return "";
+      const sel = currentAbility === name ? " selected" : "";
+      const label = hidden
+        ? `${name} [${t("builds.abilityHidden")}]`
+        : name;
+      return `<option value="${name}"${sel}>${label}</option>`;
+    })
+    .join("");
+  return `<select class="sc-select sc-ability" ${dataAttrs}>${placeholderOpt}${noneOpt}${opts}</select>`;
+}
+
 function renderStatsConfig(prefix: "atk" | "def", level: number, nature: string): string {
   const natOptions = natures
     .map(
@@ -396,6 +438,10 @@ function renderStatsConfig(prefix: "atk" | "def", level: number, nature: string)
     )
     .join("");
 
+  const pokemon = prefix === "atk" ? state.attacker : state.defender;
+  const currentAbility = prefix === "atk" ? state.attackerAbility : state.defenderAbility;
+  const abilitySelectHTML = renderAbilitySelect(prefix, pokemon, currentAbility);
+
   return `
     <div class="build-stats-config">
       <div class="build-stats-config-row">
@@ -403,6 +449,10 @@ function renderStatsConfig(prefix: "atk" | "def", level: number, nature: string)
         <input class="sc-input sc-level" type="number" min="1" max="100" data-prefix="${prefix}" data-field="level" value="${level}" />
         <label class="sc-field-label">${t("builds.nature")}</label>
         <select class="sc-select sc-nature" data-prefix="${prefix}" data-field="nature">${natOptions}</select>
+      </div>
+      <div class="build-stats-config-row">
+        <label class="sc-field-label">${t("builds.ability")}</label>
+        ${abilitySelectHTML}
       </div>
       <table class="sc-table" data-table-id="sc-${prefix}">
         <thead><tr><th data-col="stat">${t("builds.stat")}</th><th data-col="iv">IV</th><th data-col="ev">EV</th></tr></thead>
@@ -790,6 +840,8 @@ async function simulateFullBattle(): Promise<void> {
     defenderMoves: defMoves,
     attackerName: state.attacker.Name,
     defenderName: state.defender.Name,
+    attackerAbility: state.attackerAbility,
+    defenderAbility: state.defenderAbility,
   } as core.FullBattleInput);
 
   battleUI = { battleState: result, phase: "over" };
@@ -829,6 +881,8 @@ async function simulateBatchBattles(): Promise<void> {
       defenderMoves: defMoves,
       attackerName: state.attacker.Name,
       defenderName: state.defender.Name,
+      attackerAbility: state.attackerAbility,
+      defenderAbility: state.defenderAbility,
     } as core.FullBattleInput, n);
   } catch (err) {
     alert(t("builds.errorSimulating") + err);
@@ -945,6 +999,7 @@ function buildTeamMember(prefix: "atk" | "def"): core.TeamMember | null {
     nature: prefix === "atk" ? state.attackerNature : state.defenderNature,
     ivs: prefix === "atk" ? state.attackerIVs : state.defenderIVs,
     evs: prefix === "atk" ? state.attackerEVs : state.defenderEVs,
+    ability: prefix === "atk" ? state.attackerAbility : state.defenderAbility,
   } as core.TeamMember;
 }
 
@@ -1073,6 +1128,7 @@ async function importFromTeam(prefix: "atk" | "def", member: core.TeamMember): P
       state.attackerNature = member.nature;
       state.attackerIVs = { ...member.ivs };
       state.attackerEVs = { ...member.evs };
+      state.attackerAbility = (member as any).ability ?? "";
       state.slots = [emptySlot(), emptySlot(), emptySlot(), emptySlot()];
     } else {
       state.defender = pokemon;
@@ -1080,6 +1136,7 @@ async function importFromTeam(prefix: "atk" | "def", member: core.TeamMember): P
       state.defenderNature = member.nature;
       state.defenderIVs = { ...member.ivs };
       state.defenderEVs = { ...member.evs };
+      state.defenderAbility = (member as any).ability ?? "";
       state.defenderSlots = [emptySlot(), emptySlot(), emptySlot(), emptySlot()];
     }
 
@@ -1301,6 +1358,18 @@ function renderTeamsSection(): string {
         const memberKey = `${team.name}:${i}`;
         const isEditing = editingMemberKey === memberKey;
         const movesDisplay = m.moves.length > 0 ? m.moves.join(", ") : t("teams.noMoves");
+        const currentMemberAbility = (m as any).ability ?? "";
+        const abilitySelect = isEditing
+          ? `<div class="team-member-edit-ability">
+              <label class="sc-field-label">${t("builds.ability")}</label>
+              ${renderAbilitySelect(
+                "member",
+                editingMemberPokemon,
+                currentMemberAbility,
+                { team: team.name, idx: String(i) },
+              )}
+            </div>`
+          : "";
         const moveSelectors = isEditing
           ? `<div class="team-member-edit-moves">
               ${[0, 1, 2, 3].map((slotIdx) => {
@@ -1313,7 +1382,8 @@ function renderTeamsSection(): string {
                   ${options}
                 </select>`;
               }).join("")}
-            </div>`
+            </div>
+            ${abilitySelect}`
           : "";
         return `
         <div class="team-member-row${isEditing ? " team-member-row--editing" : ""}">
@@ -1422,6 +1492,7 @@ function bindTeamEvents(): void {
         // Close editing
         editingMemberKey = null;
         editingMemberMoves = [];
+        editingMemberPokemon = null;
       } else {
         // Open editing — fetch pokemon moves
         const team = cachedTeams.find((tm) => tm.name === teamName);
@@ -1429,15 +1500,38 @@ function bindTeamEvents(): void {
           try {
             const pokemon = await GetPokemon(team.members[idx].pokemonName);
             editingMemberMoves = (pokemon.Moves ?? []).map((mv: core.PokemonMoveEntry) => mv.Name);
+            editingMemberPokemon = pokemon;
             editingMemberKey = memberKey;
           } catch {
             editingMemberMoves = [];
+            editingMemberPokemon = null;
             editingMemberKey = memberKey;
           }
         }
       }
       teamsDetailsOpen = true;
       buildLayout();
+    });
+  });
+
+  // Ability select change for editing team member. Match only selects whose
+  // `data-prefix="member"` — the build-side ability selector is handled elsewhere.
+  container.querySelectorAll<HTMLSelectElement>(".sc-ability[data-prefix='member']").forEach((sel) => {
+    sel.addEventListener("change", async () => {
+      const teamName = sel.dataset.team!;
+      const idx = parseInt(sel.dataset.idx!);
+      const team = cachedTeams.find((tm) => tm.name === teamName);
+      if (!team || !team.members[idx]) return;
+      const value = sel.value === "__ab_placeholder__" ? "" : sel.value;
+      const member = { ...team.members[idx], ability: value };
+      try {
+        await UpdateTeamMember(teamName, idx, member as core.TeamMember);
+        cachedTeams = await ListTeams();
+        teamsDetailsOpen = true;
+        buildLayout();
+      } catch (err: unknown) {
+        alert(`Error al actualizar habilidad: ${String(err)}`);
+      }
     });
   });
 
@@ -1755,7 +1849,11 @@ function bindEvents(): void {
   });
 
   container.querySelectorAll<HTMLSelectElement>(".sc-select").forEach((sel) => {
-    sel.addEventListener("change", () => handleNatureSelect(sel));
+    if (sel.classList.contains("sc-ability")) {
+      sel.addEventListener("change", () => handleAbilitySelect(sel));
+    } else {
+      sel.addEventListener("change", () => handleNatureSelect(sel));
+    }
   });
 
   container.querySelectorAll<HTMLButtonElement>(".build-calc-btn").forEach((btn) => {
@@ -1797,6 +1895,13 @@ function handleNatureSelect(sel: HTMLSelectElement): void {
   else state.defenderNature = sel.value;
 }
 
+function handleAbilitySelect(sel: HTMLSelectElement): void {
+  const prefix = sel.dataset.prefix as "atk" | "def";
+  const value = sel.value === "__ab_placeholder__" ? "" : sel.value;
+  if (prefix === "atk") state.attackerAbility = value;
+  else state.defenderAbility = value;
+}
+
 // ─── Async actions ────────────────────────────────────────────────────────────
 
 async function fetchPokemon(prefix: "atk" | "def", name: string): Promise<void> {
@@ -1811,10 +1916,12 @@ async function fetchPokemon(prefix: "atk" | "def", name: string): Promise<void> 
     if (prefix === "atk") {
       state.attacker = pokemon;
       state.attackerStats = null;
+      state.attackerAbility = "";
       state.slots = [emptySlot(), emptySlot(), emptySlot(), emptySlot()];
     } else {
       state.defender = pokemon;
       state.defenderStats = null;
+      state.defenderAbility = "";
       state.defenderSlots = [emptySlot(), emptySlot(), emptySlot(), emptySlot()];
     }
     battleUI = { battleState: null, phase: "idle" };
