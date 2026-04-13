@@ -24,6 +24,7 @@ import {
 import type { core } from "../../wailsjs/go/models";
 import { createAutocomplete } from "../autocomplete";
 import { initColumnToggle, type ColumnConfig } from "../components/column-toggle";
+import { BATTLE_BG_MAPS } from "./explore/maps";
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -71,6 +72,67 @@ let battleUI: BattleUIState = { battleState: null, phase: "idle" };
 let batchReport: core.BattleReport | null = null;
 let batchRunning = false;
 let lastBatchN = 100;
+
+// Battle background preference (persisted in localStorage).
+// null = never set → show placeholder. "" = user picked "No background". id = map id.
+const BATTLE_BG_STORAGE_KEY = "battle-background";
+let battleBgId: string | null = (() => {
+  try {
+    return localStorage.getItem(BATTLE_BG_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+})();
+
+function battleArenaStyle(): string {
+  if (!battleBgId) return "";
+  const map = BATTLE_BG_MAPS.find((m) => m.id === battleBgId);
+  if (!map) return "";
+  return ` style="background-image:url('/assets/maps/${map.file}')"`;
+}
+
+function battleBgSelectorHTML(): string {
+  const placeholderSel = battleBgId === null ? " selected" : "";
+  const noneSel = battleBgId === "" ? " selected" : "";
+  const placeholder = `<option value="__placeholder__" disabled${placeholderSel}>-- ${t("builds.battleBackground")} --</option>`;
+  const noneOpt = `<option value=""${noneSel}>${t("builds.noBackground")}</option>`;
+  const options = BATTLE_BG_MAPS.map(
+    (m) => `<option value="${m.id}"${m.id === battleBgId ? " selected" : ""}>${t(m.labelKey)}</option>`,
+  ).join("");
+  return `
+    <div class="battle-bg-row">
+      <label class="battle-bg-label" for="battle-bg-select">${t("builds.battleBackground")}</label>
+      <select id="battle-bg-select" class="battle-bg-select">
+        ${placeholder}
+        ${noneOpt}
+        ${options}
+      </select>
+    </div>`;
+}
+
+function handleBattleBgChange(value: string): void {
+  if (value === "__placeholder__") return;
+  battleBgId = value;
+  try {
+    if (value === "" ) localStorage.setItem(BATTLE_BG_STORAGE_KEY, "");
+    else localStorage.setItem(BATTLE_BG_STORAGE_KEY, value);
+  } catch {
+    // ignore storage errors
+  }
+  // Apply inline style without full re-render to preserve battle state
+  const arena = container.querySelector<HTMLElement>(".battle-arena");
+  if (!arena) return;
+  if (!value) {
+    arena.style.backgroundImage = "";
+    arena.classList.remove("battle-arena--has-bg");
+  } else {
+    const map = BATTLE_BG_MAPS.find((m) => m.id === value);
+    if (map) {
+      arena.style.backgroundImage = `url('/assets/maps/${map.file}')`;
+      arena.classList.add("battle-arena--has-bg");
+    }
+  }
+}
 
 // Team battle state
 let teamBattleTeam1: string | null = null;
@@ -530,7 +592,8 @@ function renderBattleSection(): string {
     return `
       <div class="battle-section" id="battle-section">
         <h3 class="build-section-title">${t("builds.battleSimulation")}</h3>
-        <div class="battle-arena">
+        ${battleBgSelectorHTML()}
+        <div class="battle-arena${battleBgId ? " battle-arena--has-bg" : ""}"${battleArenaStyle()}>
           <div class="battle-arena-top">
             ${renderHPBar(state.defender.Name, state.defenderLevel, 0, 0, false)}
             ${battleSpriteImg(state.defender.Name, "battle-front")}
@@ -587,7 +650,8 @@ function renderBattleSection(): string {
     <div class="battle-section" id="battle-section">
       <h3 class="build-section-title">${t("builds.battleTurn", { turn: bs.turnCount })}</h3>
       ${winnerBanner}
-      <div class="battle-arena">
+      ${battleBgSelectorHTML()}
+      <div class="battle-arena${battleBgId ? " battle-arena--has-bg" : ""}"${battleArenaStyle()}>
         <div class="battle-arena-top">
           ${renderHPBar(defName, state.defenderLevel, bs.defenderHP, bs.defenderMaxHP, false)}
           ${battleSpriteImg(defName, "battle-front")}
@@ -859,6 +923,9 @@ function bindBattleEvents(): void {
       const idx = parseInt(btn.dataset.slot ?? "0");
       handleMoveClick(idx);
     });
+  });
+  container.querySelector<HTMLSelectElement>("#battle-bg-select")?.addEventListener("change", (e) => {
+    handleBattleBgChange((e.target as HTMLSelectElement).value);
   });
 }
 

@@ -521,6 +521,9 @@
 
 .battle-arena {
   background: linear-gradient(180deg, #f8e8e0 0%, #f0d0c0 50%, #e8c8b8 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: $border-radius-lg;
   padding: 1.25rem 1.5rem;
   margin-bottom: 1rem;
@@ -530,6 +533,41 @@
   flex-direction: column;
   justify-content: space-between;
   border: 3px solid #c0a090;
+
+  &--has-bg {
+    // Subtle dark overlay so sprites/HP bars stay readable over arbitrary maps.
+    box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.18);
+
+    .battle-sprite {
+      filter: drop-shadow(2px 4px 0px rgba(0, 0, 0, 0.45));
+    }
+  }
+}
+
+// ─── Battle background selector ──────────────────────────────────────────────
+.battle-bg-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.battle-bg-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.battle-bg-select {
+  flex: 1 1 auto;
+  min-width: 160px;
+  max-width: 280px;
+  padding: 0.35rem 0.5rem;
+  border-radius: $border-radius;
+  border: 1px solid #c0a090;
+  background: #fff;
+  font-size: 0.9rem;
 }
 
 .battle-arena-top {
@@ -951,6 +989,16 @@
   .battle-arena {
     padding: 0.75rem;
     min-height: 200px;
+  }
+
+  .battle-bg-row {
+    gap: 0.35rem;
+  }
+
+  .battle-bg-select {
+    min-width: 0;
+    width: 100%;
+    max-width: none;
   }
 
   .battle-sprite--front { width: 64px; height: 64px; }
