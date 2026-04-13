@@ -181,8 +181,12 @@ func TestGenerateRandomTeamMember(t *testing.T) {
 	pokemon := Pokemon{
 		Name: "pikachu",
 		Moves: []PokemonMoveEntry{
-			{Name: "thunderbolt"}, {Name: "quick-attack"}, {Name: "iron-tail"},
-			{Name: "electro-ball"}, {Name: "thunder"}, {Name: "volt-tackle"},
+			{Name: "thunderbolt", Method: "level-up"},
+			{Name: "quick-attack", Method: "level-up"},
+			{Name: "iron-tail", Method: "level-up"},
+			{Name: "electro-ball", Method: "level-up"},
+			{Name: "thunder", Method: "level-up"},
+			{Name: "volt-tackle", Method: "level-up"},
 		},
 	}
 	rng := deterministicRng([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
@@ -228,15 +232,79 @@ func TestGenerateRandomTeamMember(t *testing.T) {
 	}
 }
 
+func TestGenerateRandomTeamMember_OnlyLevelUpMoves(t *testing.T) {
+	pokemon := Pokemon{
+		Name: "pikachu",
+		Moves: []PokemonMoveEntry{
+			{Name: "thunderbolt", Method: "level-up"},
+			{Name: "quick-attack", Method: "level-up"},
+			{Name: "iron-tail", Method: "machine"},
+			{Name: "volt-tackle", Method: "egg"},
+			{Name: "grass-knot", Method: "tutor"},
+			{Name: "thunder", Method: "level-up"},
+			{Name: "electro-ball", Method: "level-up"},
+		},
+		Abilities: []PokemonAbilityEntry{{Name: "static"}},
+	}
+	allowed := map[string]bool{
+		"thunderbolt": true, "quick-attack": true, "thunder": true, "electro-ball": true,
+	}
+	rng := deterministicRng([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9})
+	member := GenerateRandomTeamMember(pokemon, rng)
+	if len(member.Moves) != 4 {
+		t.Fatalf("expected 4 moves, got %d", len(member.Moves))
+	}
+	for _, m := range member.Moves {
+		if !allowed[m] {
+			t.Errorf("move %q is not from level-up pool", m)
+		}
+	}
+}
+
+func TestGenerateRandomTeamMember_FewerThanFourLevelUp(t *testing.T) {
+	pokemon := Pokemon{
+		Name: "abra",
+		Moves: []PokemonMoveEntry{
+			{Name: "teleport", Method: "level-up"},
+			{Name: "flash", Method: "level-up"},
+			{Name: "thunder-punch", Method: "machine"},
+			{Name: "fire-punch", Method: "machine"},
+			{Name: "encore", Method: "egg"},
+		},
+	}
+	rng := deterministicRng([]int{0, 1, 2, 3})
+	member := GenerateRandomTeamMember(pokemon, rng)
+	if len(member.Moves) != 2 {
+		t.Fatalf("expected 2 moves (only level-up available), got %d", len(member.Moves))
+	}
+	seen := make(map[string]bool)
+	for _, m := range member.Moves {
+		if m != "teleport" && m != "flash" {
+			t.Errorf("unexpected move %q", m)
+		}
+		if seen[m] {
+			t.Errorf("duplicate move %q", m)
+		}
+		seen[m] = true
+	}
+}
+
 func TestFillTeamRandom(t *testing.T) {
+	lvl := func(names ...string) []PokemonMoveEntry {
+		out := make([]PokemonMoveEntry, len(names))
+		for i, n := range names {
+			out[i] = PokemonMoveEntry{Name: n, Method: "level-up"}
+		}
+		return out
+	}
 	available := []Pokemon{
-		{Name: "pikachu", Moves: []PokemonMoveEntry{{Name: "thunderbolt"}, {Name: "quick-attack"}, {Name: "iron-tail"}, {Name: "electro-ball"}}},
-		{Name: "charmander", Moves: []PokemonMoveEntry{{Name: "flamethrower"}, {Name: "scratch"}, {Name: "ember"}, {Name: "fire-blast"}}},
-		{Name: "bulbasaur", Moves: []PokemonMoveEntry{{Name: "vine-whip"}, {Name: "razor-leaf"}, {Name: "solar-beam"}, {Name: "tackle"}}},
-		{Name: "squirtle", Moves: []PokemonMoveEntry{{Name: "water-gun"}, {Name: "hydro-pump"}, {Name: "bubble"}, {Name: "surf"}}},
-		{Name: "eevee", Moves: []PokemonMoveEntry{{Name: "tackle"}, {Name: "swift"}, {Name: "bite"}, {Name: "shadow-ball"}}},
-		{Name: "jigglypuff", Moves: []PokemonMoveEntry{{Name: "sing"}, {Name: "pound"}, {Name: "double-slap"}, {Name: "hyper-voice"}}},
-		{Name: "meowth", Moves: []PokemonMoveEntry{{Name: "scratch"}, {Name: "pay-day"}, {Name: "bite"}, {Name: "slash"}}},
+		{Name: "pikachu", Moves: lvl("thunderbolt", "quick-attack", "iron-tail", "electro-ball")},
+		{Name: "charmander", Moves: lvl("flamethrower", "scratch", "ember", "fire-blast")},
+		{Name: "bulbasaur", Moves: lvl("vine-whip", "razor-leaf", "solar-beam", "tackle")},
+		{Name: "squirtle", Moves: lvl("water-gun", "hydro-pump", "bubble", "surf")},
+		{Name: "eevee", Moves: lvl("tackle", "swift", "bite", "shadow-ball")},
+		{Name: "jigglypuff", Moves: lvl("sing", "pound", "double-slap", "hyper-voice")},
+		{Name: "meowth", Moves: lvl("scratch", "pay-day", "bite", "slash")},
 	}
 	rng := deterministicRng([]int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20})
 
