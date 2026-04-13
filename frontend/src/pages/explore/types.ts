@@ -2,6 +2,8 @@ import gsap from "gsap";
 import { ListTypes, GetType } from "../../api";
 import type { PokemonListItem } from "../../types";
 import { t, typeName } from "../../i18n";
+import { getActiveId } from "../../router";
+import { setDetailOrigin } from "../pokedex";
 
 const POKEMON_DISPLAY_LIMIT = 50;
 let cachedTypes: PokemonListItem[] = [];
@@ -132,9 +134,11 @@ async function toggleType(card: HTMLDivElement): Promise<void> {
         item.addEventListener("click", () => {
           const name = item.dataset.name;
           if (!name) return;
+          const origin = getActiveId();
           document
             .querySelector<HTMLButtonElement>('[data-tab="pokedex"]')
             ?.click();
+          setDetailOrigin(origin);
           const input = document.getElementById(
             "search-input",
           ) as HTMLInputElement;

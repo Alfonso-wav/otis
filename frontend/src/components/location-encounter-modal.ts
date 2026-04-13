@@ -2,6 +2,8 @@ import gsap from "gsap";
 import { GetLocationEncounters } from "../api";
 import { t } from "../i18n";
 import { createInlineDiglett, removeInlineDiglett } from "./sorting-overlay";
+import { getActiveId } from "../router";
+import { setDetailOrigin } from "../pages/pokedex";
 
 let overlayEl: HTMLDivElement | null = null;
 
@@ -114,10 +116,12 @@ export async function openLocationEncounterModal(locationName: string): Promise<
       item.addEventListener("click", () => {
         const name = item.dataset.name;
         if (!name) return;
+        const origin = getActiveId();
         closeModal();
         document
           .querySelector<HTMLButtonElement>('[data-tab="pokedex"]')
           ?.click();
+        setDetailOrigin(origin);
         const input = document.getElementById(
           "search-input",
         ) as HTMLInputElement;
