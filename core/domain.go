@@ -1,5 +1,20 @@
 package core
 
+// Weather represents the active battle weather.
+// Gen 3–5 climates only. Rocks/items that extend duration are not modeled.
+type Weather string
+
+const (
+	WeatherNone      Weather = ""
+	WeatherRain      Weather = "rain"
+	WeatherSun       Weather = "sun"
+	WeatherSandstorm Weather = "sandstorm"
+	WeatherHail      Weather = "hail"
+)
+
+// WeatherDefaultTurns is the fixed duration (in turns) a weather condition lasts.
+const WeatherDefaultTurns = 5
+
 type Region struct {
 	Name      string
 	Locations []Location

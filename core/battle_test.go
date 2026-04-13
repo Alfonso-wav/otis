@@ -1069,3 +1069,202 @@ func TestSimulateFullBattle_NonTransformPokemonUnaffected(t *testing.T) {
 		}
 	}
 }
+
+// --- Weather system ---
+
+func TestExecuteTurn_RainDanceSetsRain(t *testing.T) {
+	state := InitBattle(200, 200)
+	input := TurnInput{
+		State:         state,
+		AttackerStats: Stats{Attack: 80, Defense: 80, SpAttack: 80, SpDefense: 80, Speed: 80, HP: 200},
+		DefenderStats: Stats{Attack: 80, Defense: 80, SpAttack: 80, SpDefense: 80, Speed: 80, HP: 200},
+		AttackerTypes: []PokemonType{{Name: "water"}},
+		DefenderTypes: []PokemonType{{Name: "grass"}},
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		Move:          Move{Name: "rain-dance", Category: "status", Power: 0, Accuracy: 0},
+		AttackerName:  "Kyogre",
+		DefenderName:  "Venusaur",
+	}
+	r := ExecuteTurn(input, nil).NewState
+	if r.Weather != WeatherRain {
+		t.Errorf("Weather: want Rain, got %q", r.Weather)
+	}
+	if r.WeatherTurnsLeft != WeatherDefaultTurns {
+		t.Errorf("WeatherTurnsLeft: want %d, got %d", WeatherDefaultTurns, r.WeatherTurnsLeft)
+	}
+	if r.DefenderHP != 200 {
+		t.Errorf("Rain Dance should not damage: defenderHP=%d", r.DefenderHP)
+	}
+}
+
+func TestExecuteTurn_AllWeatherMovesMapped(t *testing.T) {
+	cases := []struct {
+		move string
+		want Weather
+	}{
+		{"rain-dance", WeatherRain},
+		{"sunny-day", WeatherSun},
+		{"sandstorm", WeatherSandstorm},
+		{"hail", WeatherHail},
+	}
+	for _, c := range cases {
+		s := InitBattle(200, 200)
+		in := TurnInput{
+			State:         s,
+			AttackerStats: Stats{Speed: 50, HP: 200},
+			DefenderStats: Stats{Speed: 50, HP: 200},
+			AttackerTypes: []PokemonType{{Name: "normal"}},
+			DefenderTypes: []PokemonType{{Name: "normal"}},
+			AttackerLevel: 50,
+			DefenderLevel: 50,
+			Move:          Move{Name: c.move, Category: "status", Power: 0},
+			AttackerName:  "A",
+			DefenderName:  "B",
+		}
+		r := ExecuteTurn(in, nil).NewState
+		if r.Weather != c.want {
+			t.Errorf("%s: weather = %q, want %q", c.move, r.Weather, c.want)
+		}
+		if r.WeatherTurnsLeft != WeatherDefaultTurns {
+			t.Errorf("%s: turnsLeft = %d, want %d", c.move, r.WeatherTurnsLeft, WeatherDefaultTurns)
+		}
+	}
+}
+
+func TestTickWeather_SandstormDamageRespectsImmunities(t *testing.T) {
+	s := BattleState{
+		AttackerHP: 160, DefenderHP: 160,
+		AttackerMaxHP: 160, DefenderMaxHP: 160,
+		Weather: WeatherSandstorm, WeatherTurnsLeft: 5,
+	}
+	// Attacker is Fire (damaged), defender is Rock (immune).
+	atkTypes := []PokemonType{{Name: "fire"}}
+	defTypes := []PokemonType{{Name: "rock"}}
+	r := tickWeather(s, atkTypes, defTypes, "A", "B")
+	if r.AttackerHP != 150 {
+		t.Errorf("Non-immune attacker: want 150 HP (160 - 10), got %d", r.AttackerHP)
+	}
+	if r.DefenderHP != 160 {
+		t.Errorf("Rock defender must be immune to Sandstorm: got %d", r.DefenderHP)
+	}
+	if r.WeatherTurnsLeft != 4 {
+		t.Errorf("WeatherTurnsLeft: want 4, got %d", r.WeatherTurnsLeft)
+	}
+}
+
+func TestTickWeather_HailRespectsIceImmunity(t *testing.T) {
+	s := BattleState{
+		AttackerHP: 160, DefenderHP: 160,
+		AttackerMaxHP: 160, DefenderMaxHP: 160,
+		Weather: WeatherHail, WeatherTurnsLeft: 3,
+	}
+	atkTypes := []PokemonType{{Name: "ice"}}        // immune
+	defTypes := []PokemonType{{Name: "grass"}}       // hit
+	r := tickWeather(s, atkTypes, defTypes, "A", "B")
+	if r.AttackerHP != 160 {
+		t.Errorf("Ice should be immune to Hail: got %d", r.AttackerHP)
+	}
+	if r.DefenderHP != 150 {
+		t.Errorf("Non-ice should take 10 Hail dmg: got %d", r.DefenderHP)
+	}
+}
+
+func TestTickWeather_ExpiresAfterDuration(t *testing.T) {
+	s := BattleState{
+		AttackerHP: 200, DefenderHP: 200,
+		AttackerMaxHP: 200, DefenderMaxHP: 200,
+		Weather: WeatherRain, WeatherTurnsLeft: 1,
+	}
+	r := tickWeather(s, []PokemonType{{Name: "water"}}, []PokemonType{{Name: "water"}}, "A", "B")
+	if r.Weather != WeatherNone {
+		t.Errorf("Weather should clear, got %q", r.Weather)
+	}
+	if r.WeatherTurnsLeft != 0 {
+		t.Errorf("TurnsLeft should be 0, got %d", r.WeatherTurnsLeft)
+	}
+	// Log should contain end message
+	hasEnd := false
+	for _, l := range r.Log {
+		if strings.Contains(l, "lluvia cesó") {
+			hasEnd = true
+			break
+		}
+	}
+	if !hasEnd {
+		t.Error("expected rain-end log entry")
+	}
+}
+
+func TestSimulateFullBattle_WeatherExpiresAfter5Turns(t *testing.T) {
+	// Attacker opens with Rain Dance (status), then spams Tackle.
+	// Defender always uses Tackle. Use stats such that Tackle deals ~10 dmg so
+	// battle reaches turn 6+.
+	input := FullBattleInput{
+		AttackerStats: Stats{Attack: 80, Defense: 120, SpAttack: 40, SpDefense: 120, Speed: 100, HP: 500},
+		DefenderStats: Stats{Attack: 80, Defense: 120, SpAttack: 40, SpDefense: 120, Speed: 90, HP: 500},
+		AttackerTypes: []PokemonType{{Name: "water"}},
+		DefenderTypes: []PokemonType{{Name: "grass"}},
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		AttackerMoves: []Move{
+			{Name: "rain-dance", Category: "status", Power: 0, Accuracy: 0},
+		},
+		DefenderMoves: []Move{
+			{Name: "tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100},
+		},
+		AttackerName: "Poliwrath",
+		DefenderName: "Venusaur",
+	}
+	// Single-move attacker means it spams rain-dance every turn — each call
+	// refreshes the weather. That does not test expiry. Split into a scripted
+	// sequence: first move rain-dance, then dummy status without weather.
+	input.AttackerMoves = []Move{
+		{Name: "rain-dance", Category: "status", Power: 0, Accuracy: 0},
+		{Name: "splash", Category: "status", Power: 0, Accuracy: 0},
+	}
+	// randSource: deterministic; picks index 0 first, then 1 forever so the
+	// attacker uses rain-dance exactly once then switches to splash.
+	callCount := 0
+	randSource := func(n int) int {
+		if n <= 1 {
+			return 0
+		}
+		// First call to len(atkMoves)=2 picks 0 (rain-dance), every subsequent → 1 (splash).
+		// Other len(n) calls (accuracy rolls, crit rolls, random rolls, len(defMoves)=1) return 0.
+		if n == 2 {
+			callCount++
+			if callCount == 1 {
+				return 0
+			}
+			return 1
+		}
+		return 0
+	}
+	r := SimulateFullBattle(input, randSource)
+	// After 5 full turns from the activation (turn 1 Rain Dance activates),
+	// the tick at the end of turn 5 decrements to 0 and clears.
+	// Find the turn where weather becomes None.
+	sawRain := false
+	for _, l := range r.Log {
+		if strings.Contains(l, "Empezó a llover") {
+			sawRain = true
+		}
+	}
+	if !sawRain {
+		t.Error("expected rain start log")
+	}
+	// Final state must either have cleared weather within maxTurns or finished
+	// under rain. With 500 HP and 40-power Tackle, battle should last long
+	// enough to see expiry.
+	cleared := false
+	for _, l := range r.Log {
+		if strings.Contains(l, "lluvia cesó") {
+			cleared = true
+			break
+		}
+	}
+	if !cleared {
+		t.Error("expected rain to expire and log end message")
+	}
+}
