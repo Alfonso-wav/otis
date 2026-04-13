@@ -742,3 +742,330 @@ func TestExecuteTurn_NoopWhenOver(t *testing.T) {
 		t.Error("Should not add log entries when battle is already over")
 	}
 }
+
+// --- Transform (Ditto) Tests ---
+
+func TestExecuteTurn_TransformSetsOverrides(t *testing.T) {
+	state := InitBattle(100, 200)
+	dittoStats := Stats{HP: 100, Attack: 30, Defense: 30, SpAttack: 30, SpDefense: 30, Speed: 30}
+	pikachuStats := Stats{HP: 200, Attack: 120, Defense: 80, SpAttack: 130, SpDefense: 90, Speed: 110}
+	pikachuTypes := []PokemonType{{Name: "electric"}}
+	pikachuMoves := []Move{
+		{Name: "Thunderbolt", Type: "electric", Power: 90, Category: "special", Accuracy: 100},
+		{Name: "Quick Attack", Type: "normal", Power: 40, Category: "physical", Accuracy: 100, Priority: 1},
+	}
+
+	input := TurnInput{
+		State:         state,
+		AttackerStats: dittoStats,
+		DefenderStats: pikachuStats,
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: pikachuTypes,
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		Move:          Move{Name: "transform", Type: "normal", Power: 0, Category: "status"},
+		AttackerName:  "Ditto",
+		DefenderName:  "Pikachu",
+		DefenderMoves: pikachuMoves,
+	}
+
+	result := ExecuteTurn(input, nil)
+
+	// Verify overrides are set
+	if result.NewState.AttackerStatsOverride == nil {
+		t.Fatal("AttackerStatsOverride should be set after Transform")
+	}
+
+	// Verify stats are copied from defender (except HP preserved)
+	override := result.NewState.AttackerStatsOverride
+	if override.Attack != pikachuStats.Attack {
+		t.Errorf("Attack override: want %d, got %d", pikachuStats.Attack, override.Attack)
+	}
+	if override.Defense != pikachuStats.Defense {
+		t.Errorf("Defense override: want %d, got %d", pikachuStats.Defense, override.Defense)
+	}
+	if override.SpAttack != pikachuStats.SpAttack {
+		t.Errorf("SpAttack override: want %d, got %d", pikachuStats.SpAttack, override.SpAttack)
+	}
+	if override.SpDefense != pikachuStats.SpDefense {
+		t.Errorf("SpDefense override: want %d, got %d", pikachuStats.SpDefense, override.SpDefense)
+	}
+	if override.Speed != pikachuStats.Speed {
+		t.Errorf("Speed override: want %d, got %d", pikachuStats.Speed, override.Speed)
+	}
+	// HP must be Ditto's, NOT Pikachu's
+	if override.HP != dittoStats.HP {
+		t.Errorf("HP override: want %d (Ditto's), got %d", dittoStats.HP, override.HP)
+	}
+
+	// Verify moves are copied
+	if len(result.NewState.AttackerMovesOverride) != len(pikachuMoves) {
+		t.Fatalf("AttackerMovesOverride: want %d moves, got %d",
+			len(pikachuMoves), len(result.NewState.AttackerMovesOverride))
+	}
+	for i, m := range result.NewState.AttackerMovesOverride {
+		if m.Name != pikachuMoves[i].Name {
+			t.Errorf("Move[%d]: want %s, got %s", i, pikachuMoves[i].Name, m.Name)
+		}
+	}
+
+	// Verify types are copied
+	if len(result.NewState.AttackerTypesOverride) != len(pikachuTypes) {
+		t.Fatalf("AttackerTypesOverride: want %d types, got %d",
+			len(pikachuTypes), len(result.NewState.AttackerTypesOverride))
+	}
+	if result.NewState.AttackerTypesOverride[0].Name != "electric" {
+		t.Errorf("Type override: want electric, got %s", result.NewState.AttackerTypesOverride[0].Name)
+	}
+
+	// HP unchanged
+	if result.NewState.AttackerHP != 100 {
+		t.Errorf("Ditto HP should be unchanged: want 100, got %d", result.NewState.AttackerHP)
+	}
+	if result.NewState.DefenderHP != 200 {
+		t.Errorf("Pikachu HP should be unchanged: want 200, got %d", result.NewState.DefenderHP)
+	}
+
+	// Log message
+	if !strings.Contains(result.LogEntry, "Transform") {
+		t.Errorf("Log should mention Transform, got: %s", result.LogEntry)
+	}
+	if !strings.Contains(result.LogEntry, "Ditto") {
+		t.Errorf("Log should mention Ditto, got: %s", result.LogEntry)
+	}
+	if !strings.Contains(result.LogEntry, "Pikachu") {
+		t.Errorf("Log should mention Pikachu, got: %s", result.LogEntry)
+	}
+
+	// Battle should not be over
+	if result.NewState.IsOver {
+		t.Error("Battle should not end after Transform")
+	}
+}
+
+func TestSimulateFullBattle_DittoTransformUsesCopiedStats(t *testing.T) {
+	// Ditto has very low stats but Transform should copy Pikachu's high stats.
+	// Pikachu only has Splash (no damage), so Ditto survives turn 1, uses Transform,
+	// and then fights with Pikachu's copied Thunderbolt in subsequent turns.
+	transformMove := Move{Name: "transform", Type: "normal", Power: 0, Category: "status"}
+	thunderbolt := Move{Name: "Thunderbolt", Type: "electric", Power: 90, Category: "special", Accuracy: 100}
+	splash := Move{Name: "Splash", Type: "water", Power: 0, Category: "status"}
+
+	dittoStats := Stats{HP: 200, Attack: 30, Defense: 30, SpAttack: 30, SpDefense: 30, Speed: 150}
+	pikachuStats := Stats{HP: 200, Attack: 120, Defense: 80, SpAttack: 130, SpDefense: 90, Speed: 110}
+
+	input := FullBattleInput{
+		AttackerStats: dittoStats,
+		DefenderStats: pikachuStats,
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "electric"}},
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		AttackerMoves: []Move{transformMove},        // Ditto only has Transform
+		DefenderMoves: []Move{splash, thunderbolt},   // Pikachu has Splash and Thunderbolt
+		AttackerName:  "Ditto",
+		DefenderName:  "Pikachu",
+	}
+
+	// alwaysZero: picks first move always (transform for Ditto, splash for Pikachu).
+	// Ditto is faster (150 vs 110), so turn 1: Ditto transforms, Pikachu splashes.
+	// Turn 2+: Ditto now has Pikachu's moves (picks index 0 = Splash), Pikachu also Splash.
+	// To verify Ditto actually gains the moves, use a counter that picks index 1 after turn 1.
+	callCount := 0
+	mockRand := func(n int) int {
+		callCount++
+		// Move selection calls come in pairs (attacker move, defender move).
+		// After Transform, Ditto has 2 moves. We want to pick Thunderbolt (index 1)
+		// for Ditto after the first turn.
+		return 0
+	}
+	result := SimulateFullBattle(input, mockRand)
+
+	if !result.IsOver {
+		t.Error("Battle should be over")
+	}
+
+	if result.TurnCount < 2 {
+		t.Errorf("Expected at least 2 turns (Transform + attack), got %d", result.TurnCount)
+	}
+
+	// Verify the log contains a Transform entry
+	foundTransform := false
+	for _, entry := range result.Log {
+		if strings.Contains(entry, "Transform") && strings.Contains(entry, "Ditto") {
+			foundTransform = true
+			break
+		}
+	}
+	if !foundTransform {
+		t.Error("Log should contain Ditto's Transform entry")
+	}
+}
+
+func TestSimulateFullBattle_DittoTransformUsesDefenderMoves(t *testing.T) {
+	// Verify Ditto uses defender's moves after Transform, not its own.
+	transformMove := Move{Name: "transform", Type: "normal", Power: 0, Category: "status"}
+	hyperBeam := Move{Name: "Hyper Beam", Type: "normal", Power: 150, Category: "special", Accuracy: 100}
+
+	dittoStats := Stats{HP: 200, Attack: 30, Defense: 30, SpAttack: 30, SpDefense: 30, Speed: 150}
+	magikarpStats := Stats{HP: 50, Attack: 10, Defense: 10, SpAttack: 10, SpDefense: 10, Speed: 10}
+
+	input := FullBattleInput{
+		AttackerStats: dittoStats,
+		DefenderStats: magikarpStats,
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "water"}},
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		AttackerMoves: []Move{transformMove},
+		DefenderMoves: []Move{hyperBeam},
+		AttackerName:  "Ditto",
+		DefenderName:  "Magikarp",
+	}
+
+	alwaysZero := func(n int) int { return 0 }
+	result := SimulateFullBattle(input, alwaysZero)
+
+	if !result.IsOver {
+		t.Error("Battle should be over")
+	}
+	// Ditto transforms turn 1, gains Hyper Beam + Magikarp's stats.
+	// Even with Magikarp's low stats, Hyper Beam (150 power) should KO Magikarp (50 HP) quickly.
+	if result.Winner != "attacker" {
+		t.Errorf("Ditto should win after Transform + Hyper Beam, got winner: %s", result.Winner)
+	}
+
+	// Check Transform is in the log
+	foundTransform := false
+	foundHyperBeam := false
+	for _, entry := range result.Log {
+		if strings.Contains(entry, "Transform") {
+			foundTransform = true
+		}
+		if strings.Contains(entry, "Ditto") && strings.Contains(entry, "Hyper Beam") {
+			foundHyperBeam = true
+		}
+	}
+	if !foundTransform {
+		t.Error("Log should contain Transform")
+	}
+	if !foundHyperBeam {
+		t.Error("Log should show Ditto using Hyper Beam (copied from Magikarp)")
+	}
+}
+
+func TestSimulateFullBattle_DittoHPNotChanged(t *testing.T) {
+	// Ditto's HP must remain its own, not be overwritten by defender's HP.
+	transformMove := Move{Name: "transform", Type: "normal", Power: 0, Category: "status"}
+	splash := Move{Name: "Splash", Type: "water", Power: 0, Category: "status"}
+
+	dittoHP := 100
+	pikachuHP := 300
+
+	input := FullBattleInput{
+		AttackerStats: Stats{HP: dittoHP, Attack: 30, Defense: 30, SpAttack: 30, SpDefense: 30, Speed: 30},
+		DefenderStats: Stats{HP: pikachuHP, Attack: 120, Defense: 80, SpAttack: 130, SpDefense: 90, Speed: 110},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "electric"}},
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		AttackerMoves: []Move{transformMove},
+		DefenderMoves: []Move{splash}, // No damage so we can check HP at end
+		AttackerName:  "Ditto",
+		DefenderName:  "Pikachu",
+	}
+
+	alwaysZero := func(n int) int { return 0 }
+	result := SimulateFullBattle(input, alwaysZero)
+
+	// After max turns (both use splash/status), HP should be unchanged.
+	// Ditto HP must be 100 (its original), NOT 300 (Pikachu's).
+	if result.AttackerHP != dittoHP {
+		t.Errorf("Ditto HP: want %d (original), got %d", dittoHP, result.AttackerHP)
+	}
+	if result.AttackerMaxHP != dittoHP {
+		t.Errorf("Ditto MaxHP: want %d, got %d", dittoHP, result.AttackerMaxHP)
+	}
+}
+
+func TestSimulateFullBattle_DefenderTransformWorks(t *testing.T) {
+	// Test symmetry: defender using Transform also works.
+	tackle := Move{Name: "Tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100}
+	transformMove := Move{Name: "transform", Type: "normal", Power: 0, Category: "status"}
+
+	input := FullBattleInput{
+		AttackerStats: Stats{HP: 200, Attack: 150, Defense: 100, SpAttack: 100, SpDefense: 100, Speed: 100},
+		DefenderStats: Stats{HP: 200, Attack: 30, Defense: 30, SpAttack: 30, SpDefense: 30, Speed: 30},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		AttackerMoves: []Move{tackle},
+		DefenderMoves: []Move{transformMove},
+		AttackerName:  "Snorlax",
+		DefenderName:  "Ditto",
+	}
+
+	alwaysZero := func(n int) int { return 0 }
+	result := SimulateFullBattle(input, alwaysZero)
+
+	if !result.IsOver {
+		t.Error("Battle should be over")
+	}
+
+	// Check that Ditto (defender) used Transform
+	foundTransform := false
+	for _, entry := range result.Log {
+		if strings.Contains(entry, "Ditto") && strings.Contains(entry, "Transform") {
+			foundTransform = true
+			break
+		}
+	}
+	if !foundTransform {
+		t.Error("Log should contain Ditto's Transform entry when used as defender")
+	}
+}
+
+func TestSimulateFullBattle_NonTransformPokemonUnaffected(t *testing.T) {
+	// Ensure normal Pokemon without Transform are completely unaffected.
+	tackle := Move{Name: "Tackle", Type: "normal", Power: 40, Category: "physical", Accuracy: 100}
+
+	input := FullBattleInput{
+		AttackerStats: Stats{HP: 200, Attack: 100, Defense: 80, SpAttack: 100, SpDefense: 80, Speed: 80},
+		DefenderStats: Stats{HP: 200, Attack: 100, Defense: 80, SpAttack: 100, SpDefense: 80, Speed: 80},
+		AttackerTypes: []PokemonType{{Name: "normal"}},
+		DefenderTypes: []PokemonType{{Name: "normal"}},
+		AttackerLevel: 50,
+		DefenderLevel: 50,
+		AttackerMoves: []Move{tackle},
+		DefenderMoves: []Move{tackle},
+		AttackerName:  "Rattata",
+		DefenderName:  "Pidgey",
+	}
+
+	alwaysZero := func(n int) int { return 0 }
+	result := SimulateFullBattle(input, alwaysZero)
+
+	if !result.IsOver {
+		t.Error("Battle should be over")
+	}
+	// No overrides should be set
+	if result.AttackerStatsOverride != nil {
+		t.Error("AttackerStatsOverride should be nil for non-Transform Pokemon")
+	}
+	if result.DefenderStatsOverride != nil {
+		t.Error("DefenderStatsOverride should be nil for non-Transform Pokemon")
+	}
+	if len(result.AttackerMovesOverride) != 0 {
+		t.Error("AttackerMovesOverride should be empty for non-Transform Pokemon")
+	}
+	if len(result.DefenderMovesOverride) != 0 {
+		t.Error("DefenderMovesOverride should be empty for non-Transform Pokemon")
+	}
+	// Verify no Transform in log
+	for _, entry := range result.Log {
+		if strings.Contains(entry, "Transform") {
+			t.Errorf("Non-Transform battle should not mention Transform, found: %s", entry)
+		}
+	}
+}

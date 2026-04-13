@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"sort"
+	"strings"
 )
 
 // FullBattleInput contains everything needed to simulate a complete battle.
@@ -44,11 +45,30 @@ func SimulateFullBattle(input FullBattleInput, randSource func(n int) int) Battl
 	const maxTurns = 200
 
 	for !state.IsOver && state.TurnCount < maxTurns {
-		atkMove := input.AttackerMoves[randSource(len(input.AttackerMoves))]
-		defMove := input.DefenderMoves[randSource(len(input.DefenderMoves))]
+		// Use overridden moves/stats if Transform has been used.
+		atkMoves := input.AttackerMoves
+		if len(state.AttackerMovesOverride) > 0 {
+			atkMoves = state.AttackerMovesOverride
+		}
+		defMoves := input.DefenderMoves
+		if len(state.DefenderMovesOverride) > 0 {
+			defMoves = state.DefenderMovesOverride
+		}
+
+		atkMove := atkMoves[randSource(len(atkMoves))]
+		defMove := defMoves[randSource(len(defMoves))]
+
+		atkSpeed := input.AttackerStats.Speed
+		if state.AttackerStatsOverride != nil {
+			atkSpeed = state.AttackerStatsOverride.Speed
+		}
+		defSpeed := input.DefenderStats.Speed
+		if state.DefenderStatsOverride != nil {
+			defSpeed = state.DefenderStatsOverride.Speed
+		}
 
 		attackerFirst := resolveOrder(
-			input.AttackerStats.Speed, input.DefenderStats.Speed,
+			atkSpeed, defSpeed,
 			atkMove, defMove, randSource,
 		)
 
@@ -82,52 +102,115 @@ func SimulateFullBattle(input FullBattleInput, randSource func(n int) int) Battl
 }
 
 func executeAttackerTurn(state BattleState, input FullBattleInput, move Move, randSource func(n int) int) BattleState {
+	// Resolve effective stats/types using Transform overrides.
+	atkStats := input.AttackerStats
+	if state.AttackerStatsOverride != nil {
+		atkStats = *state.AttackerStatsOverride
+	}
+	atkTypes := input.AttackerTypes
+	if len(state.AttackerTypesOverride) > 0 {
+		atkTypes = state.AttackerTypesOverride
+	}
+	defStats := input.DefenderStats
+	if state.DefenderStatsOverride != nil {
+		defStats = *state.DefenderStatsOverride
+	}
+	defTypes := input.DefenderTypes
+	if len(state.DefenderTypesOverride) > 0 {
+		defTypes = state.DefenderTypesOverride
+	}
+	defMoves := input.DefenderMoves
+	if len(state.DefenderMovesOverride) > 0 {
+		defMoves = state.DefenderMovesOverride
+	}
+
 	result := ExecuteTurn(TurnInput{
 		State:         state,
-		AttackerStats: input.AttackerStats,
-		DefenderStats: input.DefenderStats,
-		AttackerTypes: input.AttackerTypes,
-		DefenderTypes: input.DefenderTypes,
+		AttackerStats: atkStats,
+		DefenderStats: defStats,
+		AttackerTypes: atkTypes,
+		DefenderTypes: defTypes,
 		AttackerLevel: input.AttackerLevel,
 		DefenderLevel: input.DefenderLevel,
 		Move:          move,
 		AttackerName:  input.AttackerName,
+		DefenderName:  input.DefenderName,
+		DefenderMoves: defMoves,
 	}, randSource)
 	return result.NewState
 }
 
 func executeDefenderTurn(state BattleState, input FullBattleInput, move Move, randSource func(n int) int) BattleState {
+	// Swap overrides along with HP: defender's overrides become attacker's in the swapped view.
 	swapped := BattleState{
-		AttackerHP:    state.DefenderHP,
-		DefenderHP:    state.AttackerHP,
-		AttackerMaxHP: state.DefenderMaxHP,
-		DefenderMaxHP: state.AttackerMaxHP,
-		TurnCount:     state.TurnCount,
-		Log:           state.Log,
-		IsOver:        state.IsOver,
-		Winner:        state.Winner,
+		AttackerHP:            state.DefenderHP,
+		DefenderHP:            state.AttackerHP,
+		AttackerMaxHP:         state.DefenderMaxHP,
+		DefenderMaxHP:         state.AttackerMaxHP,
+		TurnCount:             state.TurnCount,
+		Log:                   state.Log,
+		IsOver:                state.IsOver,
+		Winner:                state.Winner,
+		AttackerStatsOverride: state.DefenderStatsOverride,
+		AttackerMovesOverride: state.DefenderMovesOverride,
+		AttackerTypesOverride: state.DefenderTypesOverride,
+		DefenderStatsOverride: state.AttackerStatsOverride,
+		DefenderMovesOverride: state.AttackerMovesOverride,
+		DefenderTypesOverride: state.AttackerTypesOverride,
 	}
+
+	// Resolve effective stats/types using Transform overrides (from swapped perspective).
+	atkStats := input.DefenderStats
+	if swapped.AttackerStatsOverride != nil {
+		atkStats = *swapped.AttackerStatsOverride
+	}
+	atkTypes := input.DefenderTypes
+	if len(swapped.AttackerTypesOverride) > 0 {
+		atkTypes = swapped.AttackerTypesOverride
+	}
+	defStats := input.AttackerStats
+	if swapped.DefenderStatsOverride != nil {
+		defStats = *swapped.DefenderStatsOverride
+	}
+	defTypes := input.AttackerTypes
+	if len(swapped.DefenderTypesOverride) > 0 {
+		defTypes = swapped.DefenderTypesOverride
+	}
+	defMoves := input.AttackerMoves
+	if len(swapped.DefenderMovesOverride) > 0 {
+		defMoves = swapped.DefenderMovesOverride
+	}
+
 	result := ExecuteTurn(TurnInput{
 		State:         swapped,
-		AttackerStats: input.DefenderStats,
-		DefenderStats: input.AttackerStats,
-		AttackerTypes: input.DefenderTypes,
-		DefenderTypes: input.AttackerTypes,
+		AttackerStats: atkStats,
+		DefenderStats: defStats,
+		AttackerTypes: atkTypes,
+		DefenderTypes: defTypes,
 		AttackerLevel: input.DefenderLevel,
 		DefenderLevel: input.AttackerLevel,
 		Move:          move,
 		AttackerName:  input.DefenderName,
+		DefenderName:  input.AttackerName,
+		DefenderMoves: defMoves,
 	}, randSource)
 	ns := result.NewState
+	// Swap back: un-rotate HP and overrides to the original perspective.
 	state = BattleState{
-		AttackerHP:    ns.DefenderHP,
-		DefenderHP:    ns.AttackerHP,
-		AttackerMaxHP: ns.DefenderMaxHP,
-		DefenderMaxHP: ns.AttackerMaxHP,
-		TurnCount:     ns.TurnCount,
-		Log:           ns.Log,
-		IsOver:        ns.IsOver,
-		Winner:        ns.Winner,
+		AttackerHP:            ns.DefenderHP,
+		DefenderHP:            ns.AttackerHP,
+		AttackerMaxHP:         ns.DefenderMaxHP,
+		DefenderMaxHP:         ns.AttackerMaxHP,
+		TurnCount:             ns.TurnCount,
+		Log:                   ns.Log,
+		IsOver:                ns.IsOver,
+		Winner:                ns.Winner,
+		AttackerStatsOverride: ns.DefenderStatsOverride,
+		AttackerMovesOverride: ns.DefenderMovesOverride,
+		AttackerTypesOverride: ns.DefenderTypesOverride,
+		DefenderStatsOverride: ns.AttackerStatsOverride,
+		DefenderMovesOverride: ns.AttackerMovesOverride,
+		DefenderTypesOverride: ns.AttackerTypesOverride,
 	}
 	if state.IsOver {
 		state.Winner = "defender"
@@ -145,6 +228,16 @@ type BattleState struct {
 	Log           []string `json:"log"`
 	IsOver        bool     `json:"isOver"`
 	Winner        string   `json:"winner"` // "attacker" | "defender" | ""
+
+	// Transform overrides: when a Pokemon uses Transform, its stats/moves/types
+	// are replaced by the opponent's for subsequent turns. HP is NOT overridden.
+	// Nil means no override (use original values).
+	AttackerStatsOverride *Stats        `json:"attackerStatsOverride,omitempty"`
+	AttackerMovesOverride []Move        `json:"attackerMovesOverride,omitempty"`
+	AttackerTypesOverride []PokemonType `json:"attackerTypesOverride,omitempty"`
+	DefenderStatsOverride *Stats        `json:"defenderStatsOverride,omitempty"`
+	DefenderMovesOverride []Move        `json:"defenderMovesOverride,omitempty"`
+	DefenderTypesOverride []PokemonType `json:"defenderTypesOverride,omitempty"`
 }
 
 // TurnInput contains everything needed to simulate one turn.
@@ -158,6 +251,8 @@ type TurnInput struct {
 	DefenderLevel int           `json:"defenderLevel"`
 	Move          Move          `json:"move"`
 	AttackerName  string        `json:"attackerName"`
+	DefenderName  string        `json:"defenderName"`
+	DefenderMoves []Move        `json:"defenderMoves"`
 }
 
 // TurnResult is the outcome of one executed turn.
@@ -203,6 +298,35 @@ func ExecuteTurn(input TurnInput, randSource func(n int) int) TurnResult {
 	}
 
 	state.TurnCount++
+
+	// Transform: copy defender's stats (except HP), moves, and types.
+	// Always hits (accuracy irrelevant). Returns immediately with overrides set.
+	if strings.EqualFold(input.Move.Name, "transform") {
+		// Copy defender stats but preserve attacker's current HP.
+		copiedStats := input.DefenderStats
+		copiedStats.HP = input.AttackerStats.HP
+
+		// Copy defender moves into a new slice.
+		copiedMoves := make([]Move, len(input.DefenderMoves))
+		copy(copiedMoves, input.DefenderMoves)
+
+		// Copy defender types into a new slice.
+		copiedTypes := make([]PokemonType, len(input.DefenderTypes))
+		copy(copiedTypes, input.DefenderTypes)
+
+		state.AttackerStatsOverride = &copiedStats
+		state.AttackerMovesOverride = copiedMoves
+		state.AttackerTypesOverride = copiedTypes
+
+		logEntry := fmt.Sprintf("[T%d] %s usó Transform → se transformó en %s",
+			state.TurnCount, input.AttackerName, input.DefenderName)
+		newLog := make([]string, len(state.Log)+1)
+		copy(newLog, state.Log)
+		newLog[len(state.Log)] = logEntry
+		state.Log = newLog
+
+		return TurnResult{NewState: state, LogEntry: logEntry}
+	}
 
 	// Accuracy check
 	if randSource != nil && input.Move.Power > 0 && input.Move.Category != "status" {
