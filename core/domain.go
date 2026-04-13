@@ -79,6 +79,13 @@ type PokemonMoveEntry struct {
 	Level  int    // nivel al que se aprende (0 si no aplica)
 }
 
+// PokemonAbilityEntry is one ability slot of a Pokémon. IsHidden is true when
+// the slot is the species' hidden ability per PokéAPI.
+type PokemonAbilityEntry struct {
+	Name     string `json:"name"`
+	IsHidden bool   `json:"isHidden"`
+}
+
 type Pokemon struct {
 	ID        int
 	Name      string
@@ -88,7 +95,7 @@ type Pokemon struct {
 	Height    int
 	Weight    int
 	Moves     []PokemonMoveEntry
-	Abilities []string
+	Abilities []PokemonAbilityEntry
 }
 
 type PokemonType struct {
@@ -342,6 +349,8 @@ type TeamMember struct {
 	Nature      string   `json:"nature"`
 	IVs         Stats    `json:"ivs"`
 	EVs         Stats    `json:"evs"`
+	// Ability slug (kebab-case, matching PokéAPI). Empty = no ability selected.
+	Ability string `json:"ability,omitempty"`
 }
 
 // Team representa un equipo de Pokemon con nombre personalizado.
@@ -359,6 +368,8 @@ type TeamBattleMember struct {
 	Types       []PokemonType `json:"types"`
 	Moves       []Move        `json:"moves"`
 	Level       int           `json:"level"`
+	// Ability slug (kebab-case). Empty = no ability.
+	Ability string `json:"ability,omitempty"`
 }
 
 // TeamBattleInput contains everything needed to simulate a full team battle.
